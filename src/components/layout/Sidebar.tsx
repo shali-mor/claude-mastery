@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BookOpen, Terminal, Search, DollarSign,
-  Code2, HelpCircle, X, Home, Award
+  BookOpen, Terminal, DollarSign,
+  Code2, X, Home, Award, Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProgress } from '@/store';
@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
   { href: '/commands', label: 'Commands', icon: <Terminal className="h-4 w-4" /> },
   { href: '/calculator', label: 'Cost Calculator', icon: <DollarSign className="h-4 w-4" /> },
   { href: '/playground', label: 'Playground', icon: <Code2 className="h-4 w-4" /> },
+  { href: '/about', label: 'About', icon: <Info className="h-4 w-4" /> },
 ];
 
 interface SidebarProps {
@@ -148,9 +149,8 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-border">
-        <p className="text-xs text-muted-foreground">
-          Claude Mastery v1.0
-        </p>
+        <p className="text-xs text-muted-foreground">Claude Mastery v1.0</p>
+        <p className="text-xs text-muted-foreground/60 mt-0.5">by Shali Mor</p>
       </div>
     </aside>
   );
