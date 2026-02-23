@@ -427,6 +427,83 @@ const message = await client.messages.______({
       },
     ],
   },
+  {
+    id: 'quiz-module-7',
+    moduleId: 'module-7',
+    title: 'Sub-Agents & Parallelism Quiz',
+    questions: [
+      {
+        id: 'q7-1',
+        type: 'multiple-choice',
+        questionText: 'What does a sub-agent receive when it is spawned?',
+        options: [
+          { id: 'a', text: 'The full parent conversation history', isCorrect: false, explanation: 'Sub-agents do NOT inherit the parent conversation. They start with only what you explicitly pass in the prompt.' },
+          { id: 'b', text: 'Only the prompt you provide — no parent context', isCorrect: true, explanation: 'Correct! Sub-agents start fresh. Every piece of context the agent needs must be included in the delegation prompt.' },
+          { id: 'c', text: 'Shared memory with the parent and all sibling agents', isCorrect: false, explanation: 'There is no shared memory. Each agent is isolated — that is a feature, not a bug.' },
+          { id: 'd', text: 'The last 10 messages from the parent conversation', isCorrect: false, explanation: 'No portion of the parent conversation is passed automatically. You must include context explicitly.' },
+        ],
+        globalExplanation: 'Sub-agents start fresh with only the prompt you provide. This isolation forces explicit, clear communication and prevents context pollution between agents.',
+      },
+      {
+        id: 'q7-2',
+        type: 'multiple-choice',
+        questionText: 'You need to audit three separate API modules for security issues. Which execution strategy is best?',
+        options: [
+          { id: 'a', text: 'One agent sequentially reviews all three modules', isCorrect: false, explanation: 'Sequential execution is 3× slower for independent tasks. There is no reason to wait for one module before reviewing the next.' },
+          { id: 'b', text: 'Three agents launched in parallel, one per module', isCorrect: true, explanation: 'Correct! The three audits are independent — no module\'s results affect another. Parallel execution finishes in roughly the same time as one audit.' },
+          { id: 'c', text: 'One agent reviews all three, then a second agent double-checks', isCorrect: false, explanation: 'This is sequential and doubles the work. Better to run three parallel audits, then one synthesis agent.' },
+          { id: 'd', text: 'Skip agents; prompt the parent conversation directly', isCorrect: false, explanation: 'For large codebases, stuffing three security audits into one parent conversation bloats the context window and makes results harder to reason about.' },
+        ],
+        globalExplanation: 'Tasks are parallel when no task depends on another\'s output. Three independent module audits can run simultaneously, reducing total time from 3× to ~1×.',
+      },
+      {
+        id: 'q7-3',
+        type: 'true-false',
+        questionText: 'Setting `run_in_background: true` on a Task tool call allows the parent agent to continue working while the sub-agent runs.',
+        options: [
+          { id: 'a', text: 'True', isCorrect: true, explanation: 'Correct! Background agents run asynchronously. The parent gets an agent ID and can check progress later with TaskOutput, enabling true parallel execution.' },
+          { id: 'b', text: 'False', isCorrect: false, explanation: 'This is true. `run_in_background: true` is how you achieve non-blocking parallel execution. Without it, the parent waits for each agent to finish before continuing.' },
+        ],
+        globalExplanation: '`run_in_background: true` is the key to parallelism. The parent launches multiple background agents, does other work, then collects results with TaskOutput using the returned agent IDs.',
+      },
+      {
+        id: 'q7-4',
+        type: 'multiple-choice',
+        questionText: 'Which model choice is most cost-effective for a "map" phase agent that reads 20 files and extracts function names?',
+        options: [
+          { id: 'a', text: 'claude-opus-4-6 — always use the best model', isCorrect: false, explanation: 'Opus is 20× more expensive than Haiku for tasks that don\'t require deep reasoning. Reading files and extracting names is a simple, structured task.' },
+          { id: 'b', text: 'claude-sonnet-4-6 — a balanced compromise', isCorrect: false, explanation: 'Sonnet is a good default for moderate tasks, but for simple file-reading and extraction, Haiku is sufficient and much cheaper.' },
+          { id: 'c', text: 'claude-haiku-4-5 — fast and cheap for simple structured tasks', isCorrect: true, explanation: 'Correct! Haiku handles simple, structured tasks (read files, extract data, list results) extremely well at a fraction of Opus\'s cost. Save Opus for synthesis and complex reasoning.' },
+          { id: 'd', text: 'Model choice doesn\'t matter for sub-agents', isCorrect: false, explanation: 'Model choice has a major impact on cost and speed. Using Haiku for simple agents and Opus only where needed can reduce multi-agent pipeline costs by 10–20×.' },
+        ],
+        globalExplanation: 'Match model capability to task complexity. Haiku for simple data extraction, Sonnet for moderate reasoning, Opus for synthesis and high-stakes decisions. This is the key to cost-effective multi-agent pipelines.',
+      },
+      {
+        id: 'q7-5',
+        type: 'multiple-choice',
+        questionText: 'What is the most important section to include in a delegation prompt?',
+        options: [
+          { id: 'a', text: 'A greeting and explanation of who you are', isCorrect: false, explanation: 'Pleasantries add tokens but no value. Sub-agents don\'t need social context.' },
+          { id: 'b', text: 'Context, Goal, Output Format, and Constraints', isCorrect: true, explanation: 'Correct! These four sections ensure the agent knows what it\'s working with (Context), what success looks like (Goal), how to return results (Output Format), and what not to do (Constraints).' },
+          { id: 'c', text: 'A list of all files in the project', isCorrect: false, explanation: 'Dumping all files wastes tokens. Provide only the specific files or paths relevant to the task.' },
+          { id: 'd', text: 'The agent\'s previous conversation history', isCorrect: false, explanation: 'Sub-agents don\'t have previous history — they start fresh. Include only what is needed for this specific task.' },
+        ],
+        globalExplanation: 'A great delegation prompt has four parts: Context (what the agent needs to know), Goal (measurable outcome), Output Format (exact structure), and Constraints (what not to do). Missing any one of these leads to unpredictable results.',
+      },
+      {
+        id: 'q7-6',
+        type: 'multiple-choice',
+        questionText: 'You want a sub-agent to write files and make commits, but you need to review the changes before they affect your main branch. What should you do?',
+        options: [
+          { id: 'a', text: 'Tell the agent "be careful" in the prompt', isCorrect: false, explanation: 'Natural language warnings are not enforceable. The agent may still commit to main if not properly isolated.' },
+          { id: 'b', text: 'Set `isolation: "worktree"` on the Task call', isCorrect: true, explanation: 'Correct! The `isolation: "worktree"` parameter creates a temporary git worktree — the agent works on an isolated branch. You review the changes and decide whether to merge.' },
+          { id: 'c', text: 'Run the agent without any special configuration and review git diff afterwards', isCorrect: false, explanation: 'Without isolation, the agent commits directly to your current branch. If it makes a mistake, you have to undo it manually.' },
+          { id: 'd', text: 'Sub-agents cannot make commits, so no precaution is needed', isCorrect: false, explanation: 'Sub-agents with the Bash tool absolutely can make commits. Always use `isolation: "worktree"` for agents that write to disk or commit code.' },
+        ],
+        globalExplanation: '`isolation: "worktree"` is the safety net for agents that write files or commit code. The agent works in a separate git worktree (new branch), and the parent decides whether to merge. If no changes are made, the worktree is cleaned up automatically.',
+      },
+    ],
+  },
 ];
 
 export function getQuizById(id: string): Quiz | undefined {

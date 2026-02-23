@@ -1573,4 +1573,372 @@ Write Jest unit tests for $ARGUMENTS.
       },
     ],
   },
+  {
+    id: 'module-7',
+    title: 'Sub-Agents & Parallelism',
+    description: 'Spawn multiple Claude agents to work in parallel, delegate complex research, and build multi-agent pipelines for massive speed gains.',
+    icon: 'GitBranch',
+    color: 'cyan',
+    quizId: 'quiz-module-7',
+    lessons: [
+      {
+        id: 'lesson-7-1',
+        title: 'What Are Sub-Agents?',
+        description: 'Understand the sub-agent mental model and when to reach for it.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'A **sub-agent** is a separate Claude instance you spawn from inside a conversation. It runs autonomously, has its own context window, and reports back a single result when it finishes. Think of it like hiring a contractor: you give them a well-defined job, they go away and do it, and you get a deliverable back.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'Sub-agents are launched with the **Task tool** — the tool Claude Code uses internally when you ask it to delegate work. When you build your own agents with the Claude API, you give your model the same Task-like capability by providing tools that can call Claude recursively.',
+          },
+          {
+            type: 'heading',
+            content: 'Why Use Sub-Agents?',
+          },
+          {
+            type: 'table',
+            headers: ['Problem', 'Sub-Agent Solution'],
+            rows: [
+              ['Context window fills up on large codebases', 'Delegate file exploration to an agent; get a summary back'],
+              ['Sequential tasks waste time', 'Run 3–5 agents in parallel, merge results'],
+              ['One conversation can\'t hold all the detail', 'Each agent gets only the context it needs'],
+              ['You want specialization', 'One agent writes, another reviews, another tests'],
+            ],
+          },
+          {
+            type: 'heading',
+            content: 'The Sub-Agent Mental Model',
+          },
+          {
+            type: 'steps',
+            content: 'The sub-agent lifecycle',
+            steps: [
+              'Parent decides to delegate — the orchestrator identifies a well-scoped sub-task that benefits from isolation or parallelism.',
+              'Sub-agent is spawned with context — the parent passes a detailed prompt. The agent starts fresh with only that prompt and no memory of the parent conversation.',
+              'Sub-agent works autonomously — it uses its tools (Read, Grep, Bash, Write, etc.) to complete the task. The parent waits or continues with other work if non-blocking.',
+              'Result is returned — the sub-agent sends a single final message. The parent integrates the result and continues.',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**Key constraint**: sub-agents do not share memory with the parent. Anything the parent knows must be explicitly passed in the prompt. This is a feature — it forces clear communication — but it means sloppy prompts produce sloppy results.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-7-2',
+        title: 'Spawning Agents with the Task Tool',
+        description: 'Learn the exact API for launching sub-agents and writing effective delegation prompts.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'In Claude Code, sub-agents are launched via the **Task tool**. Each call spawns one agent with a specific `subagent_type`, a `prompt`, and optional parameters like `run_in_background` and `model`.',
+          },
+          {
+            type: 'heading',
+            content: 'Task Tool Parameters',
+          },
+          {
+            type: 'table',
+            headers: ['Parameter', 'Required', 'Description'],
+            rows: [
+              ['`subagent_type`', 'Yes', 'Which specialized agent to use (e.g., `Bash`, `Explore`, `general-purpose`)'],
+              ['`prompt`', 'Yes', 'The full task description — treat it like a mini CLAUDE.md'],
+              ['`description`', 'Yes', 'Short 3–5 word label shown in the UI'],
+              ['`run_in_background`', 'No', 'Set `true` to launch without blocking — useful for parallel work'],
+              ['`model`', 'No', 'Override the model: `"haiku"`, `"sonnet"`, or `"opus"`'],
+              ['`isolation`', 'No', 'Set `"worktree"` to give the agent its own git branch'],
+            ],
+          },
+          {
+            type: 'heading',
+            content: 'Anatomy of a Good Delegation Prompt',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# Task: Analyze authentication module
+
+## Context
+You are reviewing the auth system in a Next.js 14 app.
+Relevant files are in \`src/app/api/auth/\` and \`src/lib/auth.ts\`.
+
+## Your Goal
+Find all places where JWTs are verified and check whether:
+1. The expiry (\`exp\` claim) is validated
+2. The signature algorithm is pinned (not 'none')
+3. Errors are handled (not swallowed)
+
+## Output Format
+Return a markdown list. For each location include:
+- File path and line number
+- Verdict: PASS / FAIL / NEEDS_REVIEW
+- One-line explanation
+
+## Important
+- Read files; do NOT modify anything
+- If a file is missing, note it and continue`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'A great delegation prompt has four parts: **Context** (what the agent needs to know), **Goal** (what done looks like), **Output Format** (how to return the result), and **Constraints** (what NOT to do).',
+          },
+          {
+            type: 'heading',
+            content: 'Available Sub-Agent Types',
+          },
+          {
+            type: 'table',
+            headers: ['Type', 'Best For'],
+            rows: [
+              ['`Bash`', 'Git operations, running commands, terminal tasks'],
+              ['`Explore`', 'Finding files, searching code, answering codebase questions'],
+              ['`general-purpose`', 'Open-ended research, multi-step tasks, broad searches'],
+              ['`Plan`', 'Designing implementation strategies, architecture decisions'],
+              ['GSD agents (`gsd-executor`, etc.)', 'Full GSD workflow phases — planning, executing, verifying'],
+            ],
+          },
+          {
+            type: 'exercise',
+            content: 'Write a delegation prompt for an Explore agent',
+            exercise: {
+              prompt: 'Write a Task tool call (as a JSON block) that spawns an `Explore` agent to find all React components in `src/components` that use the `useEffect` hook. The agent should return a list of file paths and line numbers. It should run in the foreground.',
+              hints: [
+                'The `subagent_type` should be `"Explore"`',
+                'The prompt should tell the agent exactly what to search for and how to format results',
+                'Set `description` to a short label like "Find useEffect usages"',
+              ],
+              solution: `{
+  "subagent_type": "Explore",
+  "description": "Find useEffect usages",
+  "prompt": "Search all .tsx and .ts files in src/components for usages of the useEffect hook.\\n\\nFor each file that uses useEffect:\\n- List the file path\\n- List the line numbers where useEffect appears\\n\\nReturn results as a markdown list. Do not modify any files."
+}`,
+              solutionLanguage: 'json',
+            },
+          },
+        ],
+      },
+      {
+        id: 'lesson-7-3',
+        title: 'Parallelization Patterns',
+        description: 'Run multiple agents concurrently and merge their results for dramatically faster workflows.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'The real power of sub-agents is **parallelism**. Instead of researching four topics sequentially, you launch four agents at once and collect all the results in roughly the time it takes to do one. This section covers the core patterns for parallel agent work.',
+          },
+          {
+            type: 'heading',
+            content: 'Pattern 1: Parallel Research Fan-Out',
+          },
+          {
+            type: 'text',
+            content: 'Break one large research question into N independent sub-questions and launch N agents simultaneously. Merge their findings in a final step.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# Parallel Research: API Security Audit
+
+Launch these 3 agents IN PARALLEL (single message, three Task calls):
+
+Agent 1 — Authentication:
+  Explore src/app/api/auth/ and report JWT handling issues.
+
+Agent 2 — Input Validation:
+  Explore all API route handlers, look for missing zod/validation.
+
+Agent 3 — Rate Limiting:
+  Check middleware.ts and API routes for rate-limit enforcement.
+
+After all three return, synthesize findings into a single report.`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Rule of thumb**: agents are independent when the output of one is NOT an input to another. If Agent B needs Agent A\'s result, they must be sequential. Everything else can be parallel.',
+          },
+          {
+            type: 'heading',
+            content: 'Pattern 2: Map–Reduce',
+          },
+          {
+            type: 'text',
+            content: 'Assign one agent per item in a list (map), then combine all results (reduce). Classic for processing many files, repos, or issues at once.',
+          },
+          {
+            type: 'steps',
+            content: 'Map–Reduce execution',
+            steps: [
+              'Map phase — for each item (file, module, ticket…), spawn one agent. Pass only the data for that item. All agents run in parallel with `run_in_background: true`.',
+              'Collect phase — wait for all background agents to finish. Use `TaskOutput` to retrieve results by agent ID.',
+              'Reduce phase — the orchestrator (or a dedicated synthesis agent) merges all agent outputs into one coherent result.',
+            ],
+          },
+          {
+            type: 'heading',
+            content: 'Pattern 3: Specialist Pipeline',
+          },
+          {
+            type: 'text',
+            content: 'Chain specialized agents where each stage feeds the next. This is sequential but lets each agent focus on one thing it does well.',
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: '✅ Specialist pipeline',
+              language: 'typescript',
+              code: `// Each agent has one focused job
+// 1. Researcher gathers facts
+const research = await Task({ type: 'Explore', prompt: '...' });
+// 2. Planner designs solution using research
+const plan = await Task({ type: 'Plan', prompt: \`Based on: \${research}\` });
+// 3. Executor implements the plan
+await Task({ type: 'gsd-executor', prompt: \`Execute: \${plan}\` });`,
+            },
+            dont: {
+              label: '❌ Monolithic prompt',
+              language: 'typescript',
+              code: `// Stuffing research + planning + execution
+// into one gigantic prompt = context bloat,
+// confused output, harder to debug.
+await Task({
+  type: 'general-purpose',
+  prompt: \`Research everything, make a plan,
+           then implement it all at once...\`
+});`,
+            },
+          },
+          {
+            type: 'heading',
+            content: 'Pattern 4: Competitive Execution',
+          },
+          {
+            type: 'text',
+            content: 'Launch multiple agents to solve the same problem with different approaches. Pick the best result. Useful for creative tasks, architecture decisions, or when correctness is critical.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Use `model: "haiku"` for simple map-phase agents (fast + cheap) and `model: "opus"` for the reduce/synthesis agent where quality matters most.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-7-4',
+        title: 'Agent Communication & Best Practices',
+        description: 'Design robust multi-agent systems: context passing, error handling, and avoiding common pitfalls.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Building reliable multi-agent systems requires more than just launching agents. You need to think about how context flows between them, how to handle failures, and how to avoid the common traps that make agent pipelines brittle.',
+          },
+          {
+            type: 'heading',
+            content: 'Context Passing Strategies',
+          },
+          {
+            type: 'table',
+            headers: ['Strategy', 'When to Use', 'Example'],
+            rows: [
+              ['Inline in prompt', 'Small data (< 500 tokens)', 'Pass a list of file paths directly in the prompt string'],
+              ['File reference', 'Medium data', 'Write results to `/tmp/research.md`, tell the next agent to read it'],
+              ['Structured output', 'Machine-readable handoffs', 'Ask the first agent to return JSON, parse it, inject into next prompt'],
+              ['Shared state file', 'Long pipelines', 'Maintain a `.planning/state.md` that each agent reads and updates'],
+            ],
+          },
+          {
+            type: 'heading',
+            content: 'Error Handling in Agent Pipelines',
+          },
+          {
+            type: 'steps',
+            content: 'Handling failures gracefully',
+            steps: [
+              'Check the result before continuing — a sub-agent can return a partial or error result. Always inspect the output for failure signals ("I could not find…", "Error:", empty string) before using it downstream.',
+              'Retry with more context, not the same prompt — if an agent fails, diagnose why. Add the missing context or sharpen the goal. Re-running the identical prompt usually produces the same failure.',
+              'Use isolation for risky work — set `isolation: "worktree"` when an agent will write files or make commits. Changes are isolated until you explicitly merge them.',
+              'Limit scope with explicit constraints — include "do NOT modify files", "read only", or "stop after X steps" in the prompt. Agents without constraints can over-reach.',
+            ],
+          },
+          {
+            type: 'heading',
+            content: 'Common Pitfalls',
+          },
+          {
+            type: 'checklist',
+            content: 'Watch out for these common pitfalls',
+            items: [
+              {
+                text: 'Prompt too vague',
+                description: '"Analyze the codebase" — for what? By what criteria? What should the output look like? Vague prompts produce vague answers.',
+              },
+              {
+                text: 'Forgetting agents start fresh',
+                description: 'Every sub-agent has zero memory of the parent conversation. If the agent needs a config value, file path, or prior decision — put it in the prompt.',
+              },
+              {
+                text: 'Parallelizing dependent tasks',
+                description: 'If Agent B needs Agent A\'s output, they are NOT independent. Run them sequentially; run independent tasks in parallel.',
+              },
+              {
+                text: 'Using Opus for everything',
+                description: 'Haiku is 20× cheaper and fast enough for most map-phase tasks (reading files, running grep, listing results). Reserve Opus for synthesis and complex reasoning.',
+              },
+              {
+                text: 'No output format specified',
+                description: 'Without a format spec, agents return prose. Prose is hard to parse programmatically. Ask for JSON, markdown tables, or numbered lists.',
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            content: 'Designing Trustworthy Pipelines',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**The Golden Rule of Sub-Agents**: a pipeline is only as reliable as its weakest prompt. Spend 80% of your design time on the delegation prompt — context, goal, output format, and constraints. The infrastructure is easy; clear communication is hard.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# Sub-Agent Prompt Template
+
+## Context
+[What the agent needs to know about the project, codebase, or prior decisions]
+
+## Goal
+[Specific, measurable outcome — what "done" looks like]
+
+## Constraints
+- [What NOT to do: read-only, don't modify X, stop after Y]
+- [Scope limits: only look in src/foo, only up to 5 files]
+
+## Output Format
+[Exact structure: JSON schema / markdown list / table with columns]
+
+## If Blocked
+[What to do if something is missing or ambiguous — fail loudly, not silently]`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: 'Sub-agents transform Claude Code from a single-threaded assistant into a **multi-agent workforce**. Mastering delegation prompts, parallelism patterns, and context passing is what separates a 10× engineer from a 100× one.',
+          },
+        ],
+      },
+    ],
+  },
 ];
