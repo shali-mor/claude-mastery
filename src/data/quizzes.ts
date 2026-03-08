@@ -829,6 +829,71 @@ const message = await client.messages.______({
       },
     ],
   },
+  {
+    id: 'quiz-module-13',
+    moduleId: 'module-13',
+    title: 'Daily Stock Picks Bot Quiz',
+    questions: [
+      {
+        id: 'q13-1',
+        type: 'multiple-choice',
+        questionText: 'Which RSI range is considered ideal for a swing trade entry when holding for 1–2 months?',
+        options: [
+          { id: 'a', text: 'RSI above 80 (strongly overbought)', isCorrect: false, explanation: 'RSI above 70–80 means the stock is overbought — buying here risks entering at a short-term peak.' },
+          { id: 'b', text: 'RSI between 40–65, trending upward from oversold', isCorrect: true, explanation: 'Correct! RSI in the 40–65 range signals recovering momentum — the stock is building strength without being overextended. This is the sweet spot for a 1–2 month hold.' },
+          { id: 'c', text: 'RSI below 20 (deeply oversold)', isCorrect: false, explanation: 'RSI below 20 can signal a falling knife. While it may bounce, very low RSI stocks often continue declining before recovering. Without other confirming signals, this is risky for a swing trade.' },
+          { id: 'd', text: 'RSI exactly at 50', isCorrect: false, explanation: 'RSI at 50 is neutral — not wrong, but a single number without a trend direction is not actionable. You want RSI trending upward from oversold, not just sitting at 50.' },
+        ],
+        globalExplanation: 'For a 1–2 month swing trade, RSI between 40–65 trending upward is the target zone. It signals that selling pressure has faded and buyers are gaining control — without the stock being so extended that a pullback is overdue.',
+      },
+      {
+        id: 'q13-2',
+        type: 'multiple-choice',
+        questionText: 'Why does this workflow use Yahoo Finance\'s unofficial API instead of a paid data provider?',
+        options: [
+          { id: 'a', text: 'Paid providers are less accurate than Yahoo Finance', isCorrect: false, explanation: 'Accuracy is not the reason. Paid providers like Polygon.io often have higher-quality, more reliable data.' },
+          { id: 'b', text: 'Yahoo Finance requires no API key and is free, making it ideal for tutorials and personal projects', isCorrect: true, explanation: 'Correct! The unofficial Yahoo Finance endpoint works with no sign-up, no API key, and no rate limit concerns for personal use. This makes it the lowest-friction choice for a tutorial workflow.' },
+          { id: 'c', text: 'Yahoo Finance is the only source that provides MACD pre-calculated', isCorrect: false, explanation: 'Yahoo Finance does not pre-calculate MACD. The workflow computes MACD from raw OHLCV data in a Code node.' },
+          { id: 'd', text: 'n8n only supports Yahoo Finance for financial data', isCorrect: false, explanation: 'n8n\'s HTTP Request node can call any API. You could swap in Polygon.io, Alpha Vantage, or any other data provider.' },
+        ],
+        globalExplanation: 'Yahoo Finance\'s unofficial API (`query1.finance.yahoo.com`) is the lowest-friction option: no API key, no account, free. For production use, a paid provider (Polygon.io, Alpha Vantage) offers more reliability and official support.',
+      },
+      {
+        id: 'q13-3',
+        type: 'multiple-choice',
+        questionText: 'How do you enable on-demand stock pick requests (not just the daily cron) from Telegram?',
+        options: [
+          { id: 'a', text: 'Send an email to n8n\'s webhook address', isCorrect: false, explanation: 'Email is not a trigger in this workflow. The on-demand trigger is a Telegram message.' },
+          { id: 'b', text: 'Add a Telegram Trigger node that listens for the /picks command and routes into the same analysis flow', isCorrect: true, explanation: 'Correct! A Telegram Trigger node receives incoming messages. An IF node checks for the /picks command and routes TRUE into the stock-fetching and analysis pipeline — enabling on-demand runs.' },
+          { id: 'c', text: 'Change the cron schedule to run every minute', isCorrect: false, explanation: 'Running every minute would spam you with 1,440 daily messages and waste API credits. The on-demand solution is a Telegram command, not a high-frequency cron.' },
+          { id: 'd', text: 'Use the Manual Trigger node in n8n', isCorrect: false, explanation: 'The Manual Trigger requires clicking a button in the n8n UI. A Telegram command lets you trigger from your phone, anywhere.' },
+        ],
+        globalExplanation: 'Two triggers in one workflow: a Schedule Trigger for the automated 8 AM run, and a Telegram Trigger for on-demand /picks commands. Both routes feed into the same watchlist → signals → Claude → Telegram pipeline.',
+      },
+      {
+        id: 'q13-4',
+        type: 'true-false',
+        questionText: 'Claude\'s stock pick output in this workflow should be treated as professional financial advice.',
+        options: [
+          { id: 'a', text: 'True', isCorrect: false, explanation: 'Claude is an AI generating analysis based on simplified technical indicators from a tutorial workflow. It is not a licensed financial advisor and its output is not professional advice.' },
+          { id: 'b', text: 'False', isCorrect: true, explanation: 'Correct! This is a tutorial demonstrating how to build an AI-assisted screening tool. Claude\'s output is educational. Always do your own research and consult a qualified financial advisor before making investment decisions.' },
+        ],
+        globalExplanation: 'AI-generated stock screening output is a starting point for your own research, not a financial recommendation. The workflow includes a disclaimer in every Telegram message to make this clear.',
+      },
+      {
+        id: 'q13-5',
+        type: 'multiple-choice',
+        questionText: 'What does a volume ratio > 1.2 indicate when screening for swing trade candidates?',
+        options: [
+          { id: 'a', text: 'The stock\'s price increased by 20% today', isCorrect: false, explanation: 'Volume ratio measures trading volume relative to the 20-day average, not price change.' },
+          { id: 'b', text: 'Today\'s trading volume is 20% above the 20-day average — suggesting institutional interest', isCorrect: true, explanation: 'Correct! A volume ratio of 1.2 means 20% above average volume. When this occurs on an up day, it suggests institutional buyers are accumulating — a bullish confirmation for a swing trade entry.' },
+          { id: 'c', text: 'The stock has 20% more shares outstanding than average', isCorrect: false, explanation: 'Shares outstanding is a fixed company metric, not something measured by volume ratio in this context.' },
+          { id: 'd', text: 'The stock traded for 1.2 hours longer than usual', isCorrect: false, explanation: 'US stocks all trade the same market hours. Volume ratio measures quantity of shares traded, not time.' },
+        ],
+        globalExplanation: 'Volume ratio = today\'s volume / 20-day average volume. A ratio > 1.2 on a bullish day signals that more participants than usual are buying — often indicating institutional accumulation, which is a key confirmation for swing trades.',
+      },
+    ],
+  },
 ];
 
 export function getQuizById(id: string): Quiz | undefined {

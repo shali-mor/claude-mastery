@@ -3433,4 +3433,403 @@ Return a summary of findings.
       },
     ],
   },
+  {
+    id: 'module-13',
+    title: 'Daily Stock Picks Bot (Telegram + n8n + Claude)',
+    description: 'Build a real-money-ready swing trading assistant: Telegram triggers a daily n8n workflow that fetches stock data, computes signals, and asks Claude which stocks to buy for a 1–2 month hold.',
+    icon: 'TrendingUp',
+    color: 'cyan',
+    quizId: 'quiz-module-13',
+    lessons: [
+      {
+        id: 'lesson-13-1',
+        title: 'Architecture & Strategy Design',
+        description: 'Map the full pipeline and define the swing trading signals Claude will evaluate.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'We\'re building a daily stock screening bot that delivers Claude\'s top swing-trade picks to your Telegram every weekday morning — and responds instantly whenever you send it a command. The strategy targets stocks to hold for 1–2 months, so we look for momentum building rather than day-trade noise.',
+          },
+          {
+            type: 'table',
+            content: 'Pipeline stages',
+            headers: ['Stage', 'Tool', 'What it does'],
+            rows: [
+              ['Trigger', 'n8n Schedule (cron) OR Telegram command', 'Fires daily at 8 AM or on-demand /picks message'],
+              ['Watchlist', 'n8n Code node', 'Defines the 20 stocks to screen'],
+              ['Price data', 'HTTP node → Yahoo Finance', 'Fetches 3 months of daily OHLCV per stock'],
+              ['Signal math', 'n8n Code node (JavaScript)', 'Computes RSI-14, MACD, 50-day SMA per stock'],
+              ['AI analysis', 'HTTP node → Claude API', 'Ranks candidates and gives buy reasoning'],
+              ['Delivery', 'n8n Telegram node', 'Sends formatted picks to your chat'],
+            ],
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Swing Trading Signals (1–2 Month Hold)',
+          },
+          {
+            type: 'table',
+            content: 'Entry signal criteria',
+            headers: ['Signal', 'Bullish Condition', 'Why it matters'],
+            rows: [
+              ['RSI (14-day)', '40–60, trending up from oversold', 'Momentum recovering without being overbought'],
+              ['MACD', 'MACD line crossing above signal line', 'Short-term momentum turning positive'],
+              ['50-day SMA', 'Price above the 50-day SMA', 'Stock is in a medium-term uptrend'],
+              ['Volume', 'Above-average volume on up days', 'Institutional buying confirmation'],
+              ['Recent performance', 'Not already up 20%+ in past 30 days', 'Avoids chasing extended moves'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**This is a tutorial, not financial advice.** The signals and Claude\'s output are educational examples of how to structure an AI-assisted screening tool. Always do your own research before investing.',
+          },
+          {
+            type: 'tip',
+            content: 'Why Yahoo Finance for data? It\'s the most accessible free option — no API key required, no sign-up. The unofficial endpoint `query1.finance.yahoo.com` returns JSON with full OHLCV history. Ideal for tutorials and personal projects.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-13-2',
+        title: 'Setting Up Your Telegram Bot',
+        description: 'Create a Telegram bot with BotFather, get your chat ID, and configure n8n\'s Telegram nodes.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Telegram\'s Bot API is the easiest messaging integration available — a bot is created in under 5 minutes and the API is completely free with no rate limits for personal use. n8n has a native Telegram node that handles authentication automatically.',
+          },
+          {
+            type: 'steps',
+            content: 'Create your Telegram bot',
+            steps: [
+              'Open Telegram and search for @BotFather',
+              'Send /newbot and follow the prompts (choose a name and username ending in _bot)',
+              'BotFather replies with your bot token — copy it (looks like 123456:ABC-DEF1234...)',
+              'Open a chat with your new bot and send any message',
+              'Fetch your chat_id: GET https://api.telegram.org/bot{YOUR_TOKEN}/getUpdates',
+              'In the JSON response, find result[0].message.chat.id — this is your chat_id',
+            ],
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# Get your chat_id after sending a message to your bot
+curl "https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates" | jq '.result[0].message.chat.id'
+
+# Test sending a message manually
+curl -X POST "https://api.telegram.org/bot<YOUR_TOKEN>/sendMessage" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "chat_id": "<YOUR_CHAT_ID>",
+    "text": "Stock bot is online!",
+    "parse_mode": "HTML"
+  }'`,
+          },
+          {
+            type: 'steps',
+            content: 'Configure Telegram credentials in n8n',
+            steps: [
+              'In n8n, go to Settings → Credentials → Add Credential',
+              'Choose "Telegram API" and paste your bot token',
+              'Save — n8n will auto-verify the token against the Telegram API',
+              'Add a Telegram node to any workflow and select your credential',
+              'Set Chat ID to your chat_id from the getUpdates call above',
+              'Test with "Send a text message" → "Hello from n8n!"',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Using WhatsApp instead?** You can swap Telegram for WhatsApp via Twilio\'s WhatsApp API. Replace the Telegram node with an HTTP Request node POSTing to `https://api.twilio.com/2010-04-01/Accounts/{SID}/Messages.json`. The rest of the workflow is identical.',
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Adding an On-Demand /picks Command',
+          },
+          {
+            type: 'steps',
+            content: 'Set up Telegram webhook trigger (on-demand mode)',
+            steps: [
+              'In n8n, add a "Telegram Trigger" node as an alternative start node',
+              'Set it to listen for "message" events',
+              'Add an IF node: check if {{ $json.message.text }} equals "/picks"',
+              'Route the TRUE branch into the same stock-fetching flow',
+              'Now the bot responds to /picks in addition to the daily cron',
+            ],
+          },
+          {
+            type: 'tip',
+            content: 'To enable Telegram commands in BotFather: send /setcommands to @BotFather, select your bot, and send: `picks - Get today\'s stock picks`. This adds /picks to your bot\'s command menu.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-13-3',
+        title: 'Fetching & Calculating Stock Signals',
+        description: 'Pull 3 months of daily price data from Yahoo Finance and compute RSI, MACD, and SMA in an n8n Code node.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'The data pipeline fetches 3 months of daily candles for each stock and computes three technical indicators in a JavaScript Code node. These computed signals become the structured context Claude receives for its analysis.',
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// n8n Code node — define watchlist and fetch URLs
+const watchlist = [
+  'AAPL','MSFT','GOOGL','AMZN','NVDA',
+  'META','TSLA','JPM','V','UNH',
+  'HD','JNJ','PG','MA','BAC',
+  'XOM','ABBV','LLY','MRK','CVX'
+];
+
+// Build Yahoo Finance URLs (no API key needed)
+return watchlist.map(ticker => ({
+  json: {
+    ticker,
+    url: \`https://query1.finance.yahoo.com/v8/finance/chart/\${ticker}?interval=1d&range=3mo\`
+  }
+}));`,
+          },
+          {
+            type: 'steps',
+            content: 'Fetch data for each stock',
+            steps: [
+              'After the Code node, add a "Split In Batches" node (batch size: 5)',
+              'Add an HTTP Request node: GET {{ $json.url }}',
+              'Set "Response Format" to JSON',
+              'Add a 200ms wait between batches to avoid rate-limiting Yahoo Finance',
+              'Merge all results back with a "Merge" node (mode: Combine All)',
+            ],
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// n8n Code node — compute RSI, MACD, SMA from Yahoo response
+function sma(arr, n) {
+  const s = arr.slice(-n);
+  return s.reduce((a, b) => a + b, 0) / s.length;
+}
+
+function ema(arr, n) {
+  const k = 2 / (n + 1);
+  return arr.reduce((prev, price, i) => i === 0 ? price : price * k + prev * (1 - k));
+}
+
+function rsi(closes, period = 14) {
+  const changes = closes.slice(1).map((p, i) => p - closes[i]);
+  const gains = changes.map(c => c > 0 ? c : 0).slice(-period);
+  const losses = changes.map(c => c < 0 ? Math.abs(c) : 0).slice(-period);
+  const avgGain = gains.reduce((a, b) => a + b, 0) / period;
+  const avgLoss = losses.reduce((a, b) => a + b, 0) / period;
+  if (avgLoss === 0) return 100;
+  return 100 - (100 / (1 + avgGain / avgLoss));
+}
+
+function macdSignal(closes) {
+  const ema12 = ema(closes, 12);
+  const ema26 = ema(closes, 26);
+  const macdLine = ema12 - ema26;
+  // Simplified: compare current MACD to 3-day prior MACD
+  const ema12prev = ema(closes.slice(0, -3), 12);
+  const ema26prev = ema(closes.slice(0, -3), 26);
+  const macdPrev = ema12prev - ema26prev;
+  return { macdLine, crossingUp: macdLine > 0 && macdPrev <= 0 };
+}
+
+const results = [];
+
+for (const item of $input.all()) {
+  try {
+    const chart = item.json.chart.result[0];
+    const closes = chart.indicators.quote[0].close.filter(Boolean);
+    const volumes = chart.indicators.quote[0].volume.filter(Boolean);
+    const ticker = chart.meta.symbol;
+    const currentPrice = closes[closes.length - 1];
+
+    const rsiVal = rsi(closes);
+    const sma50 = sma(closes, Math.min(50, closes.length));
+    const { macdLine, crossingUp } = macdSignal(closes);
+    const avgVol = sma(volumes, 20);
+    const lastVol = volumes[volumes.length - 1];
+    const priceChange30d = ((currentPrice - closes[closes.length - 22]) / closes[closes.length - 22]) * 100;
+
+    results.push({ json: {
+      ticker,
+      currentPrice: currentPrice.toFixed(2),
+      rsi: rsiVal.toFixed(1),
+      macdLine: macdLine.toFixed(3),
+      macdCrossingUp: crossingUp,
+      sma50: sma50.toFixed(2),
+      aboveSMA50: currentPrice > sma50,
+      volumeRatio: (lastVol / avgVol).toFixed(2),
+      priceChange30d: priceChange30d.toFixed(1),
+    }});
+  } catch (e) {
+    // Skip stocks with incomplete data
+  }
+}
+
+return results;`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'The indicators are intentionally simplified for a tutorial. In a production system you\'d use a proper TA library (like `technicalindicators` on npm) and feed more history for accurate MACD signal lines. The structure and pipeline are identical — just swap in better math.',
+          },
+          {
+            type: 'tip',
+            content: 'After the signal computation node, add a "Filter" node to drop stocks where: RSI > 70 (overbought) OR priceChange30d > 20 (already extended). This pre-filters the list before sending to Claude, reducing token usage.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-13-4',
+        title: 'Claude as the Swing Trading Analyst',
+        description: 'Structure the stock data as context, craft the swing trading prompt, and format the Telegram message.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'With clean, structured signal data for each stock, we now ask Claude to act as a swing trading analyst. The key is giving Claude a clear strategy definition, the data in a scannable format, and a structured output requirement so n8n can format the Telegram message reliably.',
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// n8n Code node — build the Claude prompt from all stock signals
+const stocks = $input.all().map(i => i.json);
+
+const stockTable = stocks.map(s =>
+  \`\${s.ticker}: price=\$\${s.currentPrice} RSI=\${s.rsi} MACD=\${s.macdLine}(\${s.macdCrossingUp ? 'crossing up' : 'flat'}) vs50SMA=\${s.aboveSMA50 ? 'above' : 'below'} volRatio=\${s.volumeRatio}x 30d%=\${s.priceChange30d}%\`
+).join('\\n');
+
+const prompt = \`You are a swing trading analyst. The investor's strategy is to hold positions for 1–2 months, targeting 10–25% gains by riding medium-term momentum.
+
+Today's screening data for \${stocks.length} stocks:
+\${stockTable}
+
+Scoring criteria for a strong swing trade candidate:
+- RSI between 40–65 (momentum building, not overbought)
+- MACD crossing up or recently positive (momentum turning)
+- Price above 50-day SMA (medium-term uptrend intact)
+- Volume ratio > 1.2 on recent up days (institutional interest)
+- Not already up 20%+ in 30 days (room to run)
+
+Task:
+1. Score each stock against these criteria (0–5 points)
+2. Select the TOP 3 buy candidates
+3. For each pick, give: ticker, score, one-sentence reason, and one key risk to watch
+
+Respond in this exact JSON format:
+{
+  "date": "YYYY-MM-DD",
+  "picks": [
+    {
+      "ticker": "AAPL",
+      "score": 4,
+      "reason": "RSI recovering from 48 with MACD crossover and volume surge — momentum building.",
+      "risk": "Watch for broad market selloff given high beta."
+    }
+  ],
+  "summary": "One sentence market context for today."
+}\`;
+
+return [{ json: { prompt, stockCount: stocks.length } }];`,
+          },
+          {
+            type: 'steps',
+            content: 'Wire Claude API call and format Telegram message',
+            steps: [
+              'Add an HTTP Request node: POST https://api.anthropic.com/v1/messages',
+              'Headers: x-api-key (from credential), anthropic-version: 2023-06-01',
+              'Body: model claude-haiku-4-5-20251001, max_tokens: 1024, messages with the prompt',
+              'Add a Code node to parse Claude\'s JSON response and format a Telegram message',
+              'Add the Telegram node to send the formatted message',
+            ],
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// n8n Code node — parse Claude response and format Telegram HTML message
+const raw = $input.first().json.content[0].text;
+
+let data;
+try {
+  // Claude sometimes wraps JSON in markdown fences — strip them
+  data = JSON.parse(raw.replace(/^\`\`\`json\\n?|\\n?\`\`\`$/g, '').trim());
+} catch (e) {
+  return [{ json: { message: '❌ Could not parse Claude response. Try again.' } }];
+}
+
+const medals = ['🥇','🥈','🥉'];
+const lines = [
+  \`📈 <b>Swing Trade Picks — \${data.date}</b>\\n\`,
+  \`<i>\${data.summary}</i>\\n\`,
+];
+
+data.picks.forEach((p, i) => {
+  lines.push(
+    \`\${medals[i]} <b>\${p.ticker}</b> (score: \${p.score}/5)\`,
+    \`💡 \${p.reason}\`,
+    \`⚠️ Risk: \${p.risk}\\n\`
+  );
+});
+
+lines.push('\\n<i>Not financial advice. Do your own research.</i>');
+
+return [{ json: { message: lines.join('\\n') } }];`,
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `// Example Telegram message output
+📈 Daily Swing Trade Picks — 2026-03-08
+
+Market consolidating after last week's rally — momentum
+stocks showing early rotation into tech.
+
+🥇 NVDA (score: 5/5)
+💡 RSI at 52 with MACD crossover and 1.8x average volume —
+   classic breakout setup above 50-day SMA.
+⚠️ Risk: Earnings in 3 weeks could introduce volatility.
+
+🥈 MSFT (score: 4/5)
+💡 Recovering from oversold RSI-44, now turning up with
+   steady institutional volume.
+⚠️ Risk: Watch broad tech rotation risk.
+
+🥉 JPM (score: 4/5)
+💡 Financials showing strength; above 50-SMA with positive
+   MACD and rate-driven tailwind.
+⚠️ Risk: Fed meeting this month could shift sentiment.
+
+Not financial advice. Do your own research.`,
+          },
+          {
+            type: 'checklist',
+            content: 'Full workflow checklist',
+            items: [
+              { text: 'Schedule Trigger: 0 8 * * 1-5 (8 AM weekdays)', description: 'Fires before US market open.' },
+              { text: 'Telegram Trigger: listen for /picks command', description: 'Allows on-demand runs any time.' },
+              { text: 'Anthropic API key stored in n8n Credential store', description: 'Never hardcoded.' },
+              { text: 'Error branch → Telegram alert if Claude call fails', description: 'You\'ll know if the bot silently broke.' },
+              { text: 'max_tokens set to 1024', description: 'Three picks with reasoning fit comfortably in 1024 tokens.' },
+              { text: 'Disclaimer line in every message', description: 'This is educational output, not financial advice.' },
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: 'Your stock picks bot is ready to deploy. Every weekday morning — or whenever you send /picks — it fetches live price data, computes swing trading signals for 20 stocks, and delivers Claude\'s top 3 ranked candidates with reasoning directly to your Telegram. Extend the watchlist, tune the strategy criteria, or swap Telegram for WhatsApp — the architecture is the same.',
+          },
+        ],
+      },
+    ],
+  },
 ];
