@@ -1941,4 +1941,1496 @@ await Task({
       },
     ],
   },
+  {
+    id: 'module-8',
+    title: 'Plan Mode & Controlled Execution',
+    description: 'Learn how Plan Mode separates exploration from execution, enabling safer, more deliberate AI-assisted development.',
+    icon: 'ClipboardList',
+    color: 'orange',
+    quizId: 'quiz-module-8',
+    lessons: [
+      {
+        id: 'lesson-8-1',
+        title: 'What Is Plan Mode?',
+        description: 'Understand the read-only constraint that separates planning from execution.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Plan Mode is a read-only constraint that prevents Claude from editing files or running destructive commands. In Plan Mode, Claude can explore your codebase using Glob, Grep, Read, and Explore agents — but cannot write, delete, or execute shell commands that modify state.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'The one exception to the read-only rule: Claude can write to a single plan file (`.claude/plans/`). This is the artifact that gets handed to the user for review.',
+          },
+          {
+            type: 'comparison',
+            content: 'Plan Mode vs Direct Execution',
+            do: {
+              label: 'Plan Mode',
+              code: `1. Explore codebase (read-only)\n2. Draft approach\n3. Write plan file\n4. Call ExitPlanMode\n5. User reviews and approves\n6. Claude executes`,
+            },
+            dont: {
+              label: 'Direct Execution',
+              code: `1. User types request\n2. Claude immediately\n   edits files\n3. Runs commands\n4. Changes land in repo\n   (no review checkpoint)`,
+            },
+          },
+          {
+            type: 'table',
+            content: 'Allowed vs blocked actions in Plan Mode',
+            headers: ['Action', 'Allowed in Plan Mode?'],
+            rows: [
+              ['Read files (Read, Glob, Grep)', 'Yes'],
+              ['Launch Explore sub-agents', 'Yes'],
+              ['Write to plan file', 'Yes (plan file only)'],
+              ['Edit source files', 'No'],
+              ['Run shell commands (Bash)', 'No (read-only commands only)'],
+              ['Delete files', 'No'],
+            ],
+          },
+          {
+            type: 'tip',
+            content: 'Think of Plan Mode as separating "figuring out what to do" from "doing it". It inserts a mandatory user review checkpoint before any changes land in your codebase.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-8-2',
+        title: 'Entering & Exiting Plan Mode',
+        description: 'Learn activation shortcuts, plan file structure, and the critical distinction between ExitPlanMode and auto-execution.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Plan Mode can be activated in two ways: via keyboard shortcut or natural language. Once active, Claude writes its plan to a structured file in `.claude/plans/` — then calls `ExitPlanMode` to signal readiness for your review.',
+          },
+          {
+            type: 'steps',
+            content: 'Activating Plan Mode',
+            steps: [
+              'Press Shift+Tab to toggle Plan Mode on/off from the Claude Code terminal',
+              'Or use natural language: "plan this", "don\'t make any changes yet", "design the approach first"',
+              'Claude enters read-only exploration — you\'ll see a [PLAN MODE] indicator',
+              'When ready, Claude writes the plan file and calls ExitPlanMode',
+              'Review the plan in .claude/plans/ — approve or request changes',
+            ],
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# Keyboard shortcut
+Shift+Tab   # toggles Plan Mode on/off
+
+# Natural language triggers
+"Plan the refactor before making any changes"
+"Don't touch any files yet — just figure out the approach"
+"Design the migration strategy, I'll review before you proceed"`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**ExitPlanMode does NOT auto-execute.** It is purely a signal that says "I\'m done planning, please review." Execution only begins when you explicitly approve and ask Claude to proceed.',
+          },
+          {
+            type: 'table',
+            content: 'AskUserQuestion vs ExitPlanMode',
+            headers: ['Tool', 'When to use', 'What happens next'],
+            rows: [
+              ['AskUserQuestion', 'Claude needs clarification before planning can complete', 'User answers → Claude continues planning'],
+              ['ExitPlanMode', 'Plan is complete and ready for user approval', 'User reviews plan → approves or requests changes'],
+            ],
+          },
+          {
+            type: 'tip',
+            content: 'Use `AskUserQuestion` during planning when you hit ambiguity. Use `ExitPlanMode` only when the plan is fully written and ready to execute.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-8-3',
+        title: 'The Plan → Review → Execute Workflow',
+        description: 'A 5-phase walkthrough of how Plan Mode fits into a complete development workflow.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'A complete Plan Mode session has five phases. Understanding each phase helps you get more value from planning — and know when to iterate vs approve.',
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Phase 1: Explore (Read-Only)',
+          },
+          {
+            type: 'steps',
+            content: 'Exploration phase',
+            steps: [
+              'Run Glob to find relevant files by pattern',
+              'Run Grep to find function definitions, usages, and imports',
+              'Read critical files to understand existing patterns',
+              'Launch an Explore sub-agent if the scope is large',
+            ],
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Phase 2: Design',
+          },
+          {
+            type: 'steps',
+            content: 'Design phase',
+            steps: [
+              'Draft the approach in working memory',
+              'Identify which files will change and why',
+              'Consider edge cases and failure modes',
+              'Launch a Plan sub-agent for complex architectural decisions',
+            ],
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Phase 3: Review & Clarify',
+          },
+          {
+            type: 'steps',
+            content: 'Review phase',
+            steps: [
+              'Re-read any files where the approach is still uncertain',
+              'Call AskUserQuestion if critical ambiguity remains',
+              'Validate that the planned steps cover all requirements',
+            ],
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Phase 4: Write the Plan File',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# Plan: Refactor Auth Module
+
+## Context
+The current auth module mixes JWT logic with session management.
+Affected files: src/auth/jwt.ts, src/auth/session.ts, src/middleware/auth.ts
+
+## Steps
+1. Extract JWT utilities to src/auth/jwt-utils.ts
+2. Create src/auth/session-store.ts with clean interface
+3. Update middleware to import from new locations
+4. Run existing test suite to confirm no regressions
+
+## Files Changed
+- src/auth/jwt.ts (split)
+- src/auth/session.ts (split)
+- src/middleware/auth.ts (updated imports)
+- src/auth/jwt-utils.ts (new)
+- src/auth/session-store.ts (new)
+
+## Verification
+- npm test passes
+- /auth/login and /auth/refresh endpoints return 200`,
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Phase 5: ExitPlanMode & Approval',
+          },
+          {
+            type: 'steps',
+            content: 'Approval phase',
+            steps: [
+              'Claude calls ExitPlanMode — signals plan is ready',
+              'You read the plan file in .claude/plans/',
+              'Approve with "looks good, proceed" or request changes',
+              'Claude executes only after explicit approval',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Expect iteration. A first-pass plan often surfaces questions you hadn\'t considered. The review step is not a rubber stamp — it\'s where you add constraints, correct assumptions, and narrow scope.',
+          },
+          {
+            type: 'exercise',
+            content: 'Write a plan for adding a dark mode toggle to a React app',
+            exercise: {
+              prompt: 'Using the plan file template above, write a plan for adding a dark mode toggle to a React app that uses Tailwind CSS. Include context, steps, files changed, and verification criteria.',
+              hints: [
+                'Consider where theme state should live (CSS variable, context, localStorage)',
+                'Think about which components need to change vs which are handled by Tailwind dark: classes',
+                'Verification should include visual check AND accessibility check',
+              ],
+              solution: `# Plan: Add Dark Mode Toggle
+
+## Context
+React app using Tailwind CSS. Theme preference should persist across page reloads.
+Target: add a toggle button in the header; respect prefers-color-scheme on first visit.
+
+## Steps
+1. Add darkMode: 'class' to tailwind.config.js
+2. Create src/hooks/useTheme.ts — reads/writes localStorage 'theme' key
+3. Wrap app in ThemeProvider that applies 'dark' class to <html>
+4. Add DarkModeToggle component to src/components/DarkModeToggle.tsx
+5. Place toggle in Header component
+6. Audit key components and add dark: variants to bg/text classes
+
+## Files Changed
+- tailwind.config.js
+- src/hooks/useTheme.ts (new)
+- src/providers/ThemeProvider.tsx (new)
+- src/components/DarkModeToggle.tsx (new)
+- src/components/Header.tsx
+
+## Verification
+- Toggle switches theme visually
+- Preference persists after page reload
+- First visit respects OS prefers-color-scheme`,
+              solutionLanguage: 'markdown',
+            },
+          },
+          {
+            type: 'checklist',
+            content: 'What makes a good plan?',
+            items: [
+              { text: 'Clear context section explaining the current state', description: 'Claude should show it read and understood the codebase, not just the request.' },
+              { text: 'Numbered, atomic steps', description: 'Each step should be a single verifiable action.' },
+              { text: 'Explicit list of files to be modified', description: 'No surprises during execution.' },
+              { text: 'Verification criteria', description: 'How will you know it worked? Tests, API responses, visual checks.' },
+              { text: 'Scope boundaries', description: 'What is explicitly NOT being changed in this plan.' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'lesson-8-4',
+        title: 'When to Plan vs Execute Directly',
+        description: 'A practical decision framework: complexity × reversibility × blast radius.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Not every task needs a plan. Planning has overhead — it adds a review cycle before work starts. The key is matching the formality of your process to the risk of the change.',
+          },
+          {
+            type: 'comparison',
+            content: 'Plan vs Execute examples',
+            do: {
+              label: 'Plan First',
+              code: `- Database schema migration\n- Refactoring a core module\n- Changing authentication flow\n- Modifying CI/CD pipeline\n- Any production deployment\n- Multi-file architectural change`,
+            },
+            dont: {
+              label: 'Execute Directly',
+              code: `- Adding a 2-line comment\n- Fixing a typo in README\n- Adding a console.log\n- Renaming a local variable\n- Adding a unit test for\n  an existing function`,
+            },
+          },
+          {
+            type: 'table',
+            content: 'Decision matrix: when to use Plan Mode',
+            headers: ['Reversibility', 'Low Blast Radius', 'High Blast Radius'],
+            rows: [
+              ['Easily reversible (git revert)', 'Execute directly', 'Consider planning'],
+              ['Hard to reverse (DB migration, deploys)', 'Plan first', 'Always plan first'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**Always use Plan Mode for production changes.** Even simple-looking changes can have non-obvious blast radius in production environments. The cost of a review cycle is far less than an unplanned outage.',
+          },
+          {
+            type: 'checklist',
+            content: 'Pre-execution checklist',
+            items: [
+              { text: 'Do I understand all files that will change?', description: 'If not, plan first.' },
+              { text: 'Can I git revert this in under 5 minutes if it breaks?', description: 'If no, plan first.' },
+              { text: 'Does this touch shared infrastructure or production systems?', description: 'If yes, plan first.' },
+              { text: 'Am I confident in the approach without exploring the codebase?', description: 'If no, plan first.' },
+            ],
+          },
+          {
+            type: 'tip',
+            content: 'The most common mistake is **never planning big changes**. Over-planning small tasks wastes time, but skipping planning on complex or irreversible work causes real damage. When in doubt, plan.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'module-9',
+    title: 'MCP — Model Context Protocol',
+    description: 'Extend Claude with any external tool or data source using the open MCP standard.',
+    icon: 'Plug',
+    color: 'violet',
+    quizId: 'quiz-module-9',
+    lessons: [
+      {
+        id: 'lesson-9-1',
+        title: 'What Is MCP and Why It Matters',
+        description: 'Understand how MCP transforms Claude from a fixed-tool assistant into an extensible platform.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'MCP (Model Context Protocol) is an open standard created by Anthropic that lets Claude connect to external tools and data sources. Without MCP, Claude\'s tools are fixed — Read, Write, Bash, and a handful of built-ins. With MCP, Claude can query your database, call internal APIs, search GitHub, read Slack messages, or access any system an MCP server exposes.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'MCP is officially supported by Anthropic and is the canonical extension mechanism for Claude Code. It uses a lightweight JSON-RPC protocol over either stdio (local) or HTTP/SSE (remote) transport.',
+          },
+          {
+            type: 'table',
+            content: 'Built-in tools vs MCP tools',
+            headers: ['Category', 'Built-in Tools', 'MCP Tools (examples)'],
+            rows: [
+              ['File system', 'Read, Write, Glob, Grep', 'server-filesystem (extended ops)'],
+              ['Code execution', 'Bash', 'Custom sandboxed runners'],
+              ['Databases', 'None built-in', 'server-postgres, server-sqlite'],
+              ['APIs & services', 'None built-in', 'server-github, mcp-server-slack'],
+              ['Internal systems', 'None built-in', 'Your custom MCP server'],
+            ],
+          },
+          {
+            type: 'comparison',
+            content: 'Without MCP vs with MCP',
+            do: {
+              label: 'With MCP',
+              code: `Claude can:\n- Query production DB\n- Fetch open GitHub PRs\n- Read Slack channels\n- Call your internal API\n- Access any system you\n  build a server for`,
+            },
+            dont: {
+              label: 'Without MCP',
+              code: `Claude is limited to:\n- Reading/writing local files\n- Running shell commands\n- Built-in search tools\n- No external system access\n  without manual copy-paste`,
+            },
+          },
+          {
+            type: 'tip',
+            content: 'MCP has two transport types: **stdio** (the server runs as a local subprocess on your machine — fastest, most private) and **HTTP/SSE** (the server runs remotely — useful for shared team servers).',
+          },
+        ],
+      },
+      {
+        id: 'lesson-9-2',
+        title: 'Connecting MCP Servers to Claude Code',
+        description: 'Configure MCP servers globally or per-project, verify connections, and explore popular ready-made servers.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'MCP servers are configured in Claude Code\'s settings files. You can configure them globally (available in all projects) or per-project (only in a specific codebase). The configuration is a simple JSON object that tells Claude how to launch each server.',
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `// ~/.claude/settings.json  (global — all projects)
+// OR .claude/settings.json  (project-level — this project only)
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/me/projects"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_TOKEN}"
+      }
+    }
+  }
+}`,
+          },
+          {
+            type: 'steps',
+            content: 'Adding an MCP server',
+            steps: [
+              'Open ~/.claude/settings.json (global) or .claude/settings.json (project)',
+              'Add an entry under "mcpServers" with a name, command, args, and optional env',
+              'Save the file — Claude Code picks up changes on next session start',
+              'Run /mcp in Claude Code to verify the server connected and see its tools',
+              'Test by asking Claude to use one of the server\'s tools',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Run `/mcp` in Claude Code to see all connected servers and the tools each one exposes. This is your primary debugging tool when a server isn\'t working.',
+          },
+          {
+            type: 'table',
+            content: 'Popular ready-made MCP servers',
+            headers: ['Package', 'What it exposes'],
+            rows: [
+              ['@modelcontextprotocol/server-filesystem', 'Extended file system operations with configurable root'],
+              ['@modelcontextprotocol/server-github', 'GitHub repos, PRs, issues, commits, code search'],
+              ['@modelcontextprotocol/server-postgres', 'Query a PostgreSQL database, inspect schema'],
+              ['mcp-server-slack', 'Read channels, post messages, search Slack'],
+              ['@modelcontextprotocol/server-brave-search', 'Web search via Brave Search API'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**Never put secrets in the `args` array** — they appear in process listings. Always use the `env` object with references to environment variables (e.g., `"${GITHUB_TOKEN}"`).',
+          },
+        ],
+      },
+      {
+        id: 'lesson-9-3',
+        title: 'Building a Custom MCP Server',
+        description: 'When ready-made servers don\'t fit, build your own — a full walkthrough with the TypeScript SDK.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Build a custom MCP server when you need to expose an internal API, proprietary data source, or custom tool logic. The `@modelcontextprotocol/sdk` package provides everything you need. A minimal server is under 50 lines of TypeScript.',
+          },
+          {
+            type: 'code',
+            language: 'typescript',
+            content: `import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+const server = new Server(
+  { name: 'my-internal-api', version: '1.0.0' },
+  { capabilities: { tools: {} } }
+);
+
+// Declare available tools
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [
+    {
+      name: 'get_user',
+      description: 'Fetch a user by ID from the internal API',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          userId: { type: 'string', description: 'User UUID' },
+        },
+        required: ['userId'],
+      },
+    },
+  ],
+}));
+
+// Handle tool calls
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (request.params.name === 'get_user') {
+    const { userId } = request.params.arguments as { userId: string };
+    const res = await fetch(\`https://api.internal.company.com/users/\${userId}\`, {
+      headers: { Authorization: \`Bearer \${process.env.INTERNAL_API_KEY}\` },
+    });
+    const user = await res.json();
+    return { content: [{ type: 'text', text: JSON.stringify(user, null, 2) }] };
+  }
+  throw new Error(\`Unknown tool: \${request.params.name}\`);
+});
+
+const transport = new StdioServerTransport();
+await server.connect(transport);`,
+          },
+          {
+            type: 'steps',
+            content: 'Scaffold, implement, and connect a custom server',
+            steps: [
+              'mkdir my-mcp-server && cd my-mcp-server && npm init -y',
+              'npm install @modelcontextprotocol/sdk',
+              'Create src/index.ts with the server code above',
+              'Add "type": "module" and build script to package.json',
+              'Build with tsc, then add to .claude/settings.json pointing to the built file',
+              'Run /mcp in Claude Code to verify your tools appear',
+              'Test: ask Claude to call get_user with a real user ID',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'A Python SDK is also available: `pip install mcp`. The protocol is identical — choose the language that matches your team\'s stack.',
+          },
+          {
+            type: 'exercise',
+            content: 'Add a second tool to the example server',
+            exercise: {
+              prompt: 'Add a `list_users` tool to the server above that fetches all users from `GET /users?limit=20` and returns them as a JSON array.',
+              hints: [
+                'Add a second entry to the tools array in ListToolsRequestSchema handler',
+                'Add an else-if branch in the CallToolRequestSchema handler',
+                'The endpoint is GET /users?limit=20 — no userId required',
+              ],
+              solution: `// In ListToolsRequestSchema handler, add to tools array:
+{
+  name: 'list_users',
+  description: 'List up to 20 users from the internal API',
+  inputSchema: { type: 'object', properties: {} },
+},
+
+// In CallToolRequestSchema handler, add:
+if (request.params.name === 'list_users') {
+  const res = await fetch('https://api.internal.company.com/users?limit=20', {
+    headers: { Authorization: \`Bearer \${process.env.INTERNAL_API_KEY}\` },
+  });
+  const users = await res.json();
+  return { content: [{ type: 'text', text: JSON.stringify(users, null, 2) }] };
+}`,
+              solutionLanguage: 'typescript',
+            },
+          },
+          {
+            type: 'tip',
+            content: 'Test your MCP server locally by running it with `node dist/index.js` and sending JSON-RPC messages via stdin. Or use the MCP Inspector tool: `npx @modelcontextprotocol/inspector`.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-9-4',
+        title: 'MCP in Claude Code vs Claude Desktop',
+        description: 'Same protocol, different config paths and use-case sweet spots.',
+        estimatedMinutes: 8,
+        blocks: [
+          {
+            type: 'text',
+            content: 'The same MCP servers work in both Claude Code (the CLI) and Claude Desktop (the GUI app). The protocol is identical — only the configuration file location and intended use case differ.',
+          },
+          {
+            type: 'table',
+            content: 'Claude Code vs Claude Desktop MCP configuration',
+            headers: ['Property', 'Claude Code', 'Claude Desktop'],
+            rows: [
+              ['Global config path', '~/.claude/settings.json', '~/Library/Application Support/Claude/claude_desktop_config.json'],
+              ['Project config path', '.claude/settings.json (in repo)', 'N/A (no project-level config)'],
+              ['Config key', 'mcpServers', 'mcpServers'],
+              ['Primary use case', 'Agentic coding, CI, automation', 'Conversational AI with tool access'],
+              ['Tool appearance', 'Available during coding sessions', 'Available in chat conversations'],
+            ],
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `// Claude Desktop config
+// ~/Library/Application Support/Claude/claude_desktop_config.json
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
+    }
+  }
+}`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'MCP servers are separate processes — the same server binary can be connected to both Claude Code and Claude Desktop simultaneously. You don\'t need to run two copies.',
+          },
+          {
+            type: 'tip',
+            content: 'Use **Claude Desktop** for exploratory conversations ("what\'s in this database?"). Use **Claude Code** for agentic tasks that need to write code, run tests, and commit changes based on what the MCP server returns.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'module-10',
+    title: 'n8n + Claude Automation',
+    description: 'Build production automation workflows that combine n8n\'s orchestration with Claude\'s intelligence.',
+    icon: 'Workflow',
+    color: 'green',
+    quizId: 'quiz-module-10',
+    lessons: [
+      {
+        id: 'lesson-10-1',
+        title: 'n8n Fundamentals for Claude Users',
+        description: 'Understand n8n\'s core model and why it pairs naturally with Claude.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'n8n is an open-source visual workflow automation platform. Unlike SaaS tools like Zapier or Make.com, n8n is self-hostable — you run it on your own infrastructure, pay nothing per workflow execution, and keep all data within your network.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'n8n is free and open-source under the Sustainable Use License. Self-hosted deployments have no per-task fees. n8n Cloud is available if you prefer managed hosting.',
+          },
+          {
+            type: 'table',
+            content: 'n8n vs Zapier vs Make.com',
+            headers: ['Feature', 'n8n', 'Zapier', 'Make.com'],
+            rows: [
+              ['Pricing model', 'Free (self-hosted)', 'Per-task', 'Per-operation'],
+              ['Self-hostable', 'Yes', 'No', 'No'],
+              ['Code nodes', 'Yes (JS/Python)', 'Limited', 'Limited'],
+              ['Complex branching', 'Yes', 'Limited', 'Yes'],
+              ['Data privacy', 'Full control', 'SaaS', 'SaaS'],
+            ],
+          },
+          {
+            type: 'steps',
+            content: 'Install n8n locally',
+            steps: [
+              'npx n8n  (uses npx for zero-install local run)',
+              'Open http://localhost:5678 in your browser',
+              'Create an account (local only)',
+              'Click "New Workflow" to create your first automation',
+            ],
+          },
+          {
+            type: 'tip',
+            content: '**Why n8n + Claude?** n8n handles the plumbing: scheduling, triggers, retries, and 400+ integrations. Claude handles the intelligence: reasoning, generation, and classification. Together they cover the full automation stack.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-10-2',
+        title: 'Calling Claude API from n8n',
+        description: 'Configure an HTTP Request node to call Claude, store credentials safely, and parse responses.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'There are two ways to call Claude from n8n: the native Anthropic node (if installed) or a generic HTTP Request node. The HTTP Request node gives you full control and works in any n8n version.',
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `{
+  "method": "POST",
+  "url": "https://api.anthropic.com/v1/messages",
+  "headers": {
+    "x-api-key": "={{ $credentials.anthropicApi.apiKey }}",
+    "anthropic-version": "2023-06-01",
+    "content-type": "application/json"
+  },
+  "body": {
+    "model": "claude-sonnet-4-6",
+    "max_tokens": 1024,
+    "messages": [
+      {
+        "role": "user",
+        "content": "={{ $json.userMessage }}"
+      }
+    ]
+  }
+}`,
+          },
+          {
+            type: 'steps',
+            content: 'Set up the HTTP Request node',
+            steps: [
+              'Add an HTTP Request node to your workflow',
+              'Set method to POST and URL to https://api.anthropic.com/v1/messages',
+              'Create an n8n Credential of type "Header Auth" with name "x-api-key" and your key',
+              'Set Content-Type to application/json',
+              'Configure the request body with model, max_tokens, and messages',
+              'Add a Set node after to extract: {{ $json.content[0].text }}',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**Never hardcode your Anthropic API key in node parameters.** Always use n8n\'s Credential store. Hardcoded keys appear in workflow exports and logs.',
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// n8n expression to extract Claude's response text
+{{ $json.content[0].text }}
+
+// If you need to strip whitespace
+{{ $json.content[0].text.trim() }}
+
+// Access the stop reason
+{{ $json.stop_reason }}  // "end_turn" | "max_tokens" | "stop_sequence"`,
+          },
+          {
+            type: 'tip',
+            content: 'Always set `max_tokens` explicitly. If omitted, Claude may use the model\'s full context window — a runaway prompt can generate a very expensive response.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-10-3',
+        title: 'Real-World n8n + Claude Workflows',
+        description: 'Three production workflow patterns: PR summaries, standup reports, and support ticket drafting.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'The power of n8n + Claude becomes clear when you wire together real systems. Here are three production-ready workflow patterns with the design decisions behind them.',
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Workflow 1: GitHub PR → Claude Summary → Slack',
+          },
+          {
+            type: 'steps',
+            content: 'PR summary workflow',
+            steps: [
+              'Trigger: GitHub webhook fires on pull_request.opened event',
+              'HTTP node: fetch the PR diff from GitHub API',
+              'HTTP node: POST diff to Claude with prompt "Summarize this PR in 3 bullet points"',
+              'Slack node: post Claude\'s summary to #engineering channel',
+            ],
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Workflow 2: Scheduled Standup Summary',
+          },
+          {
+            type: 'steps',
+            content: 'Standup summary workflow',
+            steps: [
+              'Trigger: Cron node fires every weekday at 9:00 AM',
+              'HTTP node: fetch yesterday\'s merged PRs and closed issues from GitHub',
+              'HTTP node: POST to Claude "Generate a daily standup summary from these items"',
+              'Email node: send Claude\'s summary to the team distribution list',
+            ],
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Workflow 3: Support Ticket → Human-in-the-Loop Reply',
+          },
+          {
+            type: 'steps',
+            content: 'Support ticket workflow',
+            steps: [
+              'Trigger: Webhook receives new support ticket payload',
+              'HTTP node: POST ticket content to Claude "Draft a helpful reply to this support ticket"',
+              'Wait node: pause and send draft + approval link to support manager via email',
+              'On approval: send the draft reply; on rejection: flag for manual handling',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Use human-in-the-loop for any workflow that sends messages on your behalf.** The Wait node in n8n is purpose-built for this — it pauses the workflow until a human approves via webhook or form.',
+          },
+          {
+            type: 'comparison',
+            content: 'Batch vs real-time triggers',
+            do: {
+              label: 'Real-Time (Webhook)',
+              code: `Use when:\n- Response time matters\n- Triggered by user action\n- Each event needs\n  individual handling\n\nExample: PR opened,\nform submitted`,
+            },
+            dont: {
+              label: 'Batch (Cron)',
+              code: `Use when:\n- Timing is flexible\n- Aggregating many events\n- Cost efficiency matters\n  (fewer Claude calls)\n\nExample: daily digest,\nweekly report`,
+            },
+          },
+        ],
+      },
+      {
+        id: 'lesson-10-4',
+        title: 'Prompt Engineering Inside n8n',
+        description: 'Dynamic prompts with expressions, system/user split, long-input handling, and error branches.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Static prompts in n8n workflows waste Claude\'s capabilities. The real power comes from dynamically constructing prompts from upstream data using n8n expressions.',
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 512,
+  "system": "You are a senior code reviewer. Be concise and actionable.",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Review this pull request:\\n\\nTitle: {{ $json.pull_request.title }}\\nAuthor: {{ $json.pull_request.user.login }}\\nFiles changed: {{ $json.pull_request.changed_files }}\\n\\nDiff:\\n{{ $json.diff.substring(0, 8000) }}"
+    }
+  ]
+}`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Split your prompt into `system` (stable instructions that describe Claude\'s role) and `messages[0].content` (dynamic context from the workflow). This also sets up for prompt caching later.',
+          },
+          {
+            type: 'table',
+            content: 'Error types and recommended n8n handling',
+            headers: ['Error', 'Cause', 'Handling'],
+            rows: [
+              ['529 Overloaded', 'Anthropic API under load', 'Retry with exponential backoff (built into HTTP node)'],
+              ['400 Bad Request', 'Malformed request body', 'Error branch → Slack alert with request payload'],
+              ['max_tokens hit', 'Input/output too long', 'Truncate input, increase max_tokens, or add summarization pre-step'],
+              ['Empty content', 'Claude returned empty string', 'Check stop_reason; add fallback value in Set node'],
+            ],
+          },
+          {
+            type: 'checklist',
+            content: 'n8n + Claude workflow checklist',
+            items: [
+              { text: 'API key stored in n8n Credential store', description: 'Never hardcoded in node parameters.' },
+              { text: 'max_tokens explicitly set', description: 'Prevents runaway token usage.' },
+              { text: 'Long inputs truncated or pre-summarized', description: 'Avoids hitting context limits mid-workflow.' },
+              { text: 'Error branch wired to Slack/email alert', description: 'You\'ll know immediately when the workflow fails.' },
+              { text: 'Human-in-the-loop added for external-facing actions', description: 'Review before sending emails, posting comments, etc.' },
+            ],
+          },
+          {
+            type: 'tip',
+            content: 'Use n8n\'s built-in "Retry on Fail" option on the HTTP Request node with 3 retries and exponential backoff. This handles Anthropic\'s occasional 529 overload responses without any custom code.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'module-11',
+    title: 'The Broader Automation Ecosystem',
+    description: 'Shell scripts, Zapier, Make.com, webhooks, and a framework for choosing the right tool.',
+    icon: 'Zap',
+    color: 'yellow',
+    quizId: 'quiz-module-11',
+    lessons: [
+      {
+        id: 'lesson-11-1',
+        title: 'Claude CLI in Shell Scripts & Cron Jobs',
+        description: 'Use claude -p to embed Claude intelligence in any shell script or scheduled job.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'The `claude -p` flag puts Claude in non-interactive mode: pass a prompt, get a response, exit. This makes Claude usable anywhere you can run a shell command — cron jobs, CI pipelines, git hooks, and more.',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `#!/bin/bash
+# daily-summary.sh — runs at 8 AM via cron
+
+# Fetch yesterday's git log
+LOG=$(git log --since="yesterday" --oneline)
+
+# Generate summary with Claude
+SUMMARY=$(claude -p "Summarize these commits for a non-technical stakeholder: $LOG" \\
+  --model claude-haiku-4-5-20251001 \\
+  --output-format text)
+
+# Post to Slack
+curl -X POST "$SLACK_WEBHOOK_URL" \\
+  -H 'Content-type: application/json' \\
+  --data "{\"text\": \"Daily summary:\\n$SUMMARY\"}"`,
+          },
+          {
+            type: 'steps',
+            content: 'Create a scheduled summarizer',
+            steps: [
+              'Write a shell script that gathers context (git log, API data, etc.)',
+              'Pipe or pass that context to `claude -p "your prompt"`',
+              'Capture the output in a variable and act on it (email, Slack, file)',
+              'Make the script executable: chmod +x daily-summary.sh',
+              'Add a cron entry: crontab -e → 0 8 * * 1-5 /path/to/daily-summary.sh',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'Use `--model` to pin a specific model in scripts. This prevents cost surprises when a new model becomes the default. Use `claude-haiku-4-5-20251001` for high-volume, low-complexity tasks.',
+          },
+          {
+            type: 'tip',
+            content: 'Use `--output-format json` when you need structured data from a script. Claude will return a JSON object you can parse with `jq`: `claude -p "extract name and email" --output-format json < contact.txt | jq .name`',
+          },
+        ],
+      },
+      {
+        id: 'lesson-11-2',
+        title: 'Zapier & Make.com + Claude',
+        description: 'Integrate Claude into no-code automation stacks using webhooks or native Anthropic connectors.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'If your team already uses Zapier or Make.com, you can add Claude to existing workflows without introducing n8n. Both platforms support calling Claude via HTTP requests, and Zapier has a native Anthropic app.',
+          },
+          {
+            type: 'steps',
+            content: 'Add Claude to a Zapier workflow',
+            steps: [
+              'In Zapier, add an action step and search for "Webhooks by Zapier" (or the Anthropic app)',
+              'Select "POST" and set the URL to https://api.anthropic.com/v1/messages',
+              'Add headers: x-api-key (stored in Zapier), anthropic-version, content-type',
+              'Set the request body with model, max_tokens, and messages array',
+              'Add a subsequent step that uses the parsed response text',
+            ],
+          },
+          {
+            type: 'table',
+            content: 'Zapier vs Make vs n8n comparison',
+            headers: ['Criteria', 'Zapier', 'Make.com', 'n8n'],
+            rows: [
+              ['Setup speed', 'Fastest', 'Fast', 'Moderate'],
+              ['Cost model', 'Per task', 'Per operation', 'Free (self-hosted)'],
+              ['Data privacy', 'Data through Zapier', 'Data through Make', 'Your infrastructure'],
+              ['Complex logic', 'Limited', 'Good', 'Excellent'],
+              ['Code execution', 'Code by Zapier', 'Limited', 'Full JS/Python'],
+              ['Best for', 'Quick no-code', 'Visual complex flows', 'High-volume / private'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**SaaS tools charge per task execution.** At low volumes this is fine, but a workflow that calls Claude 10,000 times per month can get expensive fast. Model the cost before committing to SaaS tools at scale.',
+          },
+          {
+            type: 'tip',
+            content: 'A great starter use case: Google Form submitted → Zapier → Claude classifies the response → add to Notion database. This requires zero infrastructure and ships in under an hour.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-11-3',
+        title: 'Webhooks & Event-Driven Claude Workflows',
+        description: 'Build reactive systems: external events trigger Claude instantly, without polling.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Event-driven architectures respond immediately when something happens — a PR opens, a payment fails, a monitoring alert fires. Webhooks are the mechanism: the external system POSTs to your endpoint, you call Claude, you act on the result.',
+          },
+          {
+            type: 'code',
+            language: 'typescript',
+            content: `import Anthropic from '@anthropic-ai/sdk';
+import express from 'express';
+import crypto from 'crypto';
+
+const app = express();
+const anthropic = new Anthropic();
+
+app.post('/webhook/github', express.json(), async (req, res) => {
+  // Validate webhook signature
+  const sig = req.headers['x-hub-signature-256'] as string;
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', process.env.GITHUB_WEBHOOK_SECRET!)
+    .update(JSON.stringify(req.body))
+    .digest('hex');
+  if (sig !== expected) return res.status(401).send('Invalid signature');
+
+  // Only handle PR events
+  if (req.body.action !== 'opened') return res.status(200).send('ignored');
+
+  const pr = req.body.pull_request;
+
+  const msg = await anthropic.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 256,
+    messages: [{ role: 'user', content: \`Summarize this PR in one sentence: \${pr.title}\\n\${pr.body}\` }],
+  });
+
+  // Post summary to Slack
+  await fetch(process.env.SLACK_WEBHOOK_URL!, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ text: \`New PR: \${(msg.content[0] as any).text}\` }),
+  });
+
+  res.status(200).send('ok');
+});
+
+app.listen(3000);`,
+          },
+          {
+            type: 'steps',
+            content: 'Wire up a GitHub webhook',
+            steps: [
+              'Deploy your webhook handler (Railway, Fly.io, or ngrok for local dev)',
+              'In GitHub repo Settings → Webhooks → Add webhook',
+              'Set URL to your handler endpoint, content type to application/json',
+              'Set a secret and store it in your handler as GITHUB_WEBHOOK_SECRET',
+              'Select "Pull requests" event and save',
+              'Open a test PR to verify end-to-end',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Always validate webhook signatures.** Without validation, anyone who discovers your endpoint can trigger Claude calls (and rack up your API bill). Every major platform (GitHub, Stripe, Twilio) provides an HMAC signature you can verify.',
+          },
+          {
+            type: 'comparison',
+            content: 'Polling vs event-driven',
+            do: {
+              label: 'Event-Driven (Webhooks)',
+              code: `+ Instant response\n+ No wasted API calls\n+ Scales to high volume\n+ Lower compute cost\n\nBest for: PR events,\npayments, alerts`,
+            },
+            dont: {
+              label: 'Polling',
+              code: `- Delayed response\n- Wastes API calls\n  when nothing changed\n- Doesn't scale well\n\nUse only when webhooks\nare unavailable`,
+            },
+          },
+          {
+            type: 'tip',
+            content: 'Make your webhook handler idempotent — if GitHub retries a delivery, processing it twice shouldn\'t cause double-posts. Store a set of processed event IDs in Redis or a database.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-11-4',
+        title: 'Choosing the Right Tool for the Job',
+        description: 'A decision framework across Claude CLI, n8n, Make.com, Zapier, and custom services.',
+        estimatedMinutes: 8,
+        blocks: [
+          {
+            type: 'text',
+            content: 'You now have a full toolkit: Claude CLI, n8n, Make.com, Zapier, and custom webhook handlers. The right choice depends on your team\'s technical level, hosting requirements, data sensitivity, cost model, and maintenance budget.',
+          },
+          {
+            type: 'table',
+            content: 'Full decision matrix',
+            headers: ['Tool', 'Best for', 'Avoid when'],
+            rows: [
+              ['Claude CLI (-p)', 'Cron jobs, CI scripts, one-off automation', 'Needs UI, retries, or multi-step orchestration'],
+              ['n8n (self-hosted)', 'Complex workflows, data privacy, high volume', 'Team has no infra capacity or prefers no-code'],
+              ['Make.com', 'Visual complex flows, moderate volume', 'Data must stay on-premise, high volume'],
+              ['Zapier', 'Quick no-code, simple trigger → action', 'Complex logic, high volume, cost-sensitive'],
+              ['Custom service', 'Maximum control, unique requirements', 'Speed matters; avoid reinventing n8n'],
+            ],
+          },
+          {
+            type: 'comparison',
+            content: 'Over-automation vs right-sized automation',
+            do: {
+              label: 'Right-Sized',
+              code: `1. Do it manually 5 times\n2. Document the steps\n3. Automate only what\n   proved repeatable\n4. Start with simplest\n   tool that works`,
+            },
+            dont: {
+              label: 'Over-Automation',
+              code: `- Automate before\n  validating manually\n- Use Claude for data\n  a regex would handle\n- Build a "platform"\n  for one workflow`,
+            },
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Always start manual, automate what proves repeatable.** Automating an untested workflow bakes in every assumption and mistake. Run the workflow manually 5 times first — automation should encode a proven process.',
+          },
+          {
+            type: 'checklist',
+            content: 'Automation readiness checklist',
+            items: [
+              { text: 'I\'ve run this workflow manually at least 5 times', description: 'Proves it works before you automate it.' },
+              { text: 'The steps are fully documented', description: 'Automation codifies your documentation.' },
+              { text: 'Failure modes are understood', description: 'Know what can go wrong before automating.' },
+              { text: 'A human review step is included for external-facing actions', description: 'Don\'t let Claude send emails without approval at first.' },
+              { text: 'Cost per run is estimated', description: 'Especially important for SaaS tools and Claude API calls.' },
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: 'You\'ve completed the core automation modules! You now understand Plan Mode, MCP, n8n integration, and the full automation ecosystem. The final module puts it all together in a production-grade capstone project.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'module-12',
+    title: 'Capstone: Build an AI Code Review Pipeline',
+    description: 'Apply every course concept in one project: a production PR reviewer using MCP, sub-agents, prompt caching, hooks, and n8n.',
+    icon: 'GraduationCap',
+    color: 'rose',
+    quizId: 'quiz-module-12',
+    lessons: [
+      {
+        id: 'lesson-12-1',
+        title: 'Designing the Pipeline with Plan Mode',
+        description: 'Start in Plan Mode to map the full architecture before writing a single line of code.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'We\'re building a production AI code reviewer: when a GitHub PR opens, an n8n workflow fetches the diff via the GitHub MCP server, Claude runs three parallel analysis agents (security, style, logic), and the results are posted back to GitHub as a structured review with a Slack notification. This single project demonstrates every major technique from the course.',
+          },
+          {
+            type: 'table',
+            content: 'Pipeline stages and course concepts',
+            headers: ['Stage', 'Course Concept Used'],
+            rows: [
+              ['Design before coding', 'Plan Mode (Module 8)'],
+              ['Project context file', 'CLAUDE.md (Module 2)'],
+              ['Fetch PR diff', 'MCP — GitHub server (Module 9)'],
+              ['Dev-time observability', 'Hooks — PreToolUse logger (Module 6)'],
+              ['Parallel analysis', 'Sub-agents — 3 specialists (Module 7)'],
+              ['Reduce repeated token costs', 'Prompt caching (Module 5)'],
+              ['Manual trigger from terminal', 'Custom skill /review-pr (Module 4)'],
+              ['Orchestration & delivery', 'n8n + webhooks (Modules 10–11)'],
+            ],
+          },
+          {
+            type: 'steps',
+            content: 'Plan Mode design session',
+            steps: [
+              'Create the project directory and run /init to generate a starter CLAUDE.md',
+              'Activate Plan Mode (Shift+Tab)',
+              'Ask Claude: "Map the architecture for a GitHub PR reviewer using the tools I\'ve described"',
+              'Claude explores the GitHub MCP server tools with /mcp and reads the SDK docs',
+              'Claude calls AskUserQuestion for any ambiguities (auth strategy, output format)',
+              'Claude writes the plan file and calls ExitPlanMode',
+              'Review and approve the plan — then proceed to implementation',
+            ],
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# PR Reviewer — CLAUDE.md
+
+## Project
+AI-powered GitHub PR reviewer. Runs on every PR open event.
+
+## Stack
+- n8n (self-hosted) for workflow orchestration
+- GitHub MCP server for diff fetching and review posting
+- Anthropic API with prompt caching for parallel analysis
+- Slack for team notifications
+
+## File Layout
+\`\`\`
+pr-reviewer/
+  .claude/
+    settings.json     # MCP + hooks config
+    hooks/
+      pre-tool-logger.sh
+      post-tool-validator.sh
+  prompts/
+    system.md         # Shared cached system prompt
+    security.md       # Security agent instructions
+    style.md          # Style agent instructions
+    logic.md          # Logic agent instructions
+  n8n/
+    workflow.json     # Full n8n workflow export
+  scripts/
+    review-pr.sh      # /review-pr skill script
+\`\`\`
+
+## Conventions
+- All prompts stored in /prompts — never inline in code
+- Max 2048 tokens per agent response
+- Always include line numbers in review comments`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'Design before you build — Plan Mode enforces this by making it impossible to accidentally write code during the architecture phase. Every minute spent in planning saves ten minutes of debugging.',
+          },
+          {
+            type: 'tip',
+            content: 'Use a read-only Explore sub-agent to audit the GitHub MCP server\'s available tools before writing your plan. Ask it: "List all tools from the GitHub MCP server and describe what each one returns."',
+          },
+        ],
+      },
+      {
+        id: 'lesson-12-2',
+        title: 'Setting Up MCP, Hooks & Project Scaffolding',
+        description: 'Configure the GitHub MCP server, add observability hooks, and scaffold the n8n workflow skeleton.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'With the plan approved, we scaffold the project: configure the GitHub MCP server, add two development hooks for observability, and build the n8n workflow skeleton that will orchestrate everything.',
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `// .claude/settings.json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_TOKEN}"
+      }
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[TOOL] $(date +%T) $CLAUDE_TOOL_NAME: $CLAUDE_TOOL_INPUT\" >> .claude/dev.log"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ \\"$CLAUDE_TOOL_INPUT\\" != *\\"/src/\\"* ]]; then echo \\"BLOCKED: writes outside /src/\\" && exit 2; fi"
+          }
+        ]
+      }
+    ]
+  }
+}`,
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `// hooks config section only
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": ".*",
+      "hooks": [{
+        "type": "command",
+        "command": "echo \\"[$(date +%T)] $CLAUDE_TOOL_NAME\\" >> .claude/dev.log"
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "type": "command",
+        "command": "bash .claude/hooks/post-tool-validator.sh"
+      }]
+    }]
+  }
+}`,
+          },
+          {
+            type: 'steps',
+            content: 'Verify MCP connection and test a hook',
+            steps: [
+              'Run /mcp in Claude Code — confirm github server is listed',
+              'Verify get_pull_request and create_review tools appear in the tool list',
+              'Ask Claude: "Use get_pull_request to fetch PR #1 from my repo"',
+              'Check .claude/dev.log — the PreToolUse hook should have logged the call',
+              'Test the write guard: ask Claude to create a file outside /src/ — it should be blocked',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Hooks give you observability during development. The dev.log file is your X-ray: every tool call Claude makes is recorded with a timestamp. Review it after a session to understand exactly what Claude did.',
+          },
+          {
+            type: 'exercise',
+            content: 'Add a third hook that blocks writes outside /src/',
+            exercise: {
+              prompt: 'The PostToolUse hook above logs writes. Extend it to also block (exit code 2) any write or edit that targets a path not under /src/. The hook receives the tool input as $CLAUDE_TOOL_INPUT.',
+              hints: [
+                'Check if $CLAUDE_TOOL_INPUT contains "/src/" using bash string matching',
+                'Exit with code 2 to block the tool — Claude will receive an error and stop',
+                'Use echo to explain why it was blocked before exiting',
+              ],
+              solution: `#!/bin/bash
+# .claude/hooks/post-tool-validator.sh
+INPUT="$CLAUDE_TOOL_INPUT"
+
+if [[ "$INPUT" != *"/src/"* ]]; then
+  echo "BLOCKED: File writes are restricted to /src/ in this project."
+  echo "Attempted path: $INPUT"
+  exit 2
+fi`,
+              solutionLanguage: 'bash',
+            },
+          },
+        ],
+      },
+      {
+        id: 'lesson-12-3',
+        title: 'The Parallel Analysis Engine',
+        description: 'Orchestrate three specialist sub-agents in parallel with a shared cached system prompt.',
+        estimatedMinutes: 20,
+        blocks: [
+          {
+            type: 'text',
+            content: 'The analysis engine is the heart of the pipeline. An orchestrator agent spawns three specialist sub-agents in parallel — each receives only the relevant diff slice. A shared system prompt is cached so it\'s only tokenized once across all three calls.',
+          },
+          {
+            type: 'code',
+            language: 'typescript',
+            content: `import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic();
+
+// Shared system prompt — cached to avoid re-tokenizing on every call
+const SYSTEM_PROMPT = \`You are an expert code reviewer for a TypeScript/React codebase.
+Review ONLY the aspect assigned to you. Be specific: include file names and line numbers.
+Format output as JSON: { "verdict": "pass"|"warn"|"fail", "comments": [{ "file": "", "line": 0, "message": "" }] }\`;
+
+async function runParallelAnalysis(diff: string) {
+  const agents = [
+    { role: 'security',  focus: 'Find exposed secrets, injection risks, and auth/authz issues.' },
+    { role: 'style',     focus: 'Check naming conventions, DRY violations, and comment quality.' },
+    { role: 'logic',     focus: 'Find bugs, edge cases, off-by-one errors, and missing null checks.' },
+  ];
+
+  // Launch all 3 agents in parallel
+  const results = await Promise.all(
+    agents.map(agent =>
+      anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2048,
+        system: [
+          {
+            type: 'text',
+            text: SYSTEM_PROMPT,
+            cache_control: { type: 'ephemeral' }, // Cache the shared prompt
+          },
+        ],
+        messages: [{
+          role: 'user',
+          content: \`You are the \${agent.role} reviewer. \${agent.focus}\\n\\nDiff:\\n\${diff}\`,
+        }],
+      })
+    )
+  );
+
+  return results.map((r, i) => ({
+    agent: agents[i].role,
+    result: JSON.parse((r.content[0] as any).text),
+  }));
+}`,
+          },
+          {
+            type: 'steps',
+            content: 'Test the parallel analysis with a sample diff',
+            steps: [
+              'Create a sample diff file at test/sample.diff with a few intentional issues',
+              'Run the analysis: npx ts-node src/analyze.ts < test/sample.diff',
+              'Verify all 3 agents return valid JSON with verdict and comments fields',
+              'Check Anthropic usage dashboard — confirm cache_creation_input_tokens on first call',
+              'Re-run and confirm cache_read_input_tokens (not re-billed) on subsequent calls',
+            ],
+          },
+          {
+            type: 'table',
+            content: 'Agent focus areas and estimated tokens',
+            headers: ['Agent', 'Focus Area', 'Typical Output Tokens'],
+            rows: [
+              ['Security', 'Secrets, injection, auth', '200–400'],
+              ['Style', 'Naming, DRY, comments', '300–600'],
+              ['Logic', 'Bugs, edge cases, null checks', '400–800'],
+              ['Synthesizer', 'Merge 3 reports → final review', '500–1000'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'Running 3 agents in parallel takes the same wall-clock time as 1 agent — but you get 3× the analysis depth. Prompt caching ensures the shared system prompt is only charged once, keeping costs close to a single-agent run.',
+          },
+          {
+            type: 'exercise',
+            content: 'Add a fourth "Performance" agent to the parallel fan-out',
+            exercise: {
+              prompt: 'Add a fourth agent to the agents array that reviews the diff for performance issues: unnecessary re-renders, unindexed queries, O(n²) algorithms, and missing memoization.',
+              hints: [
+                'Add a new entry to the agents array with role: "performance"',
+                'The focus should mention specific performance anti-patterns relevant to the stack',
+                'No other code changes needed — Promise.all handles N agents automatically',
+              ],
+              solution: `// Add to agents array:
+{
+  role: 'performance',
+  focus: 'Find unnecessary re-renders, missing memoization (useMemo/useCallback), unindexed DB queries, O(n²) loops, and synchronous operations that should be async.'
+}
+
+// Promise.all automatically includes the fourth agent — no other changes needed.`,
+              solutionLanguage: 'typescript',
+            },
+          },
+        ],
+      },
+      {
+        id: 'lesson-12-4',
+        title: 'Wiring the Pipeline & Shipping',
+        description: 'Complete the n8n workflow, add the /review-pr skill, run end-to-end tests, and analyze costs.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'With the analysis engine working, we wire it into n8n, add error handling, create the `/review-pr` custom skill for manual triggers, run a full end-to-end test, and analyze the cost model.',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `#!/bin/bash
+# scripts/review-pr.sh — triggered by /review-pr skill
+# Usage: /review-pr https://github.com/owner/repo/pull/123
+
+PR_URL="$1"
+if [ -z "$PR_URL" ]; then
+  echo "Usage: /review-pr <pr-url>"
+  exit 1
+fi
+
+# Extract owner, repo, PR number from URL
+OWNER=$(echo $PR_URL | cut -d'/' -f4)
+REPO=$(echo $PR_URL | cut -d'/' -f5)
+PR_NUM=$(echo $PR_URL | cut -d'/' -f7)
+
+# Call the analysis pipeline non-interactively
+claude -p "
+Fetch PR #\${PR_NUM} diff from \${OWNER}/\${REPO} using the GitHub MCP tool.
+Run the parallel analysis (security, style, logic, performance).
+Post a structured review comment on the PR.
+Return a summary of findings.
+" --model claude-sonnet-4-6`,
+          },
+          {
+            type: 'steps',
+            content: 'End-to-end test checklist',
+            steps: [
+              'Open a real (or test) PR against your repo',
+              'Verify the GitHub webhook fires and reaches n8n',
+              'Check n8n execution log — all nodes should show green',
+              'Confirm the review comment appears on the GitHub PR',
+              'Verify the Slack notification appears in #engineering',
+              'Test the error branch: temporarily break the API key and confirm Slack alert fires',
+              'Test /review-pr manually: /review-pr https://github.com/you/repo/pull/1',
+            ],
+          },
+          {
+            type: 'table',
+            content: 'Cost breakdown per PR review',
+            headers: ['Scenario', 'Input Tokens', 'Output Tokens', 'Est. Cost'],
+            rows: [
+              ['No caching (4 agents × full system prompt)', '~8,000', '~2,000', '~$0.042'],
+              ['With prompt caching (system prompt cached)', '~2,500 + 5,500 cache read', '~2,000', '~$0.018'],
+              ['50 PRs/day, no cache', '~400K/day', '~100K/day', '~$2.10/day'],
+              ['50 PRs/day, with cache', '~125K + cache', '~100K/day', '~$0.90/day'],
+            ],
+          },
+          {
+            type: 'checklist',
+            content: 'Production readiness checklist',
+            items: [
+              { text: 'Webhook signature validation implemented', description: 'Prevents unauthorized triggers and API cost abuse.' },
+              { text: 'Rate limiting on the webhook endpoint', description: 'Prevents a PR spam attack from draining your API credits.' },
+              { text: 'Idempotency key on review creation', description: 'Prevents duplicate reviews if the webhook is retried.' },
+              { text: 'Error branch alerts team on failure', description: 'Slack message with the failed PR link so it can be manually reviewed.' },
+              { text: 'Prompt caching enabled on shared system prompt', description: 'Reduces cost by ~55% at the cache hit rate above.' },
+              { text: 'Model pinned in all API calls', description: 'Prevents unexpected cost changes when default models update.' },
+              { text: 'Review comment includes disclaimer', description: 'e.g., "AI-generated review — please verify before merging".' },
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: '**Congratulations — you\'ve built a production AI pipeline!** This project used Plan Mode, CLAUDE.md, MCP, Hooks, Sub-agents, Prompt Caching, a Custom Skill, n8n orchestration, and webhooks. Every major technique from this course, wired together into something you can ship today.',
+          },
+        ],
+      },
+    ],
+  },
 ];
