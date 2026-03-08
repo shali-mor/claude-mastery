@@ -18,7 +18,7 @@ export function ModuleIndex() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2">Learning Modules</h1>
         <p className="text-muted-foreground">
-          5 modules covering everything from Claude Code basics to advanced API optimization.
+          {modules.length} modules covering Claude Code basics, hooks, cost optimization, Plan Mode, MCP, n8n automation, and real-world AI pipelines.
         </p>
       </div>
 
