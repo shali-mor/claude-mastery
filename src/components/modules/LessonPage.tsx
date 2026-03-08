@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { LessonContent } from './LessonContent';
 import { QuizRunner } from '@/components/quiz/QuizRunner';
+import { GuideAvatar, type AvatarMood } from '@/components/avatar/GuideAvatar';
 import { getQuizByModuleId } from '@/data/quizzes';
 import { useProgress } from '@/store';
 import type { Module, Lesson } from '@/types/module';
@@ -21,7 +22,13 @@ interface LessonPageProps {
 export function LessonPage({ module, lesson }: LessonPageProps) {
   const { completedLessons, completeLesson, setLastVisited, quizResults } = useProgress();
   const [showCelebration, setShowCelebration] = useState(false);
+  const [justCompleted, setJustCompleted] = useState(false);
   const prevCompleteRef = useRef(false);
+
+  // Reset justCompleted when navigating to a different lesson
+  useEffect(() => {
+    setJustCompleted(false);
+  }, [lesson.id]);
 
   const lessonIndex = module.lessons.findIndex(l => l.id === lesson.id);
   const prevLesson = lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null;
@@ -51,7 +58,27 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
 
   const markComplete = () => {
     completeLesson(lesson.id);
+    setJustCompleted(true);
   };
+
+  // Avatar contextual message
+  const avatarMessage = (() => {
+    if (showCelebration || (justCompleted && allLessonsComplete)) {
+      return `All ${module.lessons.length} lessons done! 🏆 Ready to take the quiz?`;
+    }
+    if (justCompleted) {
+      return nextLesson
+        ? `Lesson complete! 🎉 Next up: "${nextLesson.title}"`
+        : `Lesson complete! 🎉 Great work!`;
+    }
+    if (isCompleted) {
+      return `You've already completed "${lesson.title}". Review at your own pace. 📚`;
+    }
+    return `"${lesson.title}" — ~${lesson.estimatedMinutes} min. Let's go! 🚀`;
+  })();
+
+  const avatarMood: AvatarMood =
+    showCelebration || justCompleted ? 'celebrating' : isCompleted ? 'encouraging' : 'happy';
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
@@ -209,6 +236,8 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
           )}
         </nav>
       </div>
+
+      <GuideAvatar message={avatarMessage} mood={avatarMood} />
     </div>
   );
 }

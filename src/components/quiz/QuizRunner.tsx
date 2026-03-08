@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { useProgress } from '@/store';
+import { GuideAvatar, type AvatarMood } from '@/components/avatar/GuideAvatar';
 import type { Quiz } from '@/types/quiz';
 import type { Module } from '@/types/module';
 
@@ -84,6 +85,33 @@ export function QuizRunner({ quiz, module, inline = false }: QuizRunnerProps) {
     ? 'mt-10 pt-8 border-t-2 border-dashed border-primary/30'
     : 'max-w-2xl mx-auto px-6 py-8';
 
+  // Avatar contextual messages — only for standalone quiz page
+  const avatarMessage = (() => {
+    if (state === 'idle') return `Quiz time! ${quiz.questions.length} questions to test your knowledge. Take your time. 🎯`;
+    if (state === 'results') {
+      const pct = Math.round((score / quiz.questions.length) * 100);
+      return pct >= 70
+        ? `You scored ${score}/${quiz.questions.length} — excellent work! 🎉`
+        : `You scored ${score}/${quiz.questions.length}. Review the explanations and try again!`;
+    }
+    if (state === 'reviewing') {
+      const correct = currentQuestion?.options.find(o => o.isCorrect);
+      return selectedId === correct?.id
+        ? `Correct! Great reasoning. ✓`
+        : `Not this time — read the explanation below to understand why.`;
+    }
+    return `Question ${currentIndex + 1} of ${quiz.questions.length}. Think it through!`;
+  })();
+
+  const avatarMood: AvatarMood =
+    state === 'results' && score / quiz.questions.length >= 0.7
+      ? 'celebrating'
+      : state === 'reviewing' && selectedId === currentQuestion?.options.find(o => o.isCorrect)?.id
+      ? 'encouraging'
+      : state === 'question' || state === 'reviewing'
+      ? 'thinking'
+      : 'happy';
+
   // ── Idle ───────────────────────────────────────────────────────────────
   if (state === 'idle') {
     if (inline) {
@@ -106,26 +134,27 @@ export function QuizRunner({ quiz, module, inline = false }: QuizRunnerProps) {
     }
 
     return (
-      <div className={containerClass}>
-        {!inline && (
+      <>
+        <div className={containerClass}>
           <Link href={`/modules/${module.id}/${module.lessons[0]?.id}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
             <ChevronLeft className="h-3.5 w-3.5" />
             Back to {module.title}
           </Link>
-        )}
-        <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
-            <Award className="h-8 w-8 text-primary" />
+          <div className="text-center py-12">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+              <Award className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2">{quiz.title}</h1>
+            <p className="text-muted-foreground mb-8">
+              {quiz.questions.length} questions · Test your knowledge of {module.title}
+            </p>
+            <Button onClick={startQuiz} size="lg">
+              Start Quiz <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
-          <h1 className="text-2xl font-bold mb-2">{quiz.title}</h1>
-          <p className="text-muted-foreground mb-8">
-            {quiz.questions.length} questions · Test your knowledge of {module.title}
-          </p>
-          <Button onClick={startQuiz} size="lg">
-            Start Quiz <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
         </div>
-      </div>
+        <GuideAvatar message={avatarMessage} mood={avatarMood} />
+      </>
     );
   }
 
@@ -143,6 +172,7 @@ export function QuizRunner({ quiz, module, inline = false }: QuizRunnerProps) {
 
     return (
       <ResultsWrapper>
+        {!inline && <GuideAvatar message={avatarMessage} mood={avatarMood} />}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -207,6 +237,8 @@ export function QuizRunner({ quiz, module, inline = false }: QuizRunnerProps) {
 
   // ── Question / Reviewing ────────────────────────────────────────────────
   return (
+    <>
+    {!inline && <GuideAvatar message={avatarMessage} mood={avatarMood} />}
     <div className={containerClass}>
       {!inline && (
         <div className="flex items-center gap-3 mb-2 text-sm text-muted-foreground">
@@ -312,5 +344,6 @@ export function QuizRunner({ quiz, module, inline = false }: QuizRunnerProps) {
         </motion.div>
       </AnimatePresence>
     </div>
+    </>
   );
 }
