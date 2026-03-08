@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 import { Code2, BookOpen, Terminal, DollarSign, Layers, Github, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { modules } from '@/data/modules';
 
 const features = [
-  { icon: BookOpen,   label: '6 Modules',        desc: 'From basics to advanced API mastery' },
+  { icon: BookOpen,   label: `${modules.length} Modules`, desc: 'From basics to advanced API mastery' },
   { icon: Terminal,   label: 'Command Browser',   desc: '76+ slash commands, hooks, skills & CLI flags' },
   { icon: DollarSign, label: 'Cost Calculator',   desc: 'Real 2026 pricing with Batch & cache scenarios' },
   { icon: Code2,      label: 'Live Playground',   desc: 'Stream Claude responses with your own API key' },

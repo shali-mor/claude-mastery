@@ -14,8 +14,8 @@ import { modules } from '@/data/modules';
 const features = [
   {
     icon: BookOpen,
-    title: '5 Learning Modules',
-    description: 'Structured lessons covering Claude Code basics, hooks, GSD, cost optimization, and live API.',
+    title: `${modules.length} Learning Modules`,
+    description: 'Structured lessons covering Claude Code basics, hooks, MCP, n8n automation, and real-world AI pipelines.',
     href: '/modules',
     color: 'text-blue-500',
     bg: 'bg-blue-500/10',
