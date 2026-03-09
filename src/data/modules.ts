@@ -623,6 +623,148 @@ const results = await client.messages.batches.results(batch.id);`,
           },
         ],
       },
+
+      // ── Lesson 4-5: Auto Model Selection ────────────────────────────────
+      {
+        id: 'lesson-4-5',
+        title: 'Auto Model Selection — Skill & Hook',
+        description: 'A skill that recommends the right model for your task, and a hook that warns you when you\'re burning Opus tokens on a simple job.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Claude Code has no built-in auto-switch — you pick the model with `/model`. But you can add two automation layers: a **skill** that analyses your task and recommends the cheapest model that can handle it, and a **hook** that warns you in real-time if you\'re on the wrong model for what you\'re asking.',
+          },
+          {
+            type: 'table',
+            content: 'Model selection cheat sheet',
+            headers: ['Task type', 'Recommended model', 'Why'],
+            rows: [
+              ['Simple edits, renames, formatting', 'Haiku', '~20× cheaper than Opus, more than fast enough'],
+              ['Boilerplate, CRUD, test generation', 'Haiku or Sonnet', 'Routine code — no need for reasoning depth'],
+              ['Feature implementation, refactoring', 'Sonnet', 'Best price/performance for most real work'],
+              ['Complex architecture, debugging, planning', 'Sonnet or Opus', 'Multi-step reasoning pays off here'],
+              ['Multi-agent orchestration, research', 'Opus', 'Highest reasoning — worth the cost for hard problems'],
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: '/pick-model — the recommendation skill',
+          },
+          {
+            type: 'text',
+            content: 'Save this to `.claude/commands/pick-model.md`. Run `/pick-model` before starting a task and Claude will read your description, score its complexity, and output the optimal model plus the command to switch.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `---
+description: Analyse a task and recommend the most cost-effective Claude model
+---
+
+# /pick-model
+
+Analyse the task described in $ARGUMENTS and recommend the most
+cost-effective Claude model that can handle it reliably.
+
+## Scoring criteria
+
+Assign one point for each of the following that applies:
+1. Requires multi-step reasoning or planning
+2. Involves debugging a non-obvious bug
+3. Touches more than 5 files or >300 lines of code
+4. Needs to understand broader system architecture
+5. Is a research or synthesis task (not just writing code)
+
+## Decision
+
+| Score | Model | Switch command |
+|-------|-------|---------------|
+| 0–1   | Haiku  | \`claude --model claude-haiku-4-5-20251001\` |
+| 2–3   | Sonnet | \`claude --model claude-sonnet-4-6\` |
+| 4–5   | Opus   | \`claude --model claude-opus-4-6\` |
+
+## Output format
+
+\`\`\`
+Task: <one-line summary>
+Score: N/5
+Recommendation: <Model name>
+Reason: <one sentence explaining the key factor>
+Switch: <exact command to run>
+Estimated saving vs Opus: ~Nx cheaper
+\`\`\`
+
+If $ARGUMENTS is empty, ask: "Describe the task you're about to start."`,
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'UserPromptSubmit hook — real-time model guard',
+          },
+          {
+            type: 'text',
+            content: 'This hook fires on every prompt. It reads the prompt text, detects simple tasks, and injects a cost warning into Claude\'s context if you\'re on Opus for something Haiku could handle.',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `#!/bin/bash
+# .claude/hooks/model-guard.sh
+# UserPromptSubmit hook — warns when Opus is used for simple tasks.
+# Claude sees the warning and can suggest switching before proceeding.
+
+PROMPT=$(cat)
+CURRENT_MODEL=\${CLAUDE_MODEL:-"unknown"}
+
+# Only warn if on an expensive model
+if [[ "$CURRENT_MODEL" != *"opus"* && "$CURRENT_MODEL" != *"sonnet"* ]]; then
+  echo '{"action":"continue"}'
+  exit 0
+fi
+
+PROMPT_TEXT=$(echo "$PROMPT" | jq -r '.prompt // empty' 2>/dev/null || echo "$PROMPT")
+WORD_COUNT=$(echo "$PROMPT_TEXT" | wc -w | tr -d ' ')
+
+# Simple-task signals: short prompt with common simple-task keywords
+if [ "$WORD_COUNT" -lt 20 ]; then
+  SIMPLE_KEYWORDS="rename|fix typo|add comment|format|prettier|lint|reword|change color|update text|bump version"
+  if echo "$PROMPT_TEXT" | grep -qiE "($SIMPLE_KEYWORDS)"; then
+    echo '{"action":"continue","message":"⚠️  Cost tip: this looks like a simple task. Consider switching to Haiku (claude --model claude-haiku-4-5-20251001) — it costs ~20× less and handles this easily."}'
+    exit 0
+  fi
+fi
+
+echo '{"action":"continue"}'`,
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `// .claude/settings.json — wire the hook
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/model-guard.sh"
+      }
+    ]
+  }
+}`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'The hook uses `"action":"continue"` with a `"message"` field — this lets the operation proceed but injects the cost tip into Claude\'s context so it can surface the suggestion to you naturally.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: '**Quick win:** Add `/pick-model` to your project today. Run it at the start of each task. Over a week of development, consistently using Haiku for simple tasks and Sonnet for mid-complexity work can cut your Claude Code bill by 60–80%.',
+          },
+        ],
+      },
     ],
   },
   {
