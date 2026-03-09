@@ -30,10 +30,10 @@ export function TopBar({ onMenuClick, title }: TopBarProps) {
       <div className="flex items-center gap-2">
         <ThemeToggle />
         <Show when="signed-out">
-          <SignInButton mode="modal">
+          <SignInButton mode="redirect">
             <Button variant="ghost" size="sm">Sign in</Button>
           </SignInButton>
-          <SignUpButton mode="modal">
+          <SignUpButton mode="redirect">
             <Button size="sm">Sign up</Button>
           </SignUpButton>
         </Show>
