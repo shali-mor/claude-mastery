@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import {
   Code2, BookOpen, Terminal, DollarSign, Layers, Github,
-  Sparkles, Zap, FlaskConical, MessageSquare,
+  Sparkles, Zap, FlaskConical, MessageSquare, Database, ShieldCheck,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -177,6 +177,39 @@ export default function AboutPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* ── Data & Auth ── */}
+        <h2 className="text-base font-semibold mb-4">Data &amp; Authentication</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
+          <Card>
+            <CardContent className="pt-4 flex gap-3">
+              <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+                <Database className="h-4 w-4 text-cyan-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Neon (PostgreSQL)</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  Progress and user data are persisted in a serverless Neon PostgreSQL database,
+                  accessed via Drizzle ORM for type-safe, schema-driven queries.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 flex gap-3">
+              <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="h-4 w-4 text-violet-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Clerk Authentication</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  User sign-up, sign-in, and session management are handled by Clerk — supporting
+                  email/password and social OAuth providers out of the box.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* ── Stack ── */}
         <h2 className="text-base font-semibold mb-3">Built with</h2>
