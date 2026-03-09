@@ -351,7 +351,30 @@ if command -v notify-send &> /dev/null; then
   notify-send "Claude Code" "Finished your task" --icon=terminal
 fi`,
               },
+              {
+                label: 'Block prod commands',
+                language: 'bash',
+                content: `#!/bin/bash
+# .claude/hooks/guard-production.sh
+# PreBashExec hook — blocks any bash command that targets production.
+# Claude reads the reason and tries a safe alternative instead.
+
+# Hooks read the pending command from stdin
+INPUT=$(cat)
+
+if echo "$INPUT" | grep -qE "(production|prod-db|api\\.prod)"; then
+  echo '{"action":"block","reason":"Production operations require manual approval. Run this in a separate terminal after peer review."}'
+  exit 0
+fi
+
+echo '{"action":"continue"}'`,
+              },
             ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**How hooks receive data:** Hooks read the pending operation from **stdin** (`INPUT=$(cat)`) and return a JSON object. `{"action":"continue"}` allows it; `{"action":"block","reason":"..."}` cancels it and sends the reason back to Claude so it can try an alternative.',
           },
           {
             type: 'heading',
@@ -376,6 +399,12 @@ fi`,
         "command": "bash .claude/hooks/protect-env.sh"
       }
     ],
+    "PreBashExec": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/guard-production.sh"
+      }
+    ],
     "Stop": [
       {
         "type": "command",
@@ -393,55 +422,6 @@ fi`,
             type: 'callout',
             calloutVariant: 'success',
             content: '**Start here:** The **block .env writes** hook costs nothing to set up and prevents a painful class of accidents. Add it to every project today.',
-          },
-        ],
-      },
-      {
-        id: 'lesson-2-3',
-        title: 'Building Custom Hooks',
-        description: 'Write practical hooks for notifications, formatting, and security.',
-        estimatedMinutes: 15,
-        blocks: [
-          {
-            type: 'text',
-            content: 'Hooks receive context about the operation via environment variables and stdin. They can return JSON to control behavior — blocking operations, modifying inputs, or providing feedback to Claude.',
-          },
-          {
-            type: 'code',
-            language: 'bash',
-            content: `#!/bin/bash
-# ~/.claude/hooks/guard-production.sh
-# PreBashExec hook — blocks commands that could affect production
-
-INPUT=$(cat)  # Reads the bash command being executed
-
-# Block any command targeting production
-if echo "$INPUT" | grep -qE "(production|prod-db|api.prod)"; then
-  echo '{"action": "block", "reason": "Production operations require manual approval. Run this in a separate terminal after review."}'
-  exit 0
-fi
-
-# Allow everything else
-echo '{"action": "continue"}'`,
-          },
-          {
-            type: 'code',
-            language: 'json',
-            content: `// Configure the hook in ~/.claude/settings.json
-{
-  "hooks": {
-    "PreBashExec": [
-      {
-        "type": "command",
-        "command": "~/.claude/hooks/guard-production.sh"
-      }
-    ]
-  }
-}`,
-          },
-          {
-            type: 'tip',
-            content: 'Hooks that return {"action": "block", "reason": "..."} prevent the operation and send the reason to Claude, which can then try an alternative approach.',
           },
         ],
       },
