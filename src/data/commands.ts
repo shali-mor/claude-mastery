@@ -740,8 +740,9 @@ export const commands: Command[] = [
   },
 
   // ─── SKILLS ───────────────────────────────────────────────────────────────
-  // Built-in skills ship with Claude Code. Ready-to-copy skills are from Module 2 lesson 5.
-  // Install custom skills: copy the .md file to .claude/commands/ and commit.
+  // Only built-in skills that ship with Claude Code are listed here.
+  // Custom skills (user-created .md files in .claude/commands/) are taught
+  // in Module 2 lesson 5 but are NOT listed here since they must be installed.
   {
     id: 'skill-simplify',
     name: '/simplify',
@@ -750,88 +751,8 @@ export const commands: Command[] = [
     description: 'A built-in Claude Code skill. Runs a three-agent parallel review of your recent git changes: (1) Code Reuse — searches for existing utilities that could replace new code; (2) Code Quality — flags redundant state, copy-paste patterns, leaky abstractions, and stringly-typed code; (3) Efficiency — catches unnecessary work, missed concurrency, hot-path bloat, and memory leaks. Then fixes every actionable finding directly. No file path needed — it reads git diff automatically.',
     syntax: '/simplify',
     examples: ['/simplify'],
-    relatedCommandIds: ['skill-security-review', 'skill-refactor'],
+    relatedCommandIds: [],
     tags: ['code-quality', 'refactor', 'review', 'built-in', 'cleanup'],
-  },
-  {
-    id: 'skill-security-review',
-    name: '/security-review',
-    category: 'skill',
-    summary: 'Audit the current diff or a specific file for security vulnerabilities.',
-    description: 'Acts as a senior application security engineer. Runs `git diff HEAD` (or reads the file in $ARGUMENTS), then checks for injection (SQL, command, NoSQL), broken auth/authorisation, data exposure (hardcoded secrets, PII in logs), XSS, path traversal, and vulnerable dependencies. Reports every finding as CRITICAL / HIGH / MEDIUM / LOW / INFO with file, line, problem, and a concrete fix. Install at .claude/commands/security-review.md.',
-    syntax: '/security-review\n/security-review src/api/users.ts',
-    examples: [
-      '/security-review',
-      '/security-review src/api/payments.ts',
-    ],
-    relatedCommandIds: ['skill-pr-review', 'slash-review'],
-    tags: ['security', 'OWASP', 'audit', 'vulnerability', 'injection', 'XSS'],
-  },
-  {
-    id: 'skill-commit',
-    name: '/commit',
-    category: 'skill',
-    summary: 'Generate a conventional commit message from staged changes and commit.',
-    description: 'Runs `git diff --staged` (falls back to `git diff HEAD`), writes a conventional commit message (type(scope): description), shows it in a code block, asks "Run this commit? (yes or edit)", then commits on confirmation. Follows the format: imperative mood, lowercase, ≤72 chars, WHY in the body. Install at .claude/commands/commit.md.',
-    syntax: '/commit',
-    examples: [
-      '# Stage your changes first, then:\n/commit',
-    ],
-    relatedCommandIds: ['skill-pr-review', 'slash-review'],
-    tags: ['git', 'commit', 'conventional-commits', 'version-control'],
-  },
-  {
-    id: 'skill-pr-review',
-    name: '/pr-review',
-    category: 'skill',
-    summary: 'Thorough code review of the current PR across correctness, security, performance, and readability.',
-    description: 'Runs `git diff main...HEAD`, then reviews across four dimensions: Correctness (logic, edge cases, error handling), Security (no secrets, input validated, auth enforced), Performance (N+1, missing indexes, unnecessary re-renders), and Readability (clear names, tests for new behaviour). Outputs a one-paragraph PR summary then per-file findings tagged [BLOCKING], [SUGGESTION], or [NITPICK], ending with Approve / Request changes / Needs discussion. Install at .claude/commands/pr-review.md.',
-    syntax: '/pr-review',
-    examples: ['/pr-review'],
-    relatedCommandIds: ['skill-security-review', 'slash-pr-comments'],
-    tags: ['code-review', 'pull-request', 'quality', 'github'],
-  },
-  {
-    id: 'skill-debug',
-    name: '/debug',
-    category: 'skill',
-    summary: 'Systematically debug an issue using the scientific method.',
-    description: 'Takes the bug description from $ARGUMENTS and works through five steps: (1) restate symptom, (2) gather evidence (git log, error/stack trace, grep), (3) form 2–4 ranked hypotheses, (4) test hypotheses with targeted logs without touching production logic, (5) make the minimal fix, explain why it works, and suggest a regression test. Install at .claude/commands/debug.md.',
-    syntax: '/debug <description of the issue>',
-    examples: [
-      '/debug login fails with 401 after password reset',
-      '/debug TypeError: cannot read property of undefined in checkout',
-    ],
-    relatedCommandIds: [],
-    tags: ['debugging', 'bug', 'diagnosis', 'scientific-method', 'root-cause'],
-  },
-  {
-    id: 'skill-write-tests',
-    name: '/write-tests',
-    category: 'skill',
-    summary: 'Write comprehensive tests for a file or function.',
-    description: 'Takes the target from $ARGUMENTS, reads the source to identify all exports and dependencies to mock, checks 1–2 existing test files for framework/naming conventions, then writes tests covering happy paths, edge cases (null, empty, min/max), and error paths (invalid input, network/DB failures). Places the file following project conventions and reports: N tests written covering X functions. Install at .claude/commands/write-tests.md.',
-    syntax: '/write-tests <file or function>',
-    examples: [
-      '/write-tests src/lib/auth.ts',
-      '/write-tests useCartStore hook',
-    ],
-    relatedCommandIds: [],
-    tags: ['testing', 'jest', 'vitest', 'TDD', 'QA', 'coverage'],
-  },
-  {
-    id: 'skill-refactor',
-    name: '/refactor',
-    category: 'skill',
-    summary: 'Refactor a file or function for clarity without changing observable behaviour.',
-    description: 'Takes the target from $ARGUMENTS, identifies code smells (functions >40 lines, nesting >3 levels, copy-paste, unclear names, magic numbers, god functions), presents a plan and waits for confirmation, then refactors in order: rename → extract constants → extract helpers → break large functions → flatten nesting → remove dead code. Runs tests after each change. No new features — refactor only. Install at .claude/commands/refactor.md.',
-    syntax: '/refactor <file or function>',
-    examples: [
-      '/refactor src/components/CheckoutForm.tsx',
-      '/refactor the processOrder function in src/orders.ts',
-    ],
-    relatedCommandIds: ['skill-write-tests'],
-    tags: ['refactor', 'clean-code', 'readability', 'maintainability'],
   },
 
   // ─── GSD PLUGIN ───────────────────────────────────────────────────────────

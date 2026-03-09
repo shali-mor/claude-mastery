@@ -192,14 +192,14 @@ export const quizzes: Quiz[] = [
       {
         id: 'q2-10',
         type: 'multiple-choice',
-        questionText: 'The ready-to-copy /security-review skill performs which action?',
+        questionText: 'You write a skill file called "security-review.md" and place it in .claude/commands/. How do you invoke it?',
         options: [
-          { id: 'a', text: 'Runs automated penetration tests against your running server', isCorrect: false, explanation: 'The skill is a Claude prompt, not an automated pentest tool.' },
-          { id: 'b', text: 'Asks Claude to audit the current code for OWASP Top 10 vulnerabilities and suggest fixes', isCorrect: true, explanation: 'Correct! /security-review prompts Claude to scan the codebase for injection, XSS, broken auth, and other OWASP Top 10 issues, then propose concrete remediations.' },
-          { id: 'c', text: 'Locks all files so they cannot be edited until reviewed', isCorrect: false, explanation: 'Skills are prompts — they cannot lock files or enforce permissions.' },
-          { id: 'd', text: 'Generates a security.txt file for your project', isCorrect: false, explanation: 'That is a different concern. The security-review skill focuses on code auditing.' },
+          { id: 'a', text: 'claude run security-review', isCorrect: false, explanation: 'That is not how Claude Code invokes skills. Skills are invoked as slash commands inside a session.' },
+          { id: 'b', text: '/security-review', isCorrect: true, explanation: 'Correct! The filename (without .md) becomes the slash command. security-review.md → /security-review.' },
+          { id: 'c', text: 'bash .claude/commands/security-review.md', isCorrect: false, explanation: 'Skill files are Markdown prompts, not shell scripts. They are invoked as slash commands, not via bash.' },
+          { id: 'd', text: '@security-review', isCorrect: false, explanation: 'The @ prefix is not used for skills. Skills use the / prefix just like built-in commands.' },
         ],
-        globalExplanation: 'The /security-review skill from the Skills Library is a one-liner you can drop into any project. It instructs Claude to review all recently changed files against OWASP Top 10 and output a prioritised fix list.',
+        globalExplanation: 'Skill filename = slash command name. Place any .md file in .claude/commands/ and it becomes a /command immediately — no registration or config needed. Commit the file and your whole team gets the command.',
       },
       {
         id: 'q2-11',
