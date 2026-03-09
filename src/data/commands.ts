@@ -740,8 +740,19 @@ export const commands: Command[] = [
   },
 
   // ─── SKILLS ───────────────────────────────────────────────────────────────
-  // These are the six ready-to-copy skills taught in Module 2 lesson 5.
-  // Install any skill: copy its .md file to .claude/commands/ and commit.
+  // Built-in skills ship with Claude Code. Ready-to-copy skills are from Module 2 lesson 5.
+  // Install custom skills: copy the .md file to .claude/commands/ and commit.
+  {
+    id: 'skill-simplify',
+    name: '/simplify',
+    category: 'skill',
+    summary: 'Review changed code for reuse, quality, and efficiency — then fix issues found.',
+    description: 'A built-in Claude Code skill. Runs a three-agent parallel review of your recent git changes: (1) Code Reuse — searches for existing utilities that could replace new code; (2) Code Quality — flags redundant state, copy-paste patterns, leaky abstractions, and stringly-typed code; (3) Efficiency — catches unnecessary work, missed concurrency, hot-path bloat, and memory leaks. Then fixes every actionable finding directly. No file path needed — it reads git diff automatically.',
+    syntax: '/simplify',
+    examples: ['/simplify'],
+    relatedCommandIds: ['skill-security-review', 'skill-refactor'],
+    tags: ['code-quality', 'refactor', 'review', 'built-in', 'cleanup'],
+  },
   {
     id: 'skill-security-review',
     name: '/security-review',
