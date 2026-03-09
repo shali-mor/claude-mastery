@@ -441,6 +441,11 @@ echo '{"action":"continue"}'`,
             content: 'The Task tool (available to Claude Code agents) spawns sub-agents. Sub-agents have their own context window, preventing context pollution between independent tasks.',
           },
           {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Where to put the skill file:** Save it as `.claude/commands/parallel-check.md` in your project root, then invoke it with `/parallel-check` inside Claude Code. Create the directory first if needed: `mkdir -p .claude/commands`',
+          },
+          {
             type: 'code',
             language: 'markdown',
             content: `# Example: parallel agent orchestration in a skill
