@@ -266,6 +266,134 @@ Create a git commit for the current staged changes.
   }
 }`,
           },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Real-life examples',
+          },
+          {
+            type: 'text',
+            content: 'Here are four hooks that solve problems every developer actually faces. Each one is ready to drop into your project.',
+          },
+          {
+            type: 'tabs',
+            content: '',
+            tabs: [
+              {
+                label: 'Auto-lint on save',
+                language: 'bash',
+                content: `#!/bin/bash
+# .claude/hooks/lint-on-write.sh
+# PostWrite hook — runs ESLint on every JS/TS file Claude writes.
+# Catches lint errors instantly, before they pile up.
+
+FILE=$(echo "$CLAUDE_TOOL_OUTPUT" | jq -r '.path // empty')
+
+# Only lint JS/TS files
+if [[ "$FILE" =~ \\.(js|jsx|ts|tsx)$ ]]; then
+  npx eslint "$FILE" --fix --quiet 2>&1
+  if [ $? -ne 0 ]; then
+    # Feedback goes back to Claude so it can fix the issue
+    echo "ESLint found errors in $FILE — please review and fix."
+  fi
+fi`,
+              },
+              {
+                label: 'Block .env writes',
+                language: 'bash',
+                content: `#!/bin/bash
+# .claude/hooks/protect-env.sh
+# PreWrite hook — prevents Claude from ever writing to .env files.
+# Protects secrets from being accidentally overwritten.
+
+FILE=$(echo "$CLAUDE_TOOL_INPUT" | jq -r '.path // empty')
+
+if [[ "$FILE" == *".env"* ]]; then
+  echo '{"action":"block","reason":".env files are protected. Edit environment variables manually — never let an AI touch secrets."}'
+  exit 0
+fi
+
+echo '{"action":"continue"}'`,
+              },
+              {
+                label: 'Session cost tracker',
+                language: 'bash',
+                content: `#!/bin/bash
+# ~/.claude/hooks/track-cost.sh
+# Stop hook — logs token usage and estimated cost after every session.
+# Helps you understand which tasks burn the most tokens.
+
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
+INPUT_TOKENS=$(echo "$CLAUDE_USAGE" | jq -r '.input_tokens // 0')
+OUTPUT_TOKENS=$(echo "$CLAUDE_USAGE" | jq -r '.output_tokens // 0')
+
+# Sonnet 4.5 pricing: $3/M input, $15/M output
+COST=$(echo "scale=4; ($INPUT_TOKENS * 3 + $OUTPUT_TOKENS * 15) / 1000000" | bc)
+
+echo "$TIMESTAMP | in=$INPUT_TOKENS out=$OUTPUT_TOKENS cost=\\$$COST" >> ~/.claude/cost.log
+echo "Session cost: \\$$COST (in: $INPUT_TOKENS, out: $OUTPUT_TOKENS)"`,
+              },
+              {
+                label: 'Desktop notification',
+                language: 'bash',
+                content: `#!/bin/bash
+# ~/.claude/hooks/notify-done.sh
+# Stop hook — sends a desktop notification when Claude finishes.
+# Lets you context-switch away and come back when it's done.
+
+# Works on macOS
+if command -v osascript &> /dev/null; then
+  osascript -e 'display notification "Claude finished your task" with title "Claude Code" sound name "Glass"'
+fi
+
+# Works on Linux (requires libnotify)
+if command -v notify-send &> /dev/null; then
+  notify-send "Claude Code" "Finished your task" --icon=terminal
+fi`,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Wiring all four hooks',
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `// .claude/settings.json — project-level hooks
+{
+  "hooks": {
+    "PostWrite": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/lint-on-write.sh"
+      }
+    ],
+    "PreWrite": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/protect-env.sh"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "bash ~/.claude/hooks/track-cost.sh"
+      },
+      {
+        "type": "command",
+        "command": "bash ~/.claude/hooks/notify-done.sh"
+      }
+    ]
+  }
+}`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: '**Start here:** The **block .env writes** hook costs nothing to set up and prevents a painful class of accidents. Add it to every project today.',
+          },
         ],
       },
       {
