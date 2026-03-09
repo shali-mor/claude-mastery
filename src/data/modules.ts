@@ -1328,8 +1328,13 @@ git commit -m "chore: add Claude Code skill library"`,
         estimatedMinutes: 12,
         blocks: [
           {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where does this lesson apply?** Prompt caching is an Anthropic API feature for apps you build yourself — a Next.js backend, a Python script, a Node.js service. It is not a Claude Code CLI setting. If you only use Claude Code interactively, skip to lesson 4-4.',
+          },
+          {
             type: 'text',
-            content: 'Prompt caching lets you mark portions of your prompt as cacheable. On subsequent requests, cached tokens are read at ~10% of the normal input price. This is the highest-ROI optimization for apps with large, repeated contexts.',
+            content: 'Prompt caching lets you mark portions of your prompt as cacheable. On subsequent requests, cached tokens are read at ~10% of the normal input price. This is the highest-ROI optimization for apps with large, repeated contexts — like a chatbot that sends the same 10,000-token system prompt on every request.',
           },
           {
             type: 'table',
@@ -1342,33 +1347,60 @@ git commit -m "chore: add Claude Code skill library"`,
             ],
           },
           {
+            type: 'heading',
+            level: 2,
+            content: 'Setup',
+          },
+          {
+            type: 'steps',
+            content: 'Add caching to your Node.js / TypeScript project',
+            steps: [
+              'Install the SDK in your project: npm install @anthropic-ai/sdk',
+              'Set your API key: export ANTHROPIC_API_KEY=sk-ant-...',
+              'Create a file — e.g. src/ai.ts — and paste the code below',
+              'Replace yourLargeDocumentOrInstructions with the text you want cached (system prompt, docs, etc.)',
+            ],
+          },
+          {
             type: 'code',
             language: 'typescript',
-            content: `import Anthropic from '@anthropic-ai/sdk';
+            content: `// src/ai.ts — paste into any Node.js / TypeScript project
+import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic();
+const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
 
-// Add cache_control to large, stable parts of your prompt
-const response = await client.messages.create({
-  model: 'claude-sonnet-4-6',
-  max_tokens: 1024,
-  system: [
-    {
-      type: 'text',
-      text: yourLargeDocumentOrInstructions,
-      // This gets cached after the first request
-      cache_control: { type: 'ephemeral' },
-    }
-  ],
-  messages: [
-    { role: 'user', content: userQuestion }
-  ]
-});`,
+export async function askWithCaching(
+  largeContext: string,
+  userQuestion: string
+) {
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1024,
+    system: [
+      {
+        type: 'text',
+        text: largeContext,
+        // Mark this block as cacheable.
+        // First call: written to cache (1.25x cost).
+        // Every subsequent call: read from cache (0.10x cost).
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
+    messages: [{ role: 'user', content: userQuestion }],
+  });
+
+  return response.content[0].type === 'text' ? response.content[0].text : '';
+}`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**What to cache:** The cache_control block should wrap content that is large AND repeated across requests — a long system prompt, a reference document, tool definitions. Do NOT cache the user\'s message (it changes every time).',
           },
           {
             type: 'callout',
             calloutVariant: 'info',
-            content: 'Cache break-even: 1 write (1.25x) + 1 read (0.10x) = 1.35x total for 2 uses. Without caching that\'s 2.0x. You save money starting from the very first cache hit.',
+            content: 'Cache break-even: 1 write (1.25×) + 1 read (0.10×) = 1.35× total for 2 uses. Without caching that\'s 2.00×. You save money from the very first cache hit, and savings compound with every additional request.',
           },
         ],
       },
@@ -1378,6 +1410,11 @@ const response = await client.messages.create({
         description: 'Cut costs 50% on non-time-sensitive workloads with the Message Batches API.',
         estimatedMinutes: 10,
         blocks: [
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where does this lesson apply?** The Batch API is for scripts and backend services you write — a nightly classification job, a bulk data pipeline, an eval suite. It is not available inside Claude Code CLI sessions.',
+          },
           {
             type: 'text',
             content: 'The Anthropic Batch API processes requests asynchronously — typically within 24 hours — at 50% of standard pricing. Perfect for bulk workloads that don\'t need real-time responses.',
@@ -1394,26 +1431,78 @@ const response = await client.messages.create({
             ],
           },
           {
+            type: 'heading',
+            level: 2,
+            content: 'Setup',
+          },
+          {
+            type: 'steps',
+            content: 'Run your first batch job',
+            steps: [
+              'Install the SDK: npm install @anthropic-ai/sdk',
+              'Set your API key: export ANTHROPIC_API_KEY=sk-ant-...',
+              'Create a script — e.g. scripts/batch-classify.ts — and paste the code below',
+              'Replace items with your array of inputs and run: npx ts-node scripts/batch-classify.ts',
+            ],
+          },
+          {
             type: 'code',
             language: 'typescript',
-            content: `import Anthropic from '@anthropic-ai/sdk';
+            content: `// scripts/batch-classify.ts — run with: npx ts-node scripts/batch-classify.ts
+import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic();
+const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
 
-// Create a batch of requests
+// Your input data — e.g. customer support tickets, documents, etc.
+const items = [
+  { id: 'item-1', text: 'My order never arrived' },
+  { id: 'item-2', text: 'Great product, love it!' },
+  { id: 'item-3', text: 'How do I reset my password?' },
+];
+
+// Step 1: Submit the batch (50% cheaper than individual requests)
 const batch = await client.messages.batches.create({
-  requests: items.map((item, i) => ({
-    custom_id: \`request-\${i}\`,
+  requests: items.map(item => ({
+    custom_id: item.id,
     params: {
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 256,
-      messages: [{ role: 'user', content: item.text }],
-    }
-  }))
+      model: 'claude-haiku-4-5-20251001', // cheapest model for simple tasks
+      max_tokens: 64,
+      messages: [
+        {
+          role: 'user',
+          content: \`Classify this message as COMPLAINT, PRAISE, or QUESTION.
+Reply with just the label.
+
+Message: \${item.text}\`,
+        },
+      ],
+    },
+  })),
 });
 
-// Poll until complete (or use webhooks)
-const results = await client.messages.batches.results(batch.id);`,
+console.log('Batch submitted:', batch.id);
+console.log('Status:', batch.processing_status);
+
+// Step 2: Poll until complete (usually minutes to hours)
+let result = batch;
+while (result.processing_status === 'in_progress') {
+  await new Promise(r => setTimeout(r, 5000)); // wait 5 seconds
+  result = await client.messages.batches.retrieve(batch.id);
+  console.log('Still processing...', result.request_counts);
+}
+
+// Step 3: Read results
+for await (const item of await client.messages.batches.results(batch.id)) {
+  if (item.result.type === 'succeeded') {
+    const label = item.result.message.content[0];
+    console.log(item.custom_id, '->', label.type === 'text' ? label.text : '?');
+  }
+}`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Webhooks instead of polling:** For production use, pass `webhook: { url: "https://yourapp.com/batch-done" }` to the batch create call. Anthropic will POST the results when done — no polling loop needed.',
           },
         ],
       },
