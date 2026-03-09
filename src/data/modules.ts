@@ -1571,6 +1571,345 @@ Write Jest unit tests for $ARGUMENTS.
           },
         ],
       },
+
+      // ── Lesson 6-5: Ready-to-Copy Skills Library ─────────────────────────
+      {
+        id: 'lesson-6-5',
+        title: 'Ready-to-Copy Skills Library',
+        description: 'Production-quality skill files you can drop into any project today — security review, PR review, commit messages, debugging, and more.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'The fastest way to learn skill authoring is to read well-crafted skills and adapt them. Every skill below is production-ready — copy the file content to `.claude/commands/<filename>` in your project and it becomes a `/command` immediately.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**How to install any skill:** Create `.claude/commands/` in your project root, paste the skill content into a `.md` file, and commit it. The whole team gets the command automatically.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Security review — the must-have skill',
+          },
+          {
+            type: 'text',
+            content: 'This is the most universally useful skill you can add to any project. Run `/security-review` before every PR merge to catch OWASP Top 10 issues, exposed secrets, and auth gaps.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `---
+description: Audit the current diff or file for security vulnerabilities
+---
+
+# /security-review
+
+You are a senior application security engineer. Audit the code for security vulnerabilities.
+
+## Step 1 — Gather context
+Run \`git diff HEAD\` to see recent changes. If $ARGUMENTS is provided, read that specific file instead.
+
+## Step 2 — Check each category
+
+### Injection
+- SQL injection: raw string concatenation in queries
+- Command injection: unsanitised input passed to shell commands
+- NoSQL injection: unvalidated data in MongoDB/Redis queries
+
+### Authentication & authorisation
+- Missing auth middleware on API routes
+- Insecure direct object references (user can access other users' data)
+- JWT: algorithm confusion, missing expiry, secrets in code
+- Broken access control (role checks missing or bypassable)
+
+### Data exposure
+- API keys, tokens, passwords hardcoded or in committed files
+- Sensitive data in logs (emails, passwords, tokens)
+- PII returned in API responses that don't need it
+- Missing HTTPS enforcement
+
+### Input handling
+- Missing input validation or sanitisation
+- XSS: unescaped output in HTML/templates
+- Path traversal: user-controlled file paths
+- XXE or SSRF if the app fetches URLs
+
+### Dependencies
+- Check \`package.json\` / \`requirements.txt\` for packages with known CVEs
+- Flag any \`eval()\`, \`exec()\`, or dynamic \`require()\` calls
+
+## Step 3 — Report
+
+For every issue found, output:
+\`\`\`
+**[SEVERITY]** Short title
+File: path/to/file.ts  Line: N
+Problem: one sentence explaining the vulnerability
+Fix: concrete code change or mitigation
+\`\`\`
+
+Severity levels: CRITICAL | HIGH | MEDIUM | LOW | INFO
+
+If no issues are found, say: ✅ No security issues found in the reviewed code.
+
+Do NOT modify any files — only report.`,
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'More ready-to-use skills',
+          },
+          {
+            type: 'tabs',
+            content: '',
+            tabs: [
+              {
+                label: 'commit.md',
+                language: 'markdown',
+                content: `---
+description: Generate a conventional commit message from staged changes
+---
+
+# /commit
+
+Generate a conventional commit message for the staged changes.
+
+## Step 1
+Run \`git diff --staged\` to understand what changed.
+If nothing is staged, run \`git diff HEAD\` instead.
+
+## Step 2 — Write the commit message
+
+Format: \`type(scope): short description\`
+
+**Types:** feat | fix | docs | style | refactor | test | chore | perf | ci
+
+**Rules:**
+- Scope is the module/component affected (optional but helpful)
+- Description: imperative mood, lowercase, ≤72 chars, no trailing period
+- Body (optional): explain the WHY, not the what — wrap at 72 chars
+- Footer: add \`BREAKING CHANGE: description\` if public API changes
+- Footer: add \`Closes #123\` if it fixes a GitHub issue
+
+## Step 3
+Present the commit message in a code block, then ask:
+"Run this commit? (yes to confirm, or tell me what to change)"
+
+If confirmed, run: \`git commit -m "<message>"\``,
+              },
+              {
+                label: 'pr-review.md',
+                language: 'markdown',
+                content: `---
+description: Thorough code review of the current PR diff
+---
+
+# /pr-review
+
+You are a senior engineer doing a thorough pull request review.
+
+## Step 1 — Understand the PR
+Run \`git diff main...HEAD\` (or \`git diff origin/main...HEAD\`) to see all changes.
+Read any linked issue number from the branch name or recent commits.
+
+## Step 2 — Review across these dimensions
+
+**Correctness**
+- Does the logic achieve what it claims?
+- Are edge cases handled (null, empty, overflow, concurrent access)?
+- Are errors handled — or silently swallowed?
+
+**Security** (quick check — use /security-review for a deep audit)
+- No hardcoded secrets
+- Input validated before use
+- Auth enforced on new routes
+
+**Performance**
+- N+1 queries in loops
+- Missing indexes for new query patterns
+- Unnecessary re-renders or re-computations
+
+**Readability & maintainability**
+- Are names clear without needing comments?
+- Is complexity justified?
+- Are tests added for new behaviour?
+
+**Breaking changes**
+- Public API, schema, or contract changes that need a migration
+
+## Step 3 — Output format
+
+Start with a one-paragraph summary of what the PR does.
+
+Then list findings grouped by file:
+
+\`\`\`
+📄 path/to/file.ts
+  [BLOCKING]   Description of must-fix issue
+  [SUGGESTION] Description of improvement idea
+  [NITPICK]    Minor style or naming note
+\`\`\`
+
+End with: **Overall:** Approve | Request changes | Needs discussion`,
+              },
+              {
+                label: 'debug.md',
+                language: 'markdown',
+                content: `---
+description: Systematically debug a bug using the scientific method
+---
+
+# /debug
+
+Debug the issue described in $ARGUMENTS using the scientific method.
+
+## Step 1 — Understand the symptom
+- Restate the bug in one sentence: what happens vs what should happen
+- Ask clarifying questions if the description is vague (then wait for answers)
+
+## Step 2 — Gather evidence
+Run relevant commands to collect data:
+- Check recent git log: \`git log --oneline -10\`
+- Read the error message and stack trace carefully
+- Search for the error string in the codebase: \`grep -r "error text" src/\`
+- Read the files involved in the stack trace
+
+## Step 3 — Form hypotheses
+List 2–4 possible root causes ranked by likelihood. For each:
+- State the hypothesis
+- State what evidence would confirm or deny it
+
+## Step 4 — Test hypotheses
+Test the most likely hypothesis first. Add a targeted log, read a value,
+or trace the execution path. Do NOT change production logic yet.
+
+## Step 5 — Fix
+Once the root cause is confirmed:
+- Make the minimal change that fixes the issue
+- Explain why the fix works
+- Note any related areas that might have the same bug
+- Suggest a test to prevent regression`,
+              },
+              {
+                label: 'write-tests.md',
+                language: 'markdown',
+                content: `---
+description: Write comprehensive tests for a file or function
+---
+
+# /write-tests
+
+Write comprehensive tests for $ARGUMENTS.
+
+## Step 1 — Read the code
+Read the target file. Identify:
+- All exported functions/classes/components
+- Their inputs, outputs, and side effects
+- Dependencies to mock
+
+## Step 2 — Check existing test conventions
+Find 1–2 existing test files to understand:
+- Test framework in use (Jest, Vitest, Playwright, etc.)
+- File naming convention (\`*.test.ts\`, \`*.spec.ts\`, \`__tests__/\`)
+- How mocks and fixtures are structured
+
+## Step 3 — Write tests covering
+
+**Happy paths** — normal inputs produce expected outputs
+
+**Edge cases:**
+- Empty input, null, undefined, zero, empty array
+- Maximum/minimum values
+- Concurrent calls (if async)
+
+**Error paths:**
+- Invalid inputs throw the right error
+- Network/DB failures are handled gracefully
+- Partial failures don't corrupt state
+
+**Integration points** (if applicable):
+- Mock external dependencies (API calls, DB, timers)
+- Verify the component renders correctly for key states
+
+## Step 4
+Place the test file next to the source file following the project convention.
+Print a summary: N tests written covering X functions.`,
+              },
+              {
+                label: 'refactor.md',
+                language: 'markdown',
+                content: `---
+description: Refactor a file or function for clarity and maintainability
+---
+
+# /refactor
+
+Refactor $ARGUMENTS for improved readability and maintainability.
+Do NOT change observable behaviour.
+
+## Step 1 — Read and understand
+Read the target code fully before touching anything.
+Identify the code smells present:
+- Long functions (>40 lines)
+- Deep nesting (>3 levels)
+- Repeated logic (copy-paste code)
+- Unclear names (single letters, abbreviations, misleading names)
+- Magic numbers and strings (hardcoded values with no name)
+- God objects/functions doing too many things
+
+## Step 2 — Plan changes
+List the specific refactors you will make and why.
+Confirm the plan before proceeding with changes.
+
+## Step 3 — Refactor (in this order)
+1. Rename variables and functions for clarity
+2. Extract magic values into named constants
+3. Extract repeated logic into helper functions
+4. Break large functions into smaller, single-purpose functions
+5. Flatten deep nesting using early returns
+6. Remove dead code
+
+## Rules
+- One refactor type at a time — don't mix rename + extract + restructure
+- Keep each function under 40 lines where possible
+- Every extracted function must have a name that reads like a sentence
+- Run existing tests after changes to verify behaviour is preserved
+- Do NOT add new features — refactor only`,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Install all skills at once',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# Create the commands directory
+mkdir -p .claude/commands
+
+# Then create each skill file:
+# .claude/commands/security-review.md
+# .claude/commands/commit.md
+# .claude/commands/pr-review.md
+# .claude/commands/debug.md
+# .claude/commands/write-tests.md
+# .claude/commands/refactor.md
+
+# Commit so the whole team gets them
+git add .claude/commands/
+git commit -m "chore: add Claude Code skill library"`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: '**Pro tip:** Start with `/security-review` and `/commit` — they give the highest immediate value with zero configuration. Add the rest as you find yourself repeating the same prompts.',
+          },
+        ],
+      },
     ],
   },
   {
