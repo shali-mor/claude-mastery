@@ -466,136 +466,6 @@ Wait for all three to complete, then summarize:
     ],
   },
   {
-    id: 'module-3',
-    title: 'GSD Plugin Deep Dive',
-    description: 'Master the GSD methodology for milestone-based, AI-orchestrated software development.',
-    icon: 'Layers',
-    color: 'green',
-    quizId: 'quiz-module-3',
-    lessons: [
-      {
-        id: 'lesson-3-1',
-        title: 'GSD Methodology & Philosophy',
-        description: 'Understand the milestone → phase → task hierarchy that GSD uses to ship software.',
-        estimatedMinutes: 10,
-        blocks: [
-          {
-            type: 'text',
-            content: 'GSD (Get Stuff Done) is a structured, AI-orchestrated software development methodology built as a Claude Code plugin. It uses a Milestone → Phase → Task hierarchy to break large goals into executable, verifiable units of work.',
-          },
-          {
-            type: 'table',
-            content: 'GSD hierarchy',
-            headers: ['Level', 'Description', 'Example'],
-            rows: [
-              ['Milestone', 'A major version or product goal', '"Build MVP" or "v2.0 Launch"'],
-              ['Phase', 'A logical chunk of work within the milestone', '"Phase 1: Database schema" or "Phase 3: Auth"'],
-              ['Task', 'A specific, actionable work item', '"Create users table migration"'],
-            ],
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'tip',
-            content: 'GSD\'s power comes from parallelism: independent tasks within a phase run as simultaneous sub-agents. A 10-task phase might complete in the time it takes to do 2-3 tasks sequentially.',
-          },
-        ],
-      },
-      {
-        id: 'lesson-3-2',
-        title: 'Starting & Planning with GSD',
-        description: 'Initialize projects, create milestones, and generate detailed phase plans.',
-        estimatedMinutes: 12,
-        blocks: [
-          {
-            type: 'text',
-            content: 'GSD\'s planning workflow guides you from a rough idea to a detailed, executable plan. Each command builds context for the next.',
-          },
-          {
-            type: 'steps',
-            content: 'Starting a new GSD project',
-            steps: [
-              'Run /gsd:new-project — GSD interviews you about the project, tech stack, and goals. Creates PROJECT.md.',
-              'Run /gsd:new-milestone — Define the first milestone (e.g., "MVP"). Creates milestone section in PROJECT.md.',
-              'Run /gsd:plan-phase — Creates a detailed PLAN.md for Phase 1 with implementation tasks and verification criteria.',
-              'Review the plan, request adjustments if needed, then approve.',
-            ],
-          },
-          {
-            type: 'code',
-            language: 'bash',
-            content: `# Typical GSD project startup
-/gsd:new-project     # Gather project context → PROJECT.md
-/gsd:new-milestone   # Define Milestone 1 (e.g., "v1 MVP")
-/gsd:plan-phase      # Create PLAN.md for Phase 1`,
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'info',
-            content: 'PLAN.md is the contract for the phase. It lists every task, the files to create/modify, and the acceptance criteria. /gsd:execute-phase reads this file to know what to build.',
-          },
-        ],
-      },
-      {
-        id: 'lesson-3-3',
-        title: 'Executing & Verifying Work',
-        description: 'Run phases, validate results, and manage the milestone lifecycle.',
-        estimatedMinutes: 12,
-        blocks: [
-          {
-            type: 'text',
-            content: 'After planning comes execution. GSD\'s execute, verify, and audit commands ensure quality at each step — from individual phases to full milestone completion.',
-          },
-          {
-            type: 'table',
-            content: 'Execution & verification commands',
-            headers: ['Command', 'Purpose'],
-            rows: [
-              ['/gsd:execute-phase', 'Run all tasks in the current PLAN.md using parallel sub-agents'],
-              ['/gsd:verify-work', 'Interactive UAT — validate each requirement from the plan was built correctly'],
-              ['/gsd:audit-milestone', 'Check if the entire milestone is complete before archiving'],
-              ['/gsd:complete-milestone', 'Archive the milestone, prepare for the next one'],
-              ['/gsd:progress', 'Show current milestone status, completed phases, and next action'],
-            ],
-          },
-          {
-            type: 'tip',
-            content: 'Always run /gsd:verify-work after execution before marking a phase complete. GSD\'s verification is conversational — it will point out gaps and create follow-up todos.',
-          },
-        ],
-      },
-      {
-        id: 'lesson-3-4',
-        title: 'Advanced GSD Workflows',
-        description: 'Debug complex issues, map large codebases, and handle urgent work mid-phase.',
-        estimatedMinutes: 10,
-        blocks: [
-          {
-            type: 'text',
-            content: 'GSD has specialized commands for common real-world scenarios: debugging across context resets, mapping unfamiliar codebases, and slipping urgent work between planned phases.',
-          },
-          {
-            type: 'table',
-            content: 'Advanced GSD commands',
-            headers: ['Command', 'When to use'],
-            rows: [
-              ['/gsd:debug', 'Persistent debugging that survives context resets'],
-              ['/gsd:map-codebase', 'Parallel analysis of a large, unfamiliar codebase'],
-              ['/gsd:quick', 'Execute a small task with GSD guarantees but skip planning agents'],
-              ['/gsd:insert-phase', 'Insert an urgent phase (e.g., 72.1) between existing phases'],
-              ['/gsd:pause-work', 'Create a context handoff document when switching sessions'],
-              ['/gsd:resume-work', 'Restore full context when returning to paused work'],
-            ],
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'success',
-            content: '/gsd:debug is particularly valuable for hard bugs. It writes its state (hypotheses, tests run, findings) to .planning/debug/ — so you can pick up exactly where you left off after a context reset.',
-          },
-        ],
-      },
-    ],
-  },
-  {
     id: 'module-4',
     title: 'Cost Optimization',
     description: 'Dramatically reduce API costs with prompt caching, Batch API, and smart model routing.',
@@ -2982,6 +2852,136 @@ if (request.params.name === 'list_users') {
           {
             type: 'tip',
             content: 'Use **Claude Desktop** for exploratory conversations ("what\'s in this database?"). Use **Claude Code** for agentic tasks that need to write code, run tests, and commit changes based on what the MCP server returns.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'module-3',
+    title: 'GSD Plugin Deep Dive',
+    description: 'Master the GSD methodology for milestone-based, AI-orchestrated software development.',
+    icon: 'Layers',
+    color: 'green',
+    quizId: 'quiz-module-3',
+    lessons: [
+      {
+        id: 'lesson-3-1',
+        title: 'GSD Methodology & Philosophy',
+        description: 'Understand the milestone → phase → task hierarchy that GSD uses to ship software.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'GSD (Get Stuff Done) is a structured, AI-orchestrated software development methodology built as a Claude Code plugin. It uses a Milestone → Phase → Task hierarchy to break large goals into executable, verifiable units of work.',
+          },
+          {
+            type: 'table',
+            content: 'GSD hierarchy',
+            headers: ['Level', 'Description', 'Example'],
+            rows: [
+              ['Milestone', 'A major version or product goal', '"Build MVP" or "v2.0 Launch"'],
+              ['Phase', 'A logical chunk of work within the milestone', '"Phase 1: Database schema" or "Phase 3: Auth"'],
+              ['Task', 'A specific, actionable work item', '"Create users table migration"'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'GSD\'s power comes from parallelism: independent tasks within a phase run as simultaneous sub-agents. A 10-task phase might complete in the time it takes to do 2-3 tasks sequentially.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-3-2',
+        title: 'Starting & Planning with GSD',
+        description: 'Initialize projects, create milestones, and generate detailed phase plans.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'GSD\'s planning workflow guides you from a rough idea to a detailed, executable plan. Each command builds context for the next.',
+          },
+          {
+            type: 'steps',
+            content: 'Starting a new GSD project',
+            steps: [
+              'Run /gsd:new-project — GSD interviews you about the project, tech stack, and goals. Creates PROJECT.md.',
+              'Run /gsd:new-milestone — Define the first milestone (e.g., "MVP"). Creates milestone section in PROJECT.md.',
+              'Run /gsd:plan-phase — Creates a detailed PLAN.md for Phase 1 with implementation tasks and verification criteria.',
+              'Review the plan, request adjustments if needed, then approve.',
+            ],
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# Typical GSD project startup
+/gsd:new-project     # Gather project context → PROJECT.md
+/gsd:new-milestone   # Define Milestone 1 (e.g., "v1 MVP")
+/gsd:plan-phase      # Create PLAN.md for Phase 1`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'PLAN.md is the contract for the phase. It lists every task, the files to create/modify, and the acceptance criteria. /gsd:execute-phase reads this file to know what to build.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-3-3',
+        title: 'Executing & Verifying Work',
+        description: 'Run phases, validate results, and manage the milestone lifecycle.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'After planning comes execution. GSD\'s execute, verify, and audit commands ensure quality at each step — from individual phases to full milestone completion.',
+          },
+          {
+            type: 'table',
+            content: 'Execution & verification commands',
+            headers: ['Command', 'Purpose'],
+            rows: [
+              ['/gsd:execute-phase', 'Run all tasks in the current PLAN.md using parallel sub-agents'],
+              ['/gsd:verify-work', 'Interactive UAT — validate each requirement from the plan was built correctly'],
+              ['/gsd:audit-milestone', 'Check if the entire milestone is complete before archiving'],
+              ['/gsd:complete-milestone', 'Archive the milestone, prepare for the next one'],
+              ['/gsd:progress', 'Show current milestone status, completed phases, and next action'],
+            ],
+          },
+          {
+            type: 'tip',
+            content: 'Always run /gsd:verify-work after execution before marking a phase complete. GSD\'s verification is conversational — it will point out gaps and create follow-up todos.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-3-4',
+        title: 'Advanced GSD Workflows',
+        description: 'Debug complex issues, map large codebases, and handle urgent work mid-phase.',
+        estimatedMinutes: 10,
+        blocks: [
+          {
+            type: 'text',
+            content: 'GSD has specialized commands for common real-world scenarios: debugging across context resets, mapping unfamiliar codebases, and slipping urgent work between planned phases.',
+          },
+          {
+            type: 'table',
+            content: 'Advanced GSD commands',
+            headers: ['Command', 'When to use'],
+            rows: [
+              ['/gsd:debug', 'Persistent debugging that survives context resets'],
+              ['/gsd:map-codebase', 'Parallel analysis of a large, unfamiliar codebase'],
+              ['/gsd:quick', 'Execute a small task with GSD guarantees but skip planning agents'],
+              ['/gsd:insert-phase', 'Insert an urgent phase (e.g., 72.1) between existing phases'],
+              ['/gsd:pause-work', 'Create a context handoff document when switching sessions'],
+              ['/gsd:resume-work', 'Restore full context when returning to paused work'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: '/gsd:debug is particularly valuable for hard bugs. It writes its state (hypotheses, tests run, findings) to .planning/debug/ — so you can pick up exactly where you left off after a context reset.',
           },
         ],
       },
