@@ -166,145 +166,370 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
   },
   {
     id: 'module-2',
-    title: 'Skills & Hooks',
-    description: 'Build custom skills and hook into Claude\'s lifecycle events to automate your workflow.',
+    title: 'Skills, Hooks & Commands',
+    description: 'Master the three Claude Code extension points — write skills that automate your team\'s workflows, hooks that enforce standards automatically, and patterns that make your .claude/ directory a force multiplier.',
     icon: 'Zap',
     color: 'purple',
     quizId: 'quiz-module-2',
     lessons: [
+      // ── Lesson 2-1: The Right Tool ───────────────────────────────────────
       {
         id: 'lesson-2-1',
-        title: 'Understanding Claude Code Skills',
-        description: 'Create reusable, slash-invocable prompts that automate your team\'s common tasks.',
+        title: 'Skills vs Hooks vs Commands — The Right Tool',
+        description: 'Understand the three extension points and exactly when to reach for each one.',
         estimatedMinutes: 10,
         blocks: [
           {
             type: 'text',
-            content: 'Skills are markdown files that become slash commands. They let you package common workflows — like creating commits, reviewing PRs, or running deployments — into reusable, shareable prompts.',
-          },
-          {
-            type: 'steps',
-            content: 'Creating a skill',
-            steps: [
-              'Create the skills directory: mkdir -p ~/.claude/skills (global) or .claude/skills (project)',
-              'Create a markdown file: e.g., ~/.claude/skills/commit.md',
-              'Write your skill prompt using markdown — it becomes the context for Claude',
-              'Invoke it as a slash command: /commit',
-            ],
-          },
-          {
-            type: 'code',
-            language: 'markdown',
-            content: `# ~/.claude/skills/commit.md
-Create a git commit for the current staged changes.
-
-1. Run \`git diff --staged\` to see what's staged
-2. Write a concise commit message following this format:
-   - First line: imperative mood, max 72 chars (e.g., "Add user authentication")
-   - Blank line
-   - Body: explain WHY, not what (the diff shows what)
-3. Include "Co-Authored-By: Claude" at the end
-4. Run \`git commit -m "$(cat <<'EOF'...EOF)"\` to commit`,
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'info',
-            content: 'Project-level skills in .claude/skills/ override global skills with the same name. This lets you customize team-specific skills per-project.',
-          },
-        ],
-      },
-      {
-        id: 'lesson-2-2',
-        title: 'Hook Events & Types',
-        description: 'Intercept and extend Claude\'s behavior with lifecycle hooks.',
-        estimatedMinutes: 12,
-        blocks: [
-          {
-            type: 'text',
-            content: 'Hooks are shell commands or scripts that fire at specific points in Claude\'s execution lifecycle. They enable powerful automation: auto-formatting, cost tracking, notifications, security guards, and more.',
+            content: 'Claude Code gives you three ways to extend and automate your workflow: **built-in slash commands**, **custom skills**, and **hooks**. They look similar but serve different purposes. Picking the wrong one costs you time — picking the right one multiplies your output.',
           },
           {
             type: 'table',
-            content: 'Key hook events',
-            headers: ['Event', 'Fires When', 'Can Block?'],
+            headers: ['Extension', 'What it is', 'When to use it'],
             rows: [
-              ['PreToolUse', 'Before any tool call', 'Yes'],
-              ['PostToolUse', 'After any tool call completes', 'No'],
-              ['PreBashExec', 'Before bash command runs', 'Yes'],
-              ['PostBashExec', 'After bash command completes', 'No'],
-              ['PreRead', 'Before a file is read', 'Yes'],
-              ['PostRead', 'After a file is read', 'No'],
-              ['PreWrite', 'Before a file is written', 'Yes'],
-              ['PostWrite', 'After a file is written', 'No'],
-              ['Stop', 'When Claude finishes responding', 'No'],
-              ['Notification', 'Claude-triggered notifications', 'No'],
-              ['PreCompact', 'Before conversation compaction', 'Yes'],
-              ['PostCompact', 'After compaction completes', 'No'],
-              ['UserPromptSubmit', 'When user submits a prompt', 'Yes'],
-              ['AssistantResponse', 'When Claude generates a response', 'No'],
-              ['SubagentStop', 'When a sub-agent finishes', 'No'],
+              ['Slash command', 'Built-in Claude Code command (`/help`, `/compact`, `/clear`)', 'Standard Claude Code actions — cannot be added, only used'],
+              ['Skill (custom command)', 'A Markdown file in `.claude/commands/` invoked with `/name`', 'Reusable prompts or workflows specific to **your project or team**'],
+              ['Hook', 'A shell script that fires automatically on Claude Code events', 'Automations that run **without user input** — lint on save, block dangerous commands, log all actions'],
             ],
-          },
-          {
-            type: 'code',
-            language: 'json',
-            content: `// ~/.claude/settings.json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "type": "command",
-        "command": "osascript -e 'display notification \"Claude finished\" with title \"Claude Code\"'"
-      }
-    ],
-    "PreBashExec": [
-      {
-        "type": "command",
-        "command": "echo 'Executing: $CLAUDE_TOOL_INPUT' >> ~/.claude/audit.log"
-      }
-    ]
-  }
-}`,
           },
           {
             type: 'heading',
             level: 2,
-            content: 'Real-life examples',
+            content: 'When to write a skill',
           },
           {
+            type: 'checklist',
+            content: 'Write a skill when all of these are true:',
+            items: [
+              {
+                text: 'You\'ve typed the same prompt more than twice',
+                description: 'If you find yourself writing the same instructions every session, that\'s a skill waiting to be written.',
+              },
+              {
+                text: 'The task needs project-specific context',
+                description: 'Skills can describe your stack, file structure, and conventions — making Claude act like a specialist, not a generalist.',
+              },
+              {
+                text: 'Other team members would benefit',
+                description: 'Skills in `.claude/commands/` are committed to Git. Everyone on the team gets the same `/commands` automatically.',
+              },
+              {
+                text: 'The workflow involves multiple steps',
+                description: 'Skills excel at multi-step workflows: "read X, analyse Y, then write Z following our conventions".',
+              },
+            ],
+          },
+          {
+            type: 'table',
+            headers: ['Situation', 'Right tool', 'Why'],
+            rows: [
+              ['Run once, never again', 'Direct prompt', 'No skill file needed — just describe the task'],
+              ['Trigger automatically without input', 'Hook', 'Hooks fire on events; skills need `/invoke`'],
+              ['Enforce a rule on every file save', 'PreToolUse hook', 'Hook intercepts the action before it happens'],
+              ['Standard Claude Code action', 'Built-in `/command`', '`/compact`, `/clear`, `/help` are already built in'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Rule of three:** Wait until you\'ve typed the same prompt three times before writing a skill. On the third time, write the skill instead of the prompt.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: 'Don\'t write a skill for a one-off task. Skills are for **repeatable workflows**. Over-engineering your `.claude/` directory is just as wasteful as not using it at all.',
+          },
+        ],
+      },
+
+      // ── Lesson 2-2: Writing Skills That Work ────────────────────────────
+      {
+        id: 'lesson-2-2',
+        title: 'Writing Skills That Work',
+        description: 'Learn the skill file format, $ARGUMENTS, and the writing patterns that make Claude follow your instructions reliably every time.',
+        estimatedMinutes: 18,
+        blocks: [
+          {
             type: 'text',
-            content: 'Here are four hooks that solve problems every developer actually faces. Each one is ready to drop into your project.',
+            content: 'A skill is a plain Markdown file in `.claude/commands/` (project-level) or `~/.claude/commands/` (global). The filename becomes the slash command — `write-test.md` becomes `/write-test`. That\'s it. No configuration, no registration.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Skill file anatomy',
           },
           {
             type: 'tabs',
             content: '',
             tabs: [
               {
-                label: 'Auto-lint on save',
-                language: 'bash',
-                content: `#!/bin/bash
-# .claude/hooks/lint-on-write.sh
-# PostWrite hook — runs ESLint on every JS/TS file Claude writes.
-# Catches lint errors instantly, before they pile up.
+                label: 'Minimal',
+                language: 'markdown',
+                content: `# /write-test
 
-FILE=$(echo "$CLAUDE_TOOL_OUTPUT" | jq -r '.path // empty')
+Write a comprehensive test file for the current file.
 
-# Only lint JS/TS files
-if [[ "$FILE" =~ \\.(js|jsx|ts|tsx)$ ]]; then
-  npx eslint "$FILE" --fix --quiet 2>&1
-  if [ $? -ne 0 ]; then
-    # Feedback goes back to Claude so it can fix the issue
-    echo "ESLint found errors in $FILE — please review and fix."
-  fi
-fi`,
+Use the project's existing test framework and follow the
+conventions in other test files. Cover happy paths and
+edge cases. Do not modify the source file.`,
               },
+              {
+                label: 'With YAML front matter',
+                language: 'markdown',
+                content: `---
+description: Generate a conventional commit message from staged changes
+---
+
+# /commit-msg
+
+Analyse the staged git diff and write a conventional commit message.
+
+Format: \`type(scope): short description\`
+
+**Types:** feat | fix | docs | style | refactor | test | chore | perf
+
+**Rules:**
+- Scope is optional but recommended
+- Description in present tense, lowercase, no period
+- Body explains the WHY, not the what
+- Add \`BREAKING CHANGE:\` footer if the API changes
+
+Run \`git diff --staged\` first to understand what changed.`,
+              },
+              {
+                label: 'With $ARGUMENTS',
+                language: 'markdown',
+                content: `---
+description: Explain a function or file in plain English
+---
+
+# /explain
+
+Explain $ARGUMENTS in plain English suitable for a junior developer.
+
+Cover:
+1. What the code does (high level)
+2. How it works (step by step)
+3. Why it exists (purpose in the codebase)
+4. Common pitfalls or gotchas
+
+Keep explanations concise. Use bullet points.`,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'The $ARGUMENTS placeholder',
+          },
+          {
+            type: 'text',
+            content: 'Writing `$ARGUMENTS` in your skill tells Claude to substitute whatever the user typed after the command name. `/explain useAuth hook` passes `"useAuth hook"` as `$ARGUMENTS`. This makes skills flexible — they work on whatever context you point them at.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Specific beats vague — every time',
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: '✅ Do — specific and structured',
+              language: 'markdown',
+              code: `---
+description: Review a PR for security issues
+---
+
+# /security-review
+
+Review the current git diff for security vulnerabilities.
+
+Check for:
+- SQL injection (unsanitised inputs in queries)
+- XSS (unescaped output in HTML templates)
+- Exposed secrets (API keys, tokens in code)
+- Insecure direct object references
+- Missing authentication on API routes
+
+For each issue found:
+1. Identify the file and line
+2. Describe the vulnerability
+3. Provide a specific fix
+
+If no issues found, say "No security issues found."`,
+            },
+            dont: {
+              label: '❌ Don\'t — vague and unpredictable',
+              language: 'markdown',
+              code: `# /security-review
+
+Check for security issues in the code.
+Tell me if there are any problems.`,
+            },
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Six rules for reliable skills',
+          },
+          {
+            type: 'checklist',
+            content: '',
+            items: [
+              {
+                text: 'Start with one clear objective sentence',
+                description: 'The first sentence defines the task. Everything after is context and constraints.',
+              },
+              {
+                text: 'List explicit constraints ("do not modify X")',
+                description: 'Claude follows constraints reliably. Be explicit: "Do not touch the test files", "Only modify the file matching $ARGUMENTS".',
+              },
+              {
+                text: 'Specify the output format',
+                description: 'Tell Claude exactly how to format the answer: bullet points, a numbered list, a code block, a specific file structure.',
+              },
+              {
+                text: 'Use numbered steps for multi-step workflows',
+                description: 'Numbered steps make Claude\'s behaviour more predictable — it follows them in order.',
+              },
+              {
+                text: 'Add a "Done" condition',
+                description: 'Tell Claude what "finished" looks like. E.g. "When done, print a summary of all changes made."',
+              },
+              {
+                text: 'One job per file',
+                description: 'A skill that does one thing well is more reliable and easier to maintain than a Swiss army knife skill.',
+              },
+            ],
+          },
+          {
+            type: 'table',
+            headers: ['Location', 'Path', 'Scope', 'Use case'],
+            rows: [
+              ['Project skill', '`.claude/commands/name.md`', 'Current project only — committed to Git', 'Project-specific conventions, team workflows'],
+              ['Global skill', '`~/.claude/commands/name.md`', 'All projects on your machine', 'Personal workflows, universal helpers'],
+            ],
+          },
+          {
+            type: 'exercise',
+            content: 'Write your first skill',
+            exercise: {
+              prompt: 'Create a skill file called `add-jsdoc.md` in `.claude/commands/`. It should instruct Claude to add JSDoc comments to a function specified by `$ARGUMENTS`. Include: parameter descriptions, return type, and a one-line summary. Do not modify the function logic.',
+              hints: [
+                'The filename (without `.md`) becomes the command: `add-jsdoc.md` → `/add-jsdoc`',
+                'Use `$ARGUMENTS` where you want the user\'s input to be substituted',
+                'Start with a clear first sentence that states the single objective',
+              ],
+              solution: `---
+description: Add JSDoc comments to a function
+---
+
+# /add-jsdoc
+
+Add JSDoc comments to the function named $ARGUMENTS.
+
+Include:
+- A one-line summary of what the function does
+- @param tags for every parameter with type and description
+- @returns tag with type and description
+- @throws tag if the function can throw
+
+Rules:
+- Do NOT modify the function body or signature
+- Use the TypeScript types from the source if available
+- Keep descriptions concise (one sentence each)
+- Place the JSDoc block immediately above the function`,
+              solutionLanguage: 'markdown',
+            },
+          },
+        ],
+      },
+
+      // ── Lesson 2-3: Hooks in Practice ───────────────────────────────────
+      {
+        id: 'lesson-2-3',
+        title: 'Hooks in Practice',
+        description: 'Write hooks that enforce rules, automate quality checks, and guard your project — all without being asked.',
+        estimatedMinutes: 20,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Hooks are shell scripts Claude Code runs automatically at specific points in its workflow. Unlike skills (which you invoke), hooks fire on their own. They\'re ideal for enforcing team standards and automating quality gates that would otherwise be forgotten.',
+          },
+          {
+            type: 'table',
+            content: 'All hook events',
+            headers: ['Event', 'Fires When', 'Can Block?'],
+            rows: [
+              ['PreToolUse', 'Before any tool call', 'Yes'],
+              ['PostToolUse', 'After any tool call completes', 'No'],
+              ['PreBashExec', 'Before a bash command runs', 'Yes'],
+              ['PostBashExec', 'After a bash command completes', 'No'],
+              ['PreRead', 'Before a file is read', 'Yes'],
+              ['PostRead', 'After a file is read', 'No'],
+              ['PreWrite', 'Before a file is written', 'Yes'],
+              ['PostWrite', 'After a file is written', 'No'],
+              ['UserPromptSubmit', 'When the user submits a prompt', 'Yes'],
+              ['AssistantResponse', 'When Claude generates a response', 'No'],
+              ['Stop', 'When Claude finishes the task', 'No'],
+              ['Notification', 'Claude-triggered notifications', 'No'],
+              ['SubagentStop', 'When a sub-agent finishes', 'No'],
+              ['PreCompact', 'Before conversation compaction', 'Yes'],
+              ['PostCompact', 'After compaction completes', 'No'],
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Exit codes control what Claude does next',
+          },
+          {
+            type: 'table',
+            headers: ['Exit code', 'Effect', 'Use case'],
+            rows: [
+              ['`0`', 'Continue normally', 'Hook ran cleanly, nothing to report'],
+              ['`2`', '**Block** the operation — Claude will not proceed', 'Prevent dangerous actions (rm -rf, prod deployments, .env writes)'],
+              ['Non-zero (not 2)', 'Show output to Claude as context — Claude reads and fixes', 'Lint errors, type errors, test failures'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Exit code 2 is your hard stop.** Use it only for truly dangerous actions. For softer enforcement — lint errors, type failures — use a non-zero exit other than 2 so Claude sees the output and self-corrects.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Hook environment variables',
+          },
+          {
+            type: 'table',
+            headers: ['Variable', 'Available in', 'Contains'],
+            rows: [
+              ['`$CLAUDE_TOOL_NAME`', 'PreToolUse, PostToolUse', 'Name of the tool being called (e.g. `Bash`, `Write`)'],
+              ['`$CLAUDE_TOOL_INPUT`', 'PreToolUse', 'Full JSON input to the tool — the command, file path, etc.'],
+              ['`$CLAUDE_TOOL_RESULT`', 'PostToolUse', 'The tool\'s output / result'],
+              ['`$CLAUDE_TOOL_RESULT_FILE_PATH`', 'PostToolUse (Write)', 'Path of the file just written'],
+              ['`$CLAUDE_PROJECT_ROOT`', 'All hooks', 'Absolute path to the project root'],
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Five production-ready hooks',
+          },
+          {
+            type: 'tabs',
+            content: '',
+            tabs: [
               {
                 label: 'Block .env writes',
                 language: 'bash',
                 content: `#!/bin/bash
 # .claude/hooks/protect-env.sh
-# PreWrite hook — prevents Claude from ever writing to .env files.
-# Protects secrets from being accidentally overwritten.
+# PreWrite — prevents Claude from ever writing to .env files.
+# Start with this one — highest value, zero configuration.
 
 FILE=$(echo "$CLAUDE_TOOL_INPUT" | jq -r '.path // empty')
 
@@ -316,50 +541,13 @@ fi
 echo '{"action":"continue"}'`,
               },
               {
-                label: 'Session cost tracker',
-                language: 'bash',
-                content: `#!/bin/bash
-# ~/.claude/hooks/track-cost.sh
-# Stop hook — logs token usage and estimated cost after every session.
-# Helps you understand which tasks burn the most tokens.
-
-TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
-INPUT_TOKENS=$(echo "$CLAUDE_USAGE" | jq -r '.input_tokens // 0')
-OUTPUT_TOKENS=$(echo "$CLAUDE_USAGE" | jq -r '.output_tokens // 0')
-
-# Sonnet 4.5 pricing: $3/M input, $15/M output
-COST=$(echo "scale=4; ($INPUT_TOKENS * 3 + $OUTPUT_TOKENS * 15) / 1000000" | bc)
-
-echo "$TIMESTAMP | in=$INPUT_TOKENS out=$OUTPUT_TOKENS cost=\\$$COST" >> ~/.claude/cost.log
-echo "Session cost: \\$$COST (in: $INPUT_TOKENS, out: $OUTPUT_TOKENS)"`,
-              },
-              {
-                label: 'Desktop notification',
-                language: 'bash',
-                content: `#!/bin/bash
-# ~/.claude/hooks/notify-done.sh
-# Stop hook — sends a desktop notification when Claude finishes.
-# Lets you context-switch away and come back when it's done.
-
-# Works on macOS
-if command -v osascript &> /dev/null; then
-  osascript -e 'display notification "Claude finished your task" with title "Claude Code" sound name "Glass"'
-fi
-
-# Works on Linux (requires libnotify)
-if command -v notify-send &> /dev/null; then
-  notify-send "Claude Code" "Finished your task" --icon=terminal
-fi`,
-              },
-              {
                 label: 'Block prod commands',
                 language: 'bash',
                 content: `#!/bin/bash
 # .claude/hooks/guard-production.sh
-# PreBashExec hook — blocks any bash command that targets production.
+# PreBashExec — blocks commands targeting production environments.
 # Claude reads the reason and tries a safe alternative instead.
 
-# Hooks read the pending command from stdin
 INPUT=$(cat)
 
 if echo "$INPUT" | grep -qE "(production|prod-db|api\\.prod)"; then
@@ -369,97 +557,617 @@ fi
 
 echo '{"action":"continue"}'`,
               },
+              {
+                label: 'Auto-lint on save',
+                language: 'bash',
+                content: `#!/bin/bash
+# .claude/hooks/lint-on-write.sh
+# PostWrite — runs ESLint on every JS/TS file Claude writes.
+# Non-zero exit (not 2) so Claude reads errors and self-corrects.
+
+FILE=$(echo "$CLAUDE_TOOL_RESULT_FILE_PATH" | tr -d '"')
+
+if [[ "$FILE" =~ \\.(js|jsx|ts|tsx)$ ]]; then
+  npx eslint "$FILE" --fix --quiet 2>&1
+fi`,
+              },
+              {
+                label: 'Session cost tracker',
+                language: 'bash',
+                content: `#!/bin/bash
+# ~/.claude/hooks/track-cost.sh
+# Stop — logs token usage and estimated cost after every session.
+
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
+INPUT_TOKENS=$(echo "$CLAUDE_USAGE" | jq -r '.input_tokens // 0')
+OUTPUT_TOKENS=$(echo "$CLAUDE_USAGE" | jq -r '.output_tokens // 0')
+
+# Sonnet 4.6 pricing: $3/M input, $15/M output
+COST=$(echo "scale=4; ($INPUT_TOKENS * 3 + $OUTPUT_TOKENS * 15) / 1000000" | bc)
+
+echo "$TIMESTAMP | in=$INPUT_TOKENS out=$OUTPUT_TOKENS cost=\\$$COST" >> ~/.claude/cost.log
+echo "Session cost: \\$$COST"`,
+              },
+              {
+                label: 'Desktop notification',
+                language: 'bash',
+                content: `#!/bin/bash
+# ~/.claude/hooks/notify-done.sh
+# Stop — desktop alert when Claude finishes a long task.
+
+# macOS
+if command -v osascript &> /dev/null; then
+  osascript -e 'display notification "Claude finished your task" with title "Claude Code" sound name "Glass"'
+fi
+
+# Linux (requires libnotify)
+if command -v notify-send &> /dev/null; then
+  notify-send "Claude Code" "Finished your task" --icon=terminal
+fi`,
+              },
             ],
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'info',
-            content: '**How hooks receive data:** Hooks read the pending operation from **stdin** (`INPUT=$(cat)`) and return a JSON object. `{"action":"continue"}` allows it; `{"action":"block","reason":"..."}` cancels it and sends the reason back to Claude so it can try an alternative.',
           },
           {
             type: 'heading',
             level: 2,
-            content: 'Wiring all four hooks',
+            content: 'Wiring hooks in settings.json',
           },
           {
             type: 'code',
             language: 'json',
-            content: `// .claude/settings.json — project-level hooks
+            content: `// .claude/settings.json
 {
   "hooks": {
-    "PostWrite": [
-      {
-        "type": "command",
-        "command": "bash .claude/hooks/lint-on-write.sh"
-      }
-    ],
     "PreWrite": [
-      {
-        "type": "command",
-        "command": "bash .claude/hooks/protect-env.sh"
-      }
+      { "type": "command", "command": "bash .claude/hooks/protect-env.sh" }
     ],
     "PreBashExec": [
-      {
-        "type": "command",
-        "command": "bash .claude/hooks/guard-production.sh"
-      }
+      { "type": "command", "command": "bash .claude/hooks/guard-production.sh" }
+    ],
+    "PostWrite": [
+      { "type": "command", "command": "bash .claude/hooks/lint-on-write.sh" }
     ],
     "Stop": [
-      {
-        "type": "command",
-        "command": "bash ~/.claude/hooks/track-cost.sh"
-      },
-      {
-        "type": "command",
-        "command": "bash ~/.claude/hooks/notify-done.sh"
-      }
+      { "type": "command", "command": "bash ~/.claude/hooks/track-cost.sh" },
+      { "type": "command", "command": "bash ~/.claude/hooks/notify-done.sh" }
     ]
   }
 }`,
           },
           {
-            type: 'callout',
-            calloutVariant: 'success',
-            content: '**Start here:** The **block .env writes** hook costs nothing to set up and prevents a painful class of accidents. Add it to every project today.',
+            type: 'exercise',
+            content: 'Write an audit log hook',
+            exercise: {
+              prompt: 'Add a `PreBashExec` hook to `.claude/settings.json` that appends every Bash command Claude runs to `.claude/bash-history.log` with an ISO timestamp. The hook must NOT block — just log and continue.',
+              hints: [
+                'Use exit code `0` to let Claude continue after logging',
+                'The command is in `$CLAUDE_TOOL_INPUT` as JSON — use `jq -r \'.command // empty\'` to extract it',
+                '`date -u +"%Y-%m-%dT%H:%M:%SZ"` gives an ISO timestamp',
+              ],
+              solution: `// .claude/settings.json
+{
+  "hooks": {
+    "PreBashExec": [
+      {
+        "type": "command",
+        "command": "echo \\"$(date -u +'%Y-%m-%dT%H:%M:%SZ') $(echo $CLAUDE_TOOL_INPUT | jq -r '.command // empty')\\" >> .claude/bash-history.log; exit 0"
+      }
+    ]
+  }
+}`,
+              solutionLanguage: 'json',
+            },
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: '✅ Use a hook for…',
+              language: 'markdown',
+              code: `# Automatic, event-driven automation
+
+- Run ESLint every time Claude writes a .ts file
+- Block force-push to main branch
+- Send notification when a long task finishes
+- Log all file changes for audit purposes
+- Run type-check after every file modification
+
+Key: these happen WITHOUT user input.`,
+            },
+            dont: {
+              label: '✅ Use a skill for…',
+              language: 'markdown',
+              code: `# User-invoked, prompt-driven workflows
+
+- /write-test — write tests for the current file
+- /security-review — audit the current diff
+- /add-changelog — append to CHANGELOG.md
+- /explain $ARGUMENTS — explain a function
+
+Key: these run WHEN INVOKED via /command-name.`,
+            },
           },
         ],
       },
+
+      // ── Lesson 2-4: Team Patterns & CLAUDE.md ───────────────────────────
       {
         id: 'lesson-2-4',
-        title: 'Advanced Agent Patterns',
-        description: 'Orchestrate multiple Claude agents for parallel, high-throughput workflows.',
+        title: 'Team Patterns & CLAUDE.md',
+        description: 'Structure your .claude/ directory for team use, write a CLAUDE.md that makes Claude act like a specialist, and avoid the pitfalls that make AI workflows brittle.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Your `.claude/` directory is as important as your `package.json`. A well-structured `.claude/` makes onboarding instant, enforces team standards automatically, and captures institutional knowledge that would otherwise live only in someone\'s head.',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `.claude/
+├── CLAUDE.md              # Project context — auto-loaded every session
+├── settings.json          # Hooks configuration
+├── commands/              # Project skills (committed to Git)
+│   ├── write-test.md      # /write-test
+│   ├── security-review.md # /security-review
+│   ├── add-changelog.md   # /add-changelog
+│   └── explain.md         # /explain $ARGUMENTS
+└── bash-history.log       # Optional: audit log (add to .gitignore)`,
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Writing a great CLAUDE.md',
+          },
+          {
+            type: 'text',
+            content: '`CLAUDE.md` is loaded automatically at the start of every Claude Code session. It\'s your project\'s instruction manual for Claude — the onboarding doc that makes it act like a specialist who already knows your codebase.',
+          },
+          {
+            type: 'tabs',
+            content: '',
+            tabs: [
+              {
+                label: 'Full template',
+                language: 'markdown',
+                content: `# Project Context
+
+## Stack
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript (strict mode)
+- **Styling:** Tailwind CSS v4 — no inline styles
+- **State:** Zustand with \`useShallow\` selectors
+- **Database:** PostgreSQL via Prisma ORM
+
+## Conventions
+- Components in \`src/components/\` — one component per file
+- API routes in \`src/app/api/\` — always validate with Zod
+- Tests co-located: \`Button.tsx\` + \`Button.test.tsx\`
+- Commits: conventional commits (\`feat/fix/chore/docs\`)
+
+## What NOT to do
+- Never use \`any\` type — use \`unknown\` and narrow
+- Never commit .env files
+- Never call Anthropic API from client components
+- Never use \`useEffect\` for derived state — use \`useMemo\`
+
+## Key Files
+- \`src/lib/auth.ts\` — authentication utilities
+- \`src/lib/db.ts\` — Prisma client singleton
+- \`src/types/\` — all shared TypeScript types`,
+              },
+              {
+                label: 'Minimal template',
+                language: 'markdown',
+                content: `# Project: MyApp
+
+Node.js/Express REST API. TypeScript strict.
+
+## Rules
+- All route handlers must be async
+- Use \`zod\` for request validation
+- Return errors as \`{ error: string, code: number }\`
+- No console.log in production code — use the \`logger\` util
+
+## File map
+- \`src/routes/\` — Express routers
+- \`src/services/\` — business logic
+- \`src/middleware/\` — Express middleware`,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Five golden rules',
+          },
+          {
+            type: 'checklist',
+            content: '',
+            items: [
+              {
+                text: 'Commit `.claude/commands/` to Git',
+                description: 'Skills are team knowledge. Every developer gets the same `/commands` automatically when they clone the repo.',
+              },
+              {
+                text: 'Keep CLAUDE.md under 200 lines',
+                description: 'Claude reads it every session. Long files dilute the important parts. Be ruthless — if it\'s not critical context, leave it out.',
+              },
+              {
+                text: 'Name skills after the action, not the tool',
+                description: '`/write-test` is better than `/jest`. `/add-changelog` is better than `/markdown`. Action-first names are self-documenting.',
+              },
+              {
+                text: 'Start hooks in log-only mode before enabling blocking',
+                description: 'Set exit 0 first to verify the hook fires correctly. Only switch to exit 2 (blocking) once you\'ve confirmed it works.',
+              },
+              {
+                text: 'Review skills quarterly',
+                description: 'Skills go stale. Set a calendar reminder every quarter. Delete skills you no longer use — dead code applies to skills too.',
+              },
+            ],
+          },
+          {
+            type: 'table',
+            headers: ['Anti-pattern', 'Problem', 'Fix'],
+            rows: [
+              ['Mega-skill that does 10 things', 'Unpredictable, hard to debug, unreliable', 'One skill = one job. Split into focused skills.'],
+              ['Vague skill prompt ("help me with X")', 'Claude interprets it differently every time', 'Be specific: list exactly what to check, what to produce, what to avoid.'],
+              ['Hooks that always exit 2', 'Claude gets blocked constantly, frustrating UX', 'Only hard-block truly dangerous actions. Use non-zero for soft failures.'],
+              ['CLAUDE.md over 200 lines', 'Important context gets buried', 'Max 200 lines. Headers. Critical rules first.'],
+              ['Skills with no constraints', 'Claude modifies unexpected files', 'Always specify what Claude should NOT touch.'],
+            ],
+          },
+          {
+            type: 'exercise',
+            content: 'Bootstrap .claude/ for a new project',
+            exercise: {
+              prompt: 'Set up a `.claude/` directory for a TypeScript Node.js project. Create: (1) a `CLAUDE.md` with stack and top 5 conventions, (2) a `/write-test` skill, (3) a PostToolUse hook that runs `tsc --noEmit` after every file write.',
+              hints: [
+                'For CLAUDE.md, the most useful sections are: Stack, Conventions, "What NOT to do"',
+                'Your `/write-test` skill should reference your test framework and naming convention',
+                'The `tsc --noEmit` hook should use `|| true` so type errors show as context (not a hard block)',
+              ],
+              solution: `# 1. CLAUDE.md
+## Stack
+TypeScript (strict), Node.js 20, Express 4, Jest
+
+## Conventions
+- Async/await everywhere — no callbacks
+- Zod for all external input validation
+- Test files: \`src/__tests__/name.test.ts\`
+- Errors: always throw \`AppError\` from \`src/lib/errors.ts\`
+
+## Do NOT
+- Use \`any\` type
+- Call external APIs from test files (mock them)
+- Mutate function parameters
+
+---
+
+# 2. .claude/commands/write-test.md
+---
+description: Write Jest tests for a file or function
+---
+
+# /write-test
+
+Write Jest unit tests for $ARGUMENTS.
+
+- Use \`describe\` + \`it\` blocks
+- Mock external dependencies with \`jest.mock\`
+- Cover happy path, error cases, and edge cases
+- Co-locate: same directory as source
+- Do NOT modify the source file
+
+---
+
+# 3. .claude/settings.json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_ROOT && npx tsc --noEmit 2>&1 | head -20 || true"
+          }
+        ]
+      }
+    ]
+  }
+}`,
+              solutionLanguage: 'markdown',
+            },
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: 'A well-configured `.claude/` directory turns a general-purpose AI into a specialist that knows your codebase, enforces your standards, and works exactly how your team works.',
+          },
+        ],
+      },
+
+      // ── Lesson 2-5: Ready-to-Copy Skills Library ────────────────────────
+      {
+        id: 'lesson-2-5',
+        title: 'Ready-to-Copy Skills Library',
+        description: 'Six production-quality skills you can drop into any project today — security review, PR review, commit messages, debugging, tests, and refactoring.',
         estimatedMinutes: 12,
         blocks: [
           {
             type: 'text',
-            content: 'Claude Code can spawn sub-agents — separate Claude instances that work on isolated tasks in parallel. This dramatically speeds up complex tasks like running multiple test suites, analyzing multiple files, or implementing independent features simultaneously.',
+            content: 'The fastest way to learn skill authoring is to read well-crafted skills and adapt them. Every skill below is production-ready — copy the file content to `.claude/commands/<filename>.md` and it becomes a `/command` immediately.',
           },
           {
             type: 'callout',
             calloutVariant: 'info',
-            content: 'The Task tool (available to Claude Code agents) spawns sub-agents. Sub-agents have their own context window, preventing context pollution between independent tasks.',
+            content: '**Install any skill:** `mkdir -p .claude/commands`, paste the content into a `.md` file, commit it. The whole team gets the command automatically.',
           },
           {
-            type: 'callout',
-            calloutVariant: 'tip',
-            content: '**Where to put the skill file:** Save it as `.claude/commands/parallel-check.md` in your project root, then invoke it with `/parallel-check` inside Claude Code. Create the directory first if needed: `mkdir -p .claude/commands`',
+            type: 'heading',
+            level: 2,
+            content: 'Security review — the must-have skill',
           },
           {
             type: 'code',
             language: 'markdown',
-            content: `# Example: parallel agent orchestration in a skill
+            content: `---
+description: Audit the current diff or file for security vulnerabilities
+---
 
-Run these three tasks in parallel using the Task tool:
+# /security-review
 
-**Agent 1**: Run the full test suite and capture results
-**Agent 2**: Run \`npm audit\` and identify high-severity vulnerabilities
-**Agent 3**: Check for TypeScript errors with \`tsc --noEmit\`
+You are a senior application security engineer. Audit the code for security vulnerabilities.
 
-Wait for all three to complete, then summarize:
-- Tests: X passing, Y failing
-- Security: N vulnerabilities (list high-severity ones)
-- Types: N errors (list the first 5)`,
+## Step 1 — Gather context
+Run \`git diff HEAD\` to see recent changes. If $ARGUMENTS is provided, read that specific file instead.
+
+## Step 2 — Check each category
+
+### Injection
+- SQL injection: raw string concatenation in queries
+- Command injection: unsanitised input passed to shell commands
+- NoSQL injection: unvalidated data in MongoDB/Redis queries
+
+### Authentication & authorisation
+- Missing auth middleware on API routes
+- Insecure direct object references (user can access other users' data)
+- JWT: algorithm confusion, missing expiry, secrets in code
+- Broken access control (role checks missing or bypassable)
+
+### Data exposure
+- API keys, tokens, passwords hardcoded or in committed files
+- Sensitive data in logs (emails, passwords, tokens)
+- PII returned in API responses that don't need it
+
+### Input handling
+- Missing input validation or sanitisation
+- XSS: unescaped output in HTML/templates
+- Path traversal: user-controlled file paths
+
+### Dependencies
+- Flag packages with known CVEs
+- Flag any \`eval()\`, \`exec()\`, or dynamic \`require()\` calls
+
+## Step 3 — Report
+
+For every issue found:
+\`\`\`
+**[SEVERITY]** Short title
+File: path/to/file.ts  Line: N
+Problem: one sentence
+Fix: concrete code change or mitigation
+\`\`\`
+
+Severity: CRITICAL | HIGH | MEDIUM | LOW | INFO
+
+If no issues found: ✅ No security issues found.
+Do NOT modify any files.`,
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Five more essential skills',
+          },
+          {
+            type: 'tabs',
+            content: '',
+            tabs: [
+              {
+                label: 'commit.md',
+                language: 'markdown',
+                content: `---
+description: Generate a conventional commit message from staged changes
+---
+
+# /commit
+
+Generate a conventional commit message for the staged changes.
+
+## Step 1
+Run \`git diff --staged\`. If nothing staged, run \`git diff HEAD\`.
+
+## Step 2 — Write the commit
+Format: \`type(scope): short description\`
+
+Types: feat | fix | docs | style | refactor | test | chore | perf | ci
+
+Rules:
+- Imperative mood, lowercase, ≤72 chars, no trailing period
+- Body: explain the WHY — wrap at 72 chars
+- Footer: \`BREAKING CHANGE: description\` if public API changes
+- Footer: \`Closes #123\` if it fixes a GitHub issue
+
+## Step 3
+Present in a code block, then ask: "Run this commit? (yes or edit)"
+If confirmed: \`git commit -m "<message>"\``,
+              },
+              {
+                label: 'pr-review.md',
+                language: 'markdown',
+                content: `---
+description: Thorough code review of the current PR diff
+---
+
+# /pr-review
+
+You are a senior engineer doing a thorough pull request review.
+
+## Step 1
+Run \`git diff main...HEAD\` to see all changes.
+
+## Step 2 — Review across these dimensions
+
+**Correctness:** Does the logic work? Edge cases handled? Errors handled?
+
+**Security:** No hardcoded secrets. Input validated. Auth enforced on new routes.
+
+**Performance:** N+1 queries? Missing indexes? Unnecessary re-renders?
+
+**Readability:** Clear names? Complexity justified? Tests for new behaviour?
+
+**Breaking changes:** Public API, schema, or contract changes needing migration?
+
+## Step 3 — Output
+
+One-paragraph summary of what the PR does, then findings by file:
+
+\`\`\`
+📄 path/to/file.ts
+  [BLOCKING]   Must-fix issue
+  [SUGGESTION] Improvement idea
+  [NITPICK]    Minor style note
+\`\`\`
+
+End with: **Overall:** Approve | Request changes | Needs discussion`,
+              },
+              {
+                label: 'debug.md',
+                language: 'markdown',
+                content: `---
+description: Systematically debug a bug using the scientific method
+---
+
+# /debug
+
+Debug the issue described in $ARGUMENTS using the scientific method.
+
+## Step 1 — Understand the symptom
+Restate in one sentence: what happens vs what should happen.
+
+## Step 2 — Gather evidence
+- Check recent git log: \`git log --oneline -10\`
+- Read the error and stack trace carefully
+- Search for the error string: \`grep -r "error text" src/\`
+- Read the files in the stack trace
+
+## Step 3 — Form hypotheses
+List 2–4 possible root causes ranked by likelihood.
+
+## Step 4 — Test hypotheses
+Test the most likely first. Add a targeted log or read a value.
+Do NOT change production logic yet.
+
+## Step 5 — Fix
+Once root cause confirmed:
+- Make the minimal change that fixes it
+- Explain why the fix works
+- Note related areas with the same bug
+- Suggest a regression test`,
+              },
+              {
+                label: 'write-tests.md',
+                language: 'markdown',
+                content: `---
+description: Write comprehensive tests for a file or function
+---
+
+# /write-tests
+
+Write comprehensive tests for $ARGUMENTS.
+
+## Step 1 — Read the code
+Identify all exported functions/classes/components, their inputs/outputs, and dependencies to mock.
+
+## Step 2 — Check existing conventions
+Find 1–2 existing test files to understand framework (Jest, Vitest, Playwright), naming, and mocking patterns.
+
+## Step 3 — Write tests covering
+
+**Happy paths** — normal inputs produce expected outputs
+
+**Edge cases:**
+- Empty, null, undefined, zero, empty array
+- Max/min values
+
+**Error paths:**
+- Invalid inputs throw the right error
+- Network/DB failures handled gracefully
+
+## Step 4
+Place the test file following project conventions.
+Print: N tests written covering X functions.`,
+              },
+              {
+                label: 'refactor.md',
+                language: 'markdown',
+                content: `---
+description: Refactor for clarity without changing behaviour
+---
+
+# /refactor
+
+Refactor $ARGUMENTS for improved readability. Do NOT change observable behaviour.
+
+## Step 1 — Identify code smells
+- Functions >40 lines
+- Nesting >3 levels deep
+- Repeated logic (copy-paste code)
+- Unclear names (single letters, abbreviations)
+- Magic numbers and strings
+- God functions doing too many things
+
+## Step 2 — Plan, then confirm before proceeding
+
+## Step 3 — Refactor in order
+1. Rename for clarity
+2. Extract magic values into named constants
+3. Extract repeated logic into helpers
+4. Break large functions into single-purpose functions
+5. Flatten nesting with early returns
+6. Remove dead code
+
+Rules:
+- One type of refactor at a time
+- Every function name reads like a sentence
+- Run tests after changes to verify behaviour is preserved
+- No new features — refactor only`,
+              },
+            ],
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# Install the full library in one go
+mkdir -p .claude/commands
+
+# Create each skill file (paste content from above):
+# .claude/commands/security-review.md
+# .claude/commands/commit.md
+# .claude/commands/pr-review.md
+# .claude/commands/debug.md
+# .claude/commands/write-tests.md
+# .claude/commands/refactor.md
+
+git add .claude/commands/
+git commit -m "chore: add Claude Code skill library"`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: '**Start with `/security-review` and `/commit`** — they give the highest immediate value with zero project-specific configuration needed.',
           },
         ],
       },
@@ -954,1084 +1662,6 @@ const client = new Anthropic({
             type: 'callout',
             calloutVariant: 'warning',
             content: 'Never call the Anthropic API from the browser directly with an exposed API key. Always proxy through your backend server. The dangerouslyAllowBrowser: true flag is for automated testing only.',
-          },
-        ],
-      },
-    ],
-  },
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // MODULE 6: Writing Skills & Commands — Best Practices
-  // ─────────────────────────────────────────────────────────────────────────
-  {
-    id: 'module-6',
-    title: 'Writing Skills & Commands',
-    description: 'Learn when and how to write reusable skills, custom slash commands, and hooks — with real-world best practices.',
-    icon: 'Wand2',
-    color: 'violet',
-    quizId: 'quiz-module-6',
-    lessons: [
-      // ── Lesson 6-1: Skills vs Commands — When to use each ──────────────
-      {
-        id: 'lesson-6-1',
-        title: 'Skills vs Slash Commands — When to Use Each',
-        description: 'Understand the difference between skills, slash commands, and hooks, and know exactly when each one is the right tool.',
-        estimatedMinutes: 12,
-        blocks: [
-          {
-            type: 'text',
-            content: 'Claude Code gives you three main extension points: **built-in slash commands**, **custom skills**, and **hooks**. They look similar but serve different purposes. Choosing the right one saves you time and keeps your workflow clean.',
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'The three extension points',
-          },
-          {
-            type: 'table',
-            headers: ['Extension', 'What it is', 'When to use it'],
-            rows: [
-              ['Slash command', 'Built-in Claude Code command (`/help`, `/commit`, `/clear`)', 'Built-in workflow actions — cannot be added, only used'],
-              ['Skill (custom command)', 'A Markdown file in `.claude/commands/` you invoke with `/name`', 'Reusable prompts or workflows specific to **your project or team**'],
-              ['Hook', 'A shell script that runs automatically on Claude Code events', 'Automations that run **without user input** (e.g. lint on save, log every tool call)'],
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'When to write a skill',
-          },
-          {
-            type: 'checklist',
-            content: 'Write a skill when all of these are true:',
-            items: [
-              {
-                text: 'You repeat the same prompt or workflow more than twice',
-                description: 'If you find yourself typing the same instructions every session, that\'s a skill waiting to be written.',
-              },
-              {
-                text: 'The task needs project-specific context',
-                description: 'Skills can reference your project\'s conventions, file structure, and coding style by describing them in the skill body.',
-              },
-              {
-                text: 'Other team members would benefit from the same workflow',
-                description: 'Skills in `.claude/commands/` are committed to Git — the whole team shares them automatically.',
-              },
-              {
-                text: 'The workflow involves multiple steps or conditions',
-                description: 'Skills excel at multi-step workflows: "read X, analyse Y, then write Z following our conventions".',
-              },
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'When NOT to write a skill',
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'warning',
-            content: 'Don\'t write a skill for a one-off task. Skills are for **repeatable workflows**. If you only need something once, just type the prompt directly. Over-engineering kills productivity.',
-          },
-          {
-            type: 'table',
-            headers: ['Situation', 'Right tool', 'Why'],
-            rows: [
-              ['Run once, never again', 'Direct prompt', 'No skill file needed — just describe the task'],
-              ['Trigger automatically without input', 'Hook', 'Hooks fire on events; skills need `/invoke`'],
-              ['Enforce a rule on every file save', 'PreToolUse hook', 'Hook intercepts the action before it happens'],
-              ['Standard Claude Code action', 'Built-in `/command`', '`/commit`, `/review`, `/help` are already built in'],
-            ],
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'tip',
-            content: '**Rule of three**: wait until you\'ve typed the same prompt three times before writing a skill. On the third time, write the skill instead of the prompt.',
-          },
-        ],
-      },
-
-      // ── Lesson 6-2: Writing Your First Skill ────────────────────────────
-      {
-        id: 'lesson-6-2',
-        title: 'Writing Your First Skill',
-        description: 'Learn the skill file format, best-practice structure, and how to write skills that Claude actually follows reliably.',
-        estimatedMinutes: 20,
-        blocks: [
-          {
-            type: 'text',
-            content: 'A skill is a plain Markdown file placed in `.claude/commands/` (project-level) or `~/.claude/commands/` (global). The filename becomes the slash command. A file called `write-test.md` becomes `/write-test`.',
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Skill file anatomy',
-          },
-          {
-            type: 'tabs',
-            content: '',
-            tabs: [
-              {
-                label: 'Minimal skill',
-                language: 'markdown',
-                content: `# /write-test
-
-Write a comprehensive test file for the current file.
-
-Use the project's existing test framework and follow the
-conventions in other test files. Cover happy paths and
-edge cases. Do not modify the source file.`,
-              },
-              {
-                label: 'With YAML front matter',
-                language: 'markdown',
-                content: `---
-description: Generate a conventional commit message from staged changes
----
-
-# /commit-msg
-
-Analyse the staged git diff and write a conventional commit message.
-
-Format: \`type(scope): short description\`
-
-**Types:** feat | fix | docs | style | refactor | test | chore | perf
-
-**Rules:**
-- Scope is optional but recommended
-- Description in present tense, lowercase, no period
-- Body explains the WHY, not the what
-- Add \`BREAKING CHANGE:\` footer if the API changes
-
-Run \`git diff --staged\` first to understand what changed.`,
-              },
-              {
-                label: 'With $ARGUMENTS',
-                language: 'markdown',
-                content: `---
-description: Explain a function or file in plain English
----
-
-# /explain
-
-Explain $ARGUMENTS in plain English suitable for a junior developer.
-
-Cover:
-1. What the code does (high level)
-2. How it works (step by step)
-3. Why it exists (purpose in the codebase)
-4. Common pitfalls or gotchas
-
-Keep explanations concise. Use bullet points. Include a short
-code example if it helps illustrate a concept.`,
-              },
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'The $ARGUMENTS placeholder',
-          },
-          {
-            type: 'text',
-            content: 'When you write `$ARGUMENTS` in your skill, Claude substitutes whatever the user typed after the command name. For example, `/explain useAuth hook` passes `"useAuth hook"` as `$ARGUMENTS`. This makes skills flexible — they work on whatever context you point them at.',
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Do vs Don\'t — writing skill prompts',
-          },
-          {
-            type: 'comparison',
-            content: '',
-            do: {
-              label: '✅ Do — specific and structured',
-              language: 'markdown',
-              code: `---
-description: Review a PR for security issues
----
-
-# /security-review
-
-Review the current git diff for security vulnerabilities.
-
-Check for:
-- SQL injection (unsanitised inputs in queries)
-- XSS (unescaped output in HTML templates)
-- Exposed secrets (API keys, tokens in code)
-- Insecure direct object references
-- Missing authentication on API routes
-
-For each issue found:
-1. Identify the file and line
-2. Describe the vulnerability
-3. Provide a specific fix
-
-If no issues found, say "No security issues found."`,
-            },
-            dont: {
-              label: '❌ Don\'t — vague and unpredictable',
-              language: 'markdown',
-              code: `# /security-review
-
-Check for security issues in the code.
-Tell me if there are any problems.`,
-            },
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Best practices for reliable skills',
-          },
-          {
-            type: 'checklist',
-            content: 'Skill writing best practices',
-            items: [
-              {
-                text: 'Start with one clear objective sentence',
-                description: 'The first sentence defines the task. Everything after is context and constraints.',
-              },
-              {
-                text: 'List explicit constraints ("do not modify X")',
-                description: 'Claude follows constraints reliably. Be explicit: "Do not touch the test files", "Only modify the file matching $ARGUMENTS".',
-              },
-              {
-                text: 'Specify the output format',
-                description: 'Tell Claude exactly how to format the answer: bullet points, a numbered list, a code block, a specific file structure.',
-              },
-              {
-                text: 'Use numbered steps for multi-step workflows',
-                description: 'Numbered steps make Claude\'s behaviour more predictable — it follows them in order.',
-              },
-              {
-                text: 'Add a "Done" condition',
-                description: 'Tell Claude what "finished" looks like. E.g. "When done, print a summary of all changes made."',
-              },
-              {
-                text: 'Keep skills focused — one job per file',
-                description: 'A skill that does one thing well is more reliable and easier to maintain than a Swiss army knife skill.',
-              },
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Project vs global skills',
-          },
-          {
-            type: 'table',
-            headers: ['Location', 'Path', 'Scope', 'Use case'],
-            rows: [
-              ['Project skill', '`.claude/commands/name.md`', 'Current project only (committed to Git)', 'Project-specific conventions, workflows, stack'],
-              ['Global skill', '`~/.claude/commands/name.md`', 'All projects on your machine', 'Personal workflows, universal helpers'],
-            ],
-          },
-          {
-            type: 'exercise',
-            content: 'Write a skill for your project',
-            exercise: {
-              prompt: 'Create a skill file called `add-jsdoc.md` in `.claude/commands/`. It should instruct Claude to add JSDoc comments to a function specified by `$ARGUMENTS`. Include: parameter descriptions, return type, and a one-line summary. Do not modify the function logic.',
-              hints: [
-                'The filename (without `.md`) becomes the command: `add-jsdoc.md` → `/add-jsdoc`',
-                'Use `$ARGUMENTS` where you want the user\'s input to be substituted',
-                'Start with a clear first sentence that states the single objective',
-              ],
-              solution: `# .claude/commands/add-jsdoc.md
-
----
-description: Add JSDoc comments to a function
----
-
-# /add-jsdoc
-
-Add JSDoc comments to the function named $ARGUMENTS.
-
-Include:
-- A one-line summary of what the function does
-- @param tags for every parameter with type and description
-- @returns tag with type and description
-- @throws tag if the function can throw
-
-Rules:
-- Do NOT modify the function body or signature
-- Use the TypeScript types from the source if available
-- Keep descriptions concise (one sentence each)
-- Place the JSDoc block immediately above the function`,
-              solutionLanguage: 'markdown',
-            },
-          },
-        ],
-      },
-
-      // ── Lesson 6-3: Writing Hooks — Automate Without Being Asked ────────
-      {
-        id: 'lesson-6-3',
-        title: 'Writing Hooks — Automate Without Being Asked',
-        description: 'Write hooks that enforce rules, log actions, and automate quality checks — all without manual intervention.',
-        estimatedMinutes: 18,
-        blocks: [
-          {
-            type: 'text',
-            content: 'Hooks are shell scripts that Claude Code runs automatically at specific points in its workflow. Unlike skills (which you invoke), hooks fire on their own whenever a matching event occurs. They\'re ideal for enforcing team standards and automating quality gates.',
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Hook lifecycle events',
-          },
-          {
-            type: 'table',
-            headers: ['Event', 'When it fires', 'Common use cases'],
-            rows: [
-              ['`PreToolUse`', 'Before Claude uses any tool', 'Block dangerous commands, require confirmation, log all tool calls'],
-              ['`PostToolUse`', 'After a tool completes', 'Run lint/format after a file write, log results'],
-              ['`Notification`', 'When Claude sends a notification', 'Desktop alerts, Slack pings on long task completion'],
-              ['`Stop`', 'When Claude stops (task complete)', 'Run test suite, open browser, trigger CI'],
-              ['`SubagentStop`', 'When a sub-agent completes', 'Aggregate results from parallel agents'],
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Hook configuration — settings.json',
-          },
-          {
-            type: 'text',
-            content: 'Hooks are configured in `.claude/settings.json` (project-level) or `~/.claude/settings.json` (global). Each hook specifies the event, an optional matcher, and the command to run.',
-          },
-          {
-            type: 'tabs',
-            content: '',
-            tabs: [
-              {
-                label: 'Run lint on every file write',
-                language: 'json',
-                content: `{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx eslint --fix $CLAUDE_TOOL_RESULT_FILE_PATH 2>&1 || true"
-          }
-        ]
-      }
-    ]
-  }
-}`,
-              },
-              {
-                label: 'Block rm -rf in Bash',
-                language: 'json',
-                content: `{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo $CLAUDE_TOOL_INPUT | grep -q 'rm -rf' && echo 'BLOCK: rm -rf is not allowed' && exit 2 || exit 0"
-          }
-        ]
-      }
-    ]
-  }
-}`,
-              },
-              {
-                label: 'Desktop notification on completion',
-                language: 'json',
-                content: `{
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \\"Claude Code finished\\" with title \\"Claude Code\\"'"
-          }
-        ]
-      }
-    ]
-  }
-}`,
-              },
-              {
-                label: 'Run tests after every write',
-                language: 'json',
-                content: `{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd $CLAUDE_PROJECT_ROOT && npm test --passWithNoTests 2>&1 | tail -5"
-          }
-        ]
-      }
-    ]
-  }
-}`,
-              },
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Exit codes control Claude\'s behaviour',
-          },
-          {
-            type: 'table',
-            headers: ['Exit code', 'Effect on Claude', 'Use case'],
-            rows: [
-              ['`0`', 'Continue normally', 'Hook ran, everything fine'],
-              ['`2`', '**Block** the tool call — Claude will not proceed', 'Prevent dangerous actions (rm -rf, force push)'],
-              ['Non-zero (not 2)', 'Show the output to Claude as context', 'Lint errors, test failures — Claude reads and fixes them'],
-            ],
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'tip',
-            content: '**Exit code 2 is your safety net.** Use it to hard-block actions your team should never do. For softer enforcement (show lint errors and let Claude fix them), use a non-zero exit code other than 2.',
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Hook environment variables',
-          },
-          {
-            type: 'table',
-            headers: ['Variable', 'Available in', 'Contains'],
-            rows: [
-              ['`$CLAUDE_TOOL_NAME`', 'PreToolUse, PostToolUse', 'Name of the tool being called (e.g. `Bash`, `Write`)'],
-              ['`$CLAUDE_TOOL_INPUT`', 'PreToolUse', 'Full JSON input to the tool'],
-              ['`$CLAUDE_TOOL_RESULT`', 'PostToolUse', 'Tool output / result'],
-              ['`$CLAUDE_TOOL_RESULT_FILE_PATH`', 'PostToolUse (Write)', 'Path of the file just written'],
-              ['`$CLAUDE_PROJECT_ROOT`', 'All', 'Absolute path to the project root'],
-            ],
-          },
-          {
-            type: 'exercise',
-            content: 'Write a hook that logs every Bash command Claude runs',
-            exercise: {
-              prompt: 'Add a `PreToolUse` hook to `.claude/settings.json` that appends every Bash command Claude runs to a file called `.claude/bash-history.log` with a timestamp. The hook should NOT block Claude — just log and continue.',
-              hints: [
-                'Use exit code `0` to let Claude continue after logging',
-                'The command string is in `$CLAUDE_TOOL_INPUT` as JSON — use `jq` to extract the command field',
-                '`date -u +"%Y-%m-%dT%H:%M:%SZ"` gives an ISO timestamp',
-              ],
-              solution: `// .claude/settings.json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo \\"$(date -u +\\"%Y-%m-%dT%H:%M:%SZ\\") $(echo $CLAUDE_TOOL_INPUT | jq -r '.command // empty')\\" >> .claude/bash-history.log; exit 0"
-          }
-        ]
-      }
-    ]
-  }
-}`,
-              solutionLanguage: 'json',
-            },
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'When to use hooks vs skills',
-          },
-          {
-            type: 'comparison',
-            content: '',
-            do: {
-              label: '✅ Use a hook for…',
-              language: 'markdown',
-              code: `# Automatic, event-driven automation
-
-- Run ESLint every time Claude writes a .ts file
-- Block force-push to main
-- Send Slack message when a long task finishes
-- Log all file changes for audit purposes
-- Run type-check after every file modification
-
-Key: these happen WITHOUT user input
-and respond to Claude's OWN actions.`,
-            },
-            dont: {
-              label: '✅ Use a skill for…',
-              language: 'markdown',
-              code: `# User-invoked, prompt-driven workflows
-
-- /write-test — write tests for current file
-- /security-review — audit the current diff
-- /add-changelog — append to CHANGELOG.md
-- /explain $ARGUMENTS — explain a function
-
-Key: these run WHEN INVOKED by the user
-via /command-name.`,
-            },
-          },
-        ],
-      },
-
-      // ── Lesson 6-4: Workflow Patterns & Team Best Practices ─────────────
-      {
-        id: 'lesson-6-4',
-        title: 'Workflow Patterns & Team Best Practices',
-        description: 'Production-proven patterns for structuring your .claude directory, maintaining skills as a team, and avoiding common pitfalls.',
-        estimatedMinutes: 15,
-        blocks: [
-          {
-            type: 'text',
-            content: 'Your `.claude/` directory is as important as your `package.json`. A well-structured `.claude/` makes onboarding instant, enforces team standards automatically, and captures hard-won institutional knowledge.',
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Recommended .claude/ structure',
-          },
-          {
-            type: 'code',
-            language: 'bash',
-            content: `.claude/
-├── CLAUDE.md              # Project context: stack, conventions, what NOT to do
-├── settings.json          # Hooks configuration
-├── commands/              # Project skills (committed to Git)
-│   ├── write-test.md      # /write-test
-│   ├── security-review.md # /security-review
-│   ├── add-changelog.md   # /add-changelog
-│   └── explain.md         # /explain $ARGUMENTS
-└── bash-history.log       # Optional: hook audit log (add to .gitignore)`,
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Writing a great CLAUDE.md',
-          },
-          {
-            type: 'text',
-            content: '`CLAUDE.md` is loaded automatically every session. It\'s your project\'s instruction manual for Claude. Think of it as the onboarding doc you wish you had on day one — but written for an AI that will actually read every word.',
-          },
-          {
-            type: 'tabs',
-            content: '',
-            tabs: [
-              {
-                label: 'CLAUDE.md template',
-                language: 'markdown',
-                content: `# Project Context
-
-## Stack
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript (strict mode)
-- **Styling:** Tailwind CSS v4 — no inline styles
-- **State:** Zustand with \`useShallow\` selectors
-- **Database:** PostgreSQL via Prisma ORM
-
-## Conventions
-- Components go in \`src/components/\` — one component per file
-- API routes in \`src/app/api/\` — always validate with Zod
-- Tests co-located: \`Button.tsx\` + \`Button.test.tsx\`
-- Commits: conventional commits (\`feat/fix/chore/docs\`)
-
-## What NOT to do
-- Never use \`any\` type — use \`unknown\` and narrow
-- Never commit .env files
-- Never call Anthropic API from client components
-- Never use \`useEffect\` for derived state — use \`useMemo\`
-
-## Key Files
-- \`src/lib/auth.ts\` — authentication utilities
-- \`src/lib/db.ts\` — Prisma client singleton
-- \`src/types/\` — all shared TypeScript types`,
-              },
-              {
-                label: 'Minimal CLAUDE.md',
-                language: 'markdown',
-                content: `# Project: MyApp
-
-Node.js/Express REST API. TypeScript strict.
-
-## Rules
-- All route handlers must be async
-- Use \`zod\` for request validation
-- Return errors as \`{ error: string, code: number }\`
-- No console.log in production code — use the \`logger\` util
-
-## File map
-- \`src/routes/\` — Express routers
-- \`src/services/\` — business logic
-- \`src/middleware/\` — Express middleware`,
-              },
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'The five golden rules',
-          },
-          {
-            type: 'checklist',
-            content: 'Golden rules for Claude Code workflows',
-            items: [
-              {
-                text: 'Commit `.claude/commands/` to Git',
-                description: 'Skills are team knowledge. Commit them so every developer gets the same `/commands` automatically when they clone the repo.',
-              },
-              {
-                text: 'Keep CLAUDE.md under 200 lines',
-                description: 'Claude reads CLAUDE.md every session. Long files dilute the important parts. Be ruthless — if it\'s not critical context, leave it out.',
-              },
-              {
-                text: 'Name skills after the action, not the tool',
-                description: '`/write-test` is better than `/jest`. `/add-changelog` is better than `/markdown`. The action-first name is self-documenting.',
-              },
-              {
-                text: 'Test your hooks with exit code 0 first',
-                description: 'Start hooks in "log only" mode (exit 0) before enabling blocking behaviour (exit 2). This lets you verify they fire correctly without disrupting your workflow.',
-              },
-              {
-                text: 'Review skills quarterly',
-                description: 'Skills go stale. Add a calendar reminder to review `.claude/commands/` every quarter. Delete skills you no longer use — dead code applies to skills too.',
-              },
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Anti-patterns to avoid',
-          },
-          {
-            type: 'table',
-            headers: ['Anti-pattern', 'Problem', 'Fix'],
-            rows: [
-              ['Mega-skill that does 10 things', 'Unpredictable, hard to debug, low reliability', 'One skill = one job. Split into multiple focused skills.'],
-              ['Vague skill prompt ("help me with X")', 'Claude interprets it differently each time', 'Be specific: list exactly what to check, what to produce, what to avoid.'],
-              ['Hooks that always exit 2', 'Claude gets blocked constantly, frustrating UX', 'Only block truly dangerous actions. Use non-zero for soft failures.'],
-              ['CLAUDE.md with your life story', 'Important context gets buried', 'Max 200 lines. Use headers. Put the most critical rules first.'],
-              ['Skills with no constraints', 'Claude modifies unexpected files', 'Always specify what Claude should NOT touch.'],
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Starter kit — copy this for any new project',
-          },
-          {
-            type: 'exercise',
-            content: 'Set up .claude/ for a new project',
-            exercise: {
-              prompt: 'Bootstrap a `.claude/` directory for a TypeScript Node.js project. Create: (1) a `CLAUDE.md` with your stack and top 5 conventions, (2) a `/write-test` skill, (3) a PostToolUse hook that runs `tsc --noEmit` after every file write.',
-              hints: [
-                'For CLAUDE.md, the most useful sections are: Stack, Conventions, and "What NOT to do"',
-                'Your `/write-test` skill should reference your test framework (Jest, Vitest, etc.) and your test file naming convention',
-                'The `tsc --noEmit` hook should match on the `Write` tool and use `|| true` so type errors don\'t hard-block Claude — they should be shown as context',
-              ],
-              solution: `# 1. CLAUDE.md
-## Stack
-TypeScript (strict), Node.js 20, Express 4, Jest
-
-## Conventions
-- Async/await everywhere — no callbacks
-- Zod for all external input validation
-- Test files: \`src/__tests__/name.test.ts\`
-- Errors: always throw \`AppError\` from \`src/lib/errors.ts\`
-
-## Do NOT
-- Use \`any\` type
-- Call external APIs from test files (mock them)
-- Mutate function parameters
-
----
-
-# 2. .claude/commands/write-test.md
----
-description: Write Jest tests for a file or function
----
-
-# /write-test
-
-Write Jest unit tests for $ARGUMENTS.
-
-- Use \`describe\` + \`it\` blocks
-- Mock external dependencies with \`jest.mock\`
-- Cover happy path, error cases, and edge cases
-- Co-locate test file: same directory as source
-- Do NOT modify the source file
-
----
-
-# 3. .claude/settings.json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd $CLAUDE_PROJECT_ROOT && npx tsc --noEmit 2>&1 | head -20 || true"
-          }
-        ]
-      }
-    ]
-  }
-}`,
-              solutionLanguage: 'markdown',
-            },
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'success',
-            content: 'A well-configured `.claude/` directory is a force multiplier. It turns a general-purpose AI into a specialist that knows your codebase, enforces your standards, and works exactly how your team works.',
-          },
-        ],
-      },
-
-      // ── Lesson 6-5: Ready-to-Copy Skills Library ─────────────────────────
-      {
-        id: 'lesson-6-5',
-        title: 'Ready-to-Copy Skills Library',
-        description: 'Production-quality skill files you can drop into any project today — security review, PR review, commit messages, debugging, and more.',
-        estimatedMinutes: 12,
-        blocks: [
-          {
-            type: 'text',
-            content: 'The fastest way to learn skill authoring is to read well-crafted skills and adapt them. Every skill below is production-ready — copy the file content to `.claude/commands/<filename>` in your project and it becomes a `/command` immediately.',
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'info',
-            content: '**How to install any skill:** Create `.claude/commands/` in your project root, paste the skill content into a `.md` file, and commit it. The whole team gets the command automatically.',
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Security review — the must-have skill',
-          },
-          {
-            type: 'text',
-            content: 'This is the most universally useful skill you can add to any project. Run `/security-review` before every PR merge to catch OWASP Top 10 issues, exposed secrets, and auth gaps.',
-          },
-          {
-            type: 'code',
-            language: 'markdown',
-            content: `---
-description: Audit the current diff or file for security vulnerabilities
----
-
-# /security-review
-
-You are a senior application security engineer. Audit the code for security vulnerabilities.
-
-## Step 1 — Gather context
-Run \`git diff HEAD\` to see recent changes. If $ARGUMENTS is provided, read that specific file instead.
-
-## Step 2 — Check each category
-
-### Injection
-- SQL injection: raw string concatenation in queries
-- Command injection: unsanitised input passed to shell commands
-- NoSQL injection: unvalidated data in MongoDB/Redis queries
-
-### Authentication & authorisation
-- Missing auth middleware on API routes
-- Insecure direct object references (user can access other users' data)
-- JWT: algorithm confusion, missing expiry, secrets in code
-- Broken access control (role checks missing or bypassable)
-
-### Data exposure
-- API keys, tokens, passwords hardcoded or in committed files
-- Sensitive data in logs (emails, passwords, tokens)
-- PII returned in API responses that don't need it
-- Missing HTTPS enforcement
-
-### Input handling
-- Missing input validation or sanitisation
-- XSS: unescaped output in HTML/templates
-- Path traversal: user-controlled file paths
-- XXE or SSRF if the app fetches URLs
-
-### Dependencies
-- Check \`package.json\` / \`requirements.txt\` for packages with known CVEs
-- Flag any \`eval()\`, \`exec()\`, or dynamic \`require()\` calls
-
-## Step 3 — Report
-
-For every issue found, output:
-\`\`\`
-**[SEVERITY]** Short title
-File: path/to/file.ts  Line: N
-Problem: one sentence explaining the vulnerability
-Fix: concrete code change or mitigation
-\`\`\`
-
-Severity levels: CRITICAL | HIGH | MEDIUM | LOW | INFO
-
-If no issues are found, say: ✅ No security issues found in the reviewed code.
-
-Do NOT modify any files — only report.`,
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'More ready-to-use skills',
-          },
-          {
-            type: 'tabs',
-            content: '',
-            tabs: [
-              {
-                label: 'commit.md',
-                language: 'markdown',
-                content: `---
-description: Generate a conventional commit message from staged changes
----
-
-# /commit
-
-Generate a conventional commit message for the staged changes.
-
-## Step 1
-Run \`git diff --staged\` to understand what changed.
-If nothing is staged, run \`git diff HEAD\` instead.
-
-## Step 2 — Write the commit message
-
-Format: \`type(scope): short description\`
-
-**Types:** feat | fix | docs | style | refactor | test | chore | perf | ci
-
-**Rules:**
-- Scope is the module/component affected (optional but helpful)
-- Description: imperative mood, lowercase, ≤72 chars, no trailing period
-- Body (optional): explain the WHY, not the what — wrap at 72 chars
-- Footer: add \`BREAKING CHANGE: description\` if public API changes
-- Footer: add \`Closes #123\` if it fixes a GitHub issue
-
-## Step 3
-Present the commit message in a code block, then ask:
-"Run this commit? (yes to confirm, or tell me what to change)"
-
-If confirmed, run: \`git commit -m "<message>"\``,
-              },
-              {
-                label: 'pr-review.md',
-                language: 'markdown',
-                content: `---
-description: Thorough code review of the current PR diff
----
-
-# /pr-review
-
-You are a senior engineer doing a thorough pull request review.
-
-## Step 1 — Understand the PR
-Run \`git diff main...HEAD\` (or \`git diff origin/main...HEAD\`) to see all changes.
-Read any linked issue number from the branch name or recent commits.
-
-## Step 2 — Review across these dimensions
-
-**Correctness**
-- Does the logic achieve what it claims?
-- Are edge cases handled (null, empty, overflow, concurrent access)?
-- Are errors handled — or silently swallowed?
-
-**Security** (quick check — use /security-review for a deep audit)
-- No hardcoded secrets
-- Input validated before use
-- Auth enforced on new routes
-
-**Performance**
-- N+1 queries in loops
-- Missing indexes for new query patterns
-- Unnecessary re-renders or re-computations
-
-**Readability & maintainability**
-- Are names clear without needing comments?
-- Is complexity justified?
-- Are tests added for new behaviour?
-
-**Breaking changes**
-- Public API, schema, or contract changes that need a migration
-
-## Step 3 — Output format
-
-Start with a one-paragraph summary of what the PR does.
-
-Then list findings grouped by file:
-
-\`\`\`
-📄 path/to/file.ts
-  [BLOCKING]   Description of must-fix issue
-  [SUGGESTION] Description of improvement idea
-  [NITPICK]    Minor style or naming note
-\`\`\`
-
-End with: **Overall:** Approve | Request changes | Needs discussion`,
-              },
-              {
-                label: 'debug.md',
-                language: 'markdown',
-                content: `---
-description: Systematically debug a bug using the scientific method
----
-
-# /debug
-
-Debug the issue described in $ARGUMENTS using the scientific method.
-
-## Step 1 — Understand the symptom
-- Restate the bug in one sentence: what happens vs what should happen
-- Ask clarifying questions if the description is vague (then wait for answers)
-
-## Step 2 — Gather evidence
-Run relevant commands to collect data:
-- Check recent git log: \`git log --oneline -10\`
-- Read the error message and stack trace carefully
-- Search for the error string in the codebase: \`grep -r "error text" src/\`
-- Read the files involved in the stack trace
-
-## Step 3 — Form hypotheses
-List 2–4 possible root causes ranked by likelihood. For each:
-- State the hypothesis
-- State what evidence would confirm or deny it
-
-## Step 4 — Test hypotheses
-Test the most likely hypothesis first. Add a targeted log, read a value,
-or trace the execution path. Do NOT change production logic yet.
-
-## Step 5 — Fix
-Once the root cause is confirmed:
-- Make the minimal change that fixes the issue
-- Explain why the fix works
-- Note any related areas that might have the same bug
-- Suggest a test to prevent regression`,
-              },
-              {
-                label: 'write-tests.md',
-                language: 'markdown',
-                content: `---
-description: Write comprehensive tests for a file or function
----
-
-# /write-tests
-
-Write comprehensive tests for $ARGUMENTS.
-
-## Step 1 — Read the code
-Read the target file. Identify:
-- All exported functions/classes/components
-- Their inputs, outputs, and side effects
-- Dependencies to mock
-
-## Step 2 — Check existing test conventions
-Find 1–2 existing test files to understand:
-- Test framework in use (Jest, Vitest, Playwright, etc.)
-- File naming convention (\`*.test.ts\`, \`*.spec.ts\`, \`__tests__/\`)
-- How mocks and fixtures are structured
-
-## Step 3 — Write tests covering
-
-**Happy paths** — normal inputs produce expected outputs
-
-**Edge cases:**
-- Empty input, null, undefined, zero, empty array
-- Maximum/minimum values
-- Concurrent calls (if async)
-
-**Error paths:**
-- Invalid inputs throw the right error
-- Network/DB failures are handled gracefully
-- Partial failures don't corrupt state
-
-**Integration points** (if applicable):
-- Mock external dependencies (API calls, DB, timers)
-- Verify the component renders correctly for key states
-
-## Step 4
-Place the test file next to the source file following the project convention.
-Print a summary: N tests written covering X functions.`,
-              },
-              {
-                label: 'refactor.md',
-                language: 'markdown',
-                content: `---
-description: Refactor a file or function for clarity and maintainability
----
-
-# /refactor
-
-Refactor $ARGUMENTS for improved readability and maintainability.
-Do NOT change observable behaviour.
-
-## Step 1 — Read and understand
-Read the target code fully before touching anything.
-Identify the code smells present:
-- Long functions (>40 lines)
-- Deep nesting (>3 levels)
-- Repeated logic (copy-paste code)
-- Unclear names (single letters, abbreviations, misleading names)
-- Magic numbers and strings (hardcoded values with no name)
-- God objects/functions doing too many things
-
-## Step 2 — Plan changes
-List the specific refactors you will make and why.
-Confirm the plan before proceeding with changes.
-
-## Step 3 — Refactor (in this order)
-1. Rename variables and functions for clarity
-2. Extract magic values into named constants
-3. Extract repeated logic into helper functions
-4. Break large functions into smaller, single-purpose functions
-5. Flatten deep nesting using early returns
-6. Remove dead code
-
-## Rules
-- One refactor type at a time — don't mix rename + extract + restructure
-- Keep each function under 40 lines where possible
-- Every extracted function must have a name that reads like a sentence
-- Run existing tests after changes to verify behaviour is preserved
-- Do NOT add new features — refactor only`,
-              },
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Install all skills at once',
-          },
-          {
-            type: 'code',
-            language: 'bash',
-            content: `# Create the commands directory
-mkdir -p .claude/commands
-
-# Then create each skill file:
-# .claude/commands/security-review.md
-# .claude/commands/commit.md
-# .claude/commands/pr-review.md
-# .claude/commands/debug.md
-# .claude/commands/write-tests.md
-# .claude/commands/refactor.md
-
-# Commit so the whole team gets them
-git add .claude/commands/
-git commit -m "chore: add Claude Code skill library"`,
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'success',
-            content: '**Pro tip:** Start with `/security-review` and `/commit` — they give the highest immediate value with zero configuration. Add the rest as you find yourself repeating the same prompts.',
           },
         ],
       },
