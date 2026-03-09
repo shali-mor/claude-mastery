@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { MobileNav } from './MobileNav';
+import { useProgressSync } from '@/hooks/useProgressSync';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ interface AppShellProps {
 export function AppShell({ children, title }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  useProgressSync();
 
   return (
     <div className="flex h-screen bg-background">

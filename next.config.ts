@@ -3,13 +3,14 @@ import type { NextConfig } from "next";
 const ContentSecurityPolicy = [
   "default-src 'self'",
   // Next.js requires unsafe-inline + unsafe-eval for dev; locked down in prod
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self' data:",
-  // Only allow outbound API calls to Anthropic
-  "connect-src 'self' https://api.anthropic.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.com",
+  "style-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev",
+  "img-src 'self' data: blob: https://img.clerk.com https://images.clerk.dev https://*.clerk.accounts.dev",
+  "font-src 'self' data: https://*.clerk.accounts.dev",
+  // Allow Anthropic API calls + Clerk auth endpoints
+  "connect-src 'self' https://api.anthropic.com https://clerk.com https://*.clerk.accounts.dev https://api.clerk.com wss://*.clerk.accounts.dev",
   "worker-src blob:",
+  "frame-src https://accounts.google.com https://clerk.com https://*.clerk.accounts.dev",
   "frame-ancestors 'none'",
 ].join("; ");
 

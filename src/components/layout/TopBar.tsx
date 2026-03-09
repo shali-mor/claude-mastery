@@ -1,6 +1,7 @@
 'use client';
 
 import { Menu } from 'lucide-react';
+import { Show, UserButton, SignInButton, SignUpButton } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +29,17 @@ export function TopBar({ onMenuClick, title }: TopBarProps) {
       </div>
       <div className="flex items-center gap-2">
         <ThemeToggle />
+        <Show when="signed-out">
+          <SignInButton mode="modal">
+            <Button variant="ghost" size="sm">Sign in</Button>
+          </SignInButton>
+          <SignUpButton mode="modal">
+            <Button size="sm">Sign up</Button>
+          </SignUpButton>
+        </Show>
+        <Show when="signed-in">
+          <UserButton />
+        </Show>
       </div>
     </header>
   );

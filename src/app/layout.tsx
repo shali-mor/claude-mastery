@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ThemeInitializer } from '@/components/ui/ThemeInitializer';
 import './globals.css';
@@ -31,10 +32,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeInitializer />
-        <TooltipProvider delayDuration={300}>
-          {children}
-        </TooltipProvider>
+        <ClerkProvider>
+          <ThemeInitializer />
+          <TooltipProvider delayDuration={300}>
+            {children}
+          </TooltipProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

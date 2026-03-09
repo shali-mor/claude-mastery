@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useProgress } from '@/store';
 import { modules } from '@/data/modules';
@@ -66,9 +67,17 @@ export function HomePage() {
         </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Button asChild size="sm">
-            <Link href="/modules">Start Learning</Link>
-          </Button>
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <Button variant="ghost" size="sm">Sign in</Button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <Button size="sm">Sign up</Button>
+            </SignUpButton>
+          </Show>
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
         </div>
       </header>
 
