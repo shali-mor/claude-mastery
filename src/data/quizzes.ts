@@ -89,11 +89,11 @@ export const quizzes: Quiz[] = [
         questionText: 'Where are Claude Code skills defined?',
         options: [
           { id: 'a', text: 'In CLAUDE.md', isCorrect: false, explanation: 'CLAUDE.md contains project context and instructions, not skill definitions.' },
-          { id: 'b', text: 'In ~/.claude/skills/ directory', isCorrect: true, explanation: 'Correct! Skills are markdown files in ~/.claude/skills/ (or project-level .claude/skills/). The filename becomes the skill name.' },
+          { id: 'b', text: 'In ~/.claude/commands/ directory', isCorrect: true, explanation: 'Correct! Skills are markdown files in ~/.claude/commands/ (global) or .claude/commands/ (project-level). The filename becomes the slash command name.' },
           { id: 'c', text: 'In package.json scripts', isCorrect: false, explanation: 'package.json scripts are npm scripts, not Claude Code skills.' },
           { id: 'd', text: 'In .env files', isCorrect: false, explanation: '.env files store environment variables, not skill definitions.' },
         ],
-        globalExplanation: 'Skills are markdown files in ~/.claude/skills/ (global) or .claude/skills/ (project). A skill named "commit.md" becomes invocable as /commit.',
+        globalExplanation: 'Skills are markdown files in ~/.claude/commands/ (global — all projects) or .claude/commands/ (project — committed to git). A skill named "commit.md" becomes invocable as /commit.',
       },
       {
         id: 'q2-2',
