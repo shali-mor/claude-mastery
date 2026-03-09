@@ -1,10 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Terminal, DollarSign, Code2, ArrowRight,
-  Zap, Award, ChevronRight, CheckCircle2, Layers, Brain, Cpu,
+  Zap, Award, ChevronRight, CheckCircle2, Layers, Brain, Cpu, Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { Sidebar } from '@/components/layout/Sidebar';
 import { useProgress } from '@/store';
 import { modules } from '@/data/modules';
 
@@ -57,14 +59,19 @@ const highlights = [
   { icon: CheckCircle2, text: 'Progress synced across all your devices' },
 ];
 
-function NavBar() {
+function NavBar({ onMenuClick }: { onMenuClick: () => void }) {
   return (
-    <header className="flex items-center justify-between px-6 py-4 border-b border-border max-w-6xl mx-auto">
-      <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-          <Code2 className="h-4 w-4 text-primary-foreground" />
-        </div>
-        <span className="font-semibold">Claude Mastery</span>
+    <header className="flex items-center justify-between px-4 py-4 border-b border-border">
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={onMenuClick} aria-label="Open menu">
+          <Menu className="h-5 w-5" />
+        </Button>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
+            <Code2 className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <span className="font-semibold">Claude Mastery</span>
+        </Link>
       </div>
       <div className="flex items-center gap-3">
         <ThemeToggle />
@@ -354,9 +361,39 @@ function Dashboard() {
 }
 
 export function HomePage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
-      <NavBar />
+      {/* Slide-in sidebar overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            key="home-sidebar"
+            className="fixed inset-0 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.div
+              className="absolute left-0 top-0 bottom-0 w-72"
+              initial={{ x: -288 }}
+              animate={{ x: 0 }}
+              exit={{ x: -288 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <Sidebar mobile onClose={() => setSidebarOpen(false)} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <NavBar onMenuClick={() => setSidebarOpen(o => !o)} />
       <Show when="signed-out">
         <LandingPage />
       </Show>
