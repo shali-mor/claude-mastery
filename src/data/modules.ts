@@ -1563,8 +1563,14 @@ for await (const item of await client.messages.batches.results(batch.id)) {
             content: '/pick-model — the recommendation skill',
           },
           {
-            type: 'text',
-            content: 'Save this to `.claude/commands/pick-model.md`. Run `/pick-model` before starting a task and Claude will read your description, score its complexity, and output the optimal model plus the command to switch.',
+            type: 'steps',
+            content: 'Install the skill (one-time setup)',
+            steps: [
+              'In your project root, create the commands directory: mkdir -p .claude/commands',
+              'Create the file: .claude/commands/pick-model.md',
+              'Paste the content below into that file and save',
+              'Restart Claude Code — run /pick-model before starting any task',
+            ],
           },
           {
             type: 'code',
@@ -1614,8 +1620,18 @@ If $ARGUMENTS is empty, ask: "Describe the task you're about to start."`,
             content: 'UserPromptSubmit hook — real-time model guard',
           },
           {
+            type: 'steps',
+            content: 'Install the hook (one-time setup)',
+            steps: [
+              'Create the hooks directory: mkdir -p .claude/hooks',
+              'Create the file: .claude/hooks/model-guard.sh and paste the script below',
+              'Make it executable: chmod +x .claude/hooks/model-guard.sh',
+              'Create or open .claude/settings.json and add the hook config shown after the script',
+            ],
+          },
+          {
             type: 'text',
-            content: 'This hook fires on every prompt. It reads the prompt text, detects simple tasks, and injects a cost warning into Claude\'s context if you\'re on Opus for something Haiku could handle.',
+            content: 'This hook fires on every prompt. It reads the prompt text, detects simple tasks, and injects a cost warning into Claude\'s context if you\'re on Opus or Sonnet for something Haiku could handle.',
           },
           {
             type: 'code',
