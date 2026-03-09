@@ -9,6 +9,7 @@ import type { Command } from '@/types/command';
 interface CommandCardProps {
   command: Command;
   categoryColor: string;
+  showCategory?: boolean;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -20,7 +21,7 @@ const categoryLabels: Record<string, string> = {
   'keyboard-shortcut': 'Shortcut',
 };
 
-export function CommandCard({ command, categoryColor }: CommandCardProps) {
+export function CommandCard({ command, categoryColor, showCategory = false }: CommandCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -34,9 +35,11 @@ export function CommandCard({ command, categoryColor }: CommandCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <code className="text-sm font-mono font-semibold text-foreground">{command.name}</code>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${categoryColor}`}>
-              {categoryLabels[command.category] ?? command.category}
-            </span>
+            {showCategory && (
+              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${categoryColor}`}>
+                {categoryLabels[command.category] ?? command.category}
+              </span>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">{command.summary}</p>
         </div>
