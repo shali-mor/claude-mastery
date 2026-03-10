@@ -250,6 +250,45 @@ export function CommandBrowser() {
             )}
           </div>
 
+          {/* GSD community notice */}
+          {!isSearching && activeCategory === 'gsd-plugin' && (
+            <div className="mb-4 rounded-lg border border-green-500/30 bg-green-500/5 px-4 py-4 text-sm space-y-3">
+              <div className="flex items-start gap-3">
+                <Zap className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-foreground">
+                    GSD is a community-built open-source plugin — not a built-in Claude Code feature
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    You need to install it separately. With{' '}
+                    <span className="font-medium text-foreground">27k+ stars</span> and{' '}
+                    <span className="font-medium text-foreground">2,300+ forks</span>, it&apos;s one of the most popular Claude Code productivity tools in the community.
+                  </p>
+                </div>
+              </div>
+              <div className="pl-7 space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Why use it</p>
+                <ul className="text-muted-foreground space-y-1 text-sm">
+                  <li>• <span className="text-foreground font-medium">Phase-based planning</span> — breaks any project into structured phases with PLAN.md files Claude can execute reliably</li>
+                  <li>• <span className="text-foreground font-medium">Parallel sub-agent execution</span> — independent tasks run simultaneously, dramatically cutting build time</li>
+                  <li>• <span className="text-foreground font-medium">Context persistence</span> — state survives context resets; pick up exactly where you left off across sessions</li>
+                  <li>• <span className="text-foreground font-medium">Built-in verification</span> — /gsd:verify-work checks acceptance criteria before you ship</li>
+                </ul>
+              </div>
+              <div className="pl-7">
+                <a
+                  href="https://github.com/gsd-build/get-shit-done"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-medium text-green-600 underline underline-offset-2 hover:text-green-500 dark:text-green-400"
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  github.com/gsd-build/get-shit-done
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Command list */}
           <AnimatePresence mode="wait">
             {displayedCommands.length === 0 ? (
