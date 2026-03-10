@@ -64,66 +64,75 @@ const stack = [
 // ─── Instructor avatar (inline, no external dep) ─────────────────────────────
 function InstructorAvatar() {
   return (
-    <svg width="64" height="64" viewBox="0 0 60 66" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      {/* ── Shirt: black V-neck, broad shoulders ── */}
-      <path d="M0 66 L0 51 Q4 41 17 39 L24 37 L30 50 L36 37 L43 39 Q56 41 60 51 L60 66 Z" fill="#111" />
-      <path d="M24 37 L30 48 L36 37" stroke="#222" strokeWidth="1" fill="none" />
+    <svg width="64" height="64" viewBox="0 0 60 68" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      {/* ── Shirt: black V-neck ── */}
+      <path d="M0 68 L0 53 Q4 43 16 41 L22 39 L30 52 L38 39 L44 41 Q56 43 60 53 L60 68 Z" fill="#111" />
+      <path d="M22 39 L30 51 L38 39" stroke="#1d1d1d" strokeWidth="0.9" fill="none" />
       {/* ── Neck ── */}
-      <path d="M22 35 L22 42 Q30 46 38 42 L38 35 Q30 39 22 35 Z" fill="#C2986C" />
-      {/* ── Face: olive-tan, oval ── */}
-      <ellipse cx="30" cy="25" rx="21" ry="22" fill="#C8A47A" />
-      {/* ── Hair: main dark mass, swept-back style ── */}
-      {/* Outer hair silhouette — higher on top for volume */}
-      <path d="M9 22 Q8 4 17 0 Q22 -2 30 -1 Q38 -2 43 0 Q52 4 51 22 Q47 9 40 6 Q35 4 30 4.5 Q25 4 20 6 Q13 9 9 22 Z" fill="#1C1208" />
-      {/* Side hair left */}
-      <path d="M9 22 Q5 33 7 41 Q12 27 17 23" fill="#1C1208" />
-      {/* Side hair right */}
-      <path d="M51 22 Q55 33 53 41 Q48 27 43 23" fill="#1C1208" />
-      {/* Hair texture / swept-back flow lines (dark brown) */}
-      <path d="M11 18 Q17 11 26 9" stroke="#302010" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.7" />
-      <path d="M13 14 Q19 9 27 7.5" stroke="#302010" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5" />
-      {/* Salt-and-pepper gray streaks — prominent throughout */}
-      <path d="M10 20 Q14 13 20 10" stroke="#A09080" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.85" />
-      <path d="M12 16 Q16 11 22 9" stroke="#B0A090" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.7" />
-      <path d="M18 8 Q24 6 30 6" stroke="#908070" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.65" />
-      <path d="M34 6 Q40 7 46 11" stroke="#A09080" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.85" />
-      <path d="M37 7 Q43 9 48 14" stroke="#B0A090" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.7" />
+      <path d="M22 36 L22 43 Q30 47 38 43 L38 36 Q30 41 22 36 Z" fill="#C09870" />
+      {/* ── Face: olive skin, long oval ── */}
+      <ellipse cx="30" cy="28" rx="17" ry="21" fill="#C8A47C" />
+      {/* ── Hair: full, dark, swept back from forehead ── */}
+      {/* Main hair mass — high crown, volume on top */}
+      <path d="M13 25 Q12 6 19 1 Q23 -1 30 0 Q37 -1 41 1 Q48 6 47 25 Q43 11 37 8 Q33 5.5 30 6 Q27 5.5 23 8 Q17 11 13 25 Z" fill="#1C1008" />
+      {/* Left side hair flowing down */}
+      <path d="M13 25 Q10 34 12 40 Q16 28 20 25" fill="#1C1008" />
+      {/* Right side hair flowing down */}
+      <path d="M47 25 Q50 34 48 40 Q44 28 40 25" fill="#1C1008" />
+      {/* Hair wave lines on top — swept-back texture */}
+      <path d="M14 21 Q19 13 27 10.5" stroke="#2E1A0A" strokeWidth="2.2" fill="none" strokeLinecap="round" opacity="0.75" />
+      <path d="M15 17 Q20 11 28 9" stroke="#2E1A0A" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.55" />
+      <path d="M18 13 Q23 9 30 8" stroke="#2E1A0A" strokeWidth="1.3" fill="none" strokeLinecap="round" opacity="0.4" />
+      <path d="M33 8.5 Q39 10 44 15" stroke="#2E1A0A" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.7" />
+      <path d="M32 10 Q38 11.5 43 17" stroke="#2E1A0A" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.5" />
+      {/* Subtle dark-gray variation (a few silver hairs, not salt-and-pepper) */}
+      <path d="M16 18 Q20 13 26 11" stroke="#7A6A58" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.55" />
+      <path d="M35 10 Q40 12 44 17" stroke="#7A6A58" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.55" />
       {/* ── Ears ── */}
-      <ellipse cx="9.5" cy="27" rx="3.2" ry="4.5" fill="#BF9265" />
-      <ellipse cx="9.5" cy="27" rx="1.5" ry="2.4" fill="#A87848" />
-      <ellipse cx="50.5" cy="27" rx="3.2" ry="4.5" fill="#BF9265" />
-      <ellipse cx="50.5" cy="27" rx="1.5" ry="2.4" fill="#A87848" />
-      {/* ── Eyebrows: dark, defined, slightly arched ── */}
-      <path d="M12 19 Q17 16 23 17.5" stroke="#140A03" strokeWidth="2.8" strokeLinecap="round" fill="none" />
-      <path d="M37 17.5 Q43 16 48 19" stroke="#140A03" strokeWidth="2.8" strokeLinecap="round" fill="none" />
-      {/* ── Eyes: warm brown ── */}
-      <ellipse cx="18.5" cy="24.5" rx="5.2" ry="4" fill="#EDE8DE" />
-      <circle cx="19" cy="25" r="3" fill="#5C3012" />
-      <circle cx="19" cy="25" r="1.7" fill="#0A0300" />
-      <circle cx="17.7" cy="23.7" r="1" fill="white" />
-      <path d="M13.3 24 Q18.5 20 23.7 24" stroke="#180805" strokeWidth="1.3" fill="none" strokeLinecap="round" />
-      <ellipse cx="41.5" cy="24.5" rx="5.2" ry="4" fill="#EDE8DE" />
-      <circle cx="42" cy="25" r="3" fill="#5C3012" />
-      <circle cx="42" cy="25" r="1.7" fill="#0A0300" />
-      <circle cx="40.7" cy="23.7" r="1" fill="white" />
-      <path d="M36.3 24 Q41.5 20 46.7 24" stroke="#180805" strokeWidth="1.3" fill="none" strokeLinecap="round" />
-      {/* ── Nose: prominent, wide tip, visible nostrils ── */}
-      {/* Bridge */}
-      <path d="M28 28 Q26 33 25.5 37" stroke="#9A7050" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-      <path d="M32 28 Q34 33 34.5 37" stroke="#9A7050" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-      {/* Tip / bottom of nose */}
-      <path d="M22 38.5 Q26 42 30 42 Q34 42 38 38.5" stroke="#9A7050" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      {/* Nostrils */}
-      <path d="M25.5 37 Q22 39 22.5 42 Q25 43.5 28.5 42" stroke="#825A35" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-      <path d="M34.5 37 Q38 39 37.5 42 Q35 43.5 31.5 42" stroke="#825A35" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <ellipse cx="13" cy="29" rx="3.2" ry="4.5" fill="#BE9060" />
+      <ellipse cx="13" cy="29" rx="1.4" ry="2.4" fill="#A87848" />
+      <ellipse cx="47" cy="29" rx="3.2" ry="4.5" fill="#BE9060" />
+      <ellipse cx="47" cy="29" rx="1.4" ry="2.4" fill="#A87848" />
+      {/* ── Eyebrows: dark brown, strong, slightly arched ── */}
+      <path d="M14 19.5 Q19 17 25 18.5" stroke="#150A03" strokeWidth="2.7" strokeLinecap="round" fill="none" />
+      <path d="M35 18.5 Q41 17 46 19.5" stroke="#150A03" strokeWidth="2.7" strokeLinecap="round" fill="none" />
+      {/* ── Eyes: warm hazel-brown, gentle squint ── */}
+      {/* Left eye */}
+      <ellipse cx="19.5" cy="25" rx="5.2" ry="3.6" fill="#ECE7DA" />
+      <circle cx="20" cy="25.3" r="2.8" fill="#5A3010" />
+      <circle cx="20" cy="25.3" r="1.5" fill="#0A0200" />
+      <circle cx="18.8" cy="24.1" r="0.85" fill="white" />
+      <path d="M14.3 24.5 Q19.5 20.5 24.7 24.5" stroke="#180805" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      <path d="M15 26.5 Q19.5 29 24 26.5" stroke="#9A7050" strokeWidth="0.7" fill="none" opacity="0.35" />
+      {/* Right eye */}
+      <ellipse cx="40.5" cy="25" rx="5.2" ry="3.6" fill="#ECE7DA" />
+      <circle cx="41" cy="25.3" r="2.8" fill="#5A3010" />
+      <circle cx="41" cy="25.3" r="1.5" fill="#0A0200" />
+      <circle cx="39.8" cy="24.1" r="0.85" fill="white" />
+      <path d="M35.3 24.5 Q40.5 20.5 45.7 24.5" stroke="#180805" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      <path d="M36 26.5 Q40.5 29 45 26.5" stroke="#9A7050" strokeWidth="0.7" fill="none" opacity="0.35" />
+      {/* ── Nose: THE key feature — long, prominent, wide rounded tip ── */}
+      {/* Bridge sides starting just below brow */}
+      <path d="M27 29 Q25 35 24.5 39" stroke="#9A7050" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M33 29 Q35 35 35.5 39" stroke="#9A7050" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      {/* Nose tip — wide, rounded */}
+      <path d="M21.5 40 Q25.5 44 30 44 Q34.5 44 38.5 40" stroke="#8A6040" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+      {/* Left nostril */}
+      <path d="M24.5 39 Q21 41.5 21.5 44 Q24 45.5 27.5 44" stroke="#7A5030" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+      {/* Right nostril */}
+      <path d="M35.5 39 Q39 41.5 38.5 44 Q36 45.5 32.5 44" stroke="#7A5030" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+      {/* Bridge top — connects to brow */}
+      <path d="M27 29 Q28.5 27 30 27 Q31.5 27 33 29" stroke="#A07858" strokeWidth="0.9" fill="none" opacity="0.5" />
       {/* ── Nasolabial folds ── */}
-      <path d="M22 40 Q20 44 21 48" stroke="#9A7050" strokeWidth="1" fill="none" opacity="0.4" strokeLinecap="round" />
-      <path d="M38 40 Q40 44 39 48" stroke="#9A7050" strokeWidth="1" fill="none" opacity="0.4" strokeLinecap="round" />
-      {/* ── Mouth: gentle closed smile ── */}
-      <path d="M21.5 48.5 Q26 46.5 30 47 Q34 46.5 38.5 48.5" stroke="#7A4828" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-      <path d="M23 51 Q30 54 37 51" stroke="#7A4828" strokeWidth="1.3" strokeLinecap="round" fill="none" />
-      {/* ── Jaw depth ── */}
-      <path d="M10 33 Q9 45 18 52 Q23 56 30 56 Q37 56 42 52 Q51 45 50 33" fill="#9A7050" fillOpacity="0.06" />
+      <path d="M21.5 42.5 Q19.5 46.5 20.5 50" stroke="#9A7050" strokeWidth="1" fill="none" opacity="0.38" strokeLinecap="round" />
+      <path d="M38.5 42.5 Q40.5 46.5 39.5 50" stroke="#9A7050" strokeWidth="1" fill="none" opacity="0.38" strokeLinecap="round" />
+      {/* ── Mouth: warm closed smile ── */}
+      {/* Upper lip — slight M curve */}
+      <path d="M21.5 49.5 Q26 47.5 30 48 Q34 47.5 38.5 49.5" stroke="#7B4828" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      {/* Lower lip */}
+      <path d="M23 52 Q30 55 37 52" stroke="#7B4828" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+      {/* ── Jaw/chin shading ── */}
+      <path d="M14 35 Q13 46 20 52 Q24 56 30 56 Q36 56 40 52 Q47 46 46 35" fill="#9A7050" fillOpacity="0.055" />
     </svg>
   );
 }
