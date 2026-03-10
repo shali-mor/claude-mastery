@@ -218,9 +218,9 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
             href="https://github.com/shali-mor/claude-mastery-exercises"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-md px-3 py-2 bg-muted/30 hover:bg-muted/60"
+            className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors border-2 border-primary/40 hover:border-primary rounded-lg px-4 py-3 bg-primary/10 hover:bg-primary/20"
           >
-            <FolderGit2 className="h-3.5 w-3.5" />
+            <FolderGit2 className="h-4 w-4 text-primary" />
             Practice this lesson — hands-on exercises repo
           </a>
         </div>
