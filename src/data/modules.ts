@@ -3281,120 +3281,440 @@ if (request.params.name === 'list_users') {
       {
         id: 'lesson-3-1',
         title: 'GSD Methodology & Philosophy',
-        description: 'Understand the milestone → phase → task hierarchy that GSD uses to ship software.',
+        description: 'Understand what GSD is, why it exists, and the milestone → phase → task hierarchy behind it.',
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**GSD is a community-built open-source plugin — not a built-in Claude Code feature.** It was created by the community and has grown to 27k+ stars and 2,300+ forks. You install it separately from its repository: [github.com/gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done)',
+          },
+          {
+            type: 'heading',
+            content: 'The Problem GSD Solves',
+          },
+          {
             type: 'text',
-            content: 'GSD (Get Stuff Done) is a structured, AI-orchestrated software development methodology built as a Claude Code plugin. It uses a Milestone → Phase → Task hierarchy to break large goals into executable, verifiable units of work.',
+            content: 'Without structure, AI-assisted development breaks down on large projects. Claude forgets context mid-task, you lose track of what was done, parallel work conflicts, and there is no way to verify the result matches the original plan. GSD is the answer to all of these.',
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: 'With GSD',
+              code: `Every project starts with PROJECT.md —
+a single source of truth.
+
+Each phase gets a PLAN.md contract
+before any code is written.
+
+Tasks run in parallel via sub-agents.
+Progress survives context resets.
+/gsd:verify-work checks every
+acceptance criterion before you ship.`,
+            },
+            dont: {
+              label: 'Without GSD',
+              code: `You describe the task in chat.
+Claude starts coding immediately.
+
+Context fills up halfway through.
+You restart, losing all momentum.
+
+No one knows what was built vs
+what was supposed to be built.
+You ship and find gaps later.`,
+            },
+          },
+          {
+            type: 'heading',
+            content: 'The Three-Level Hierarchy',
           },
           {
             type: 'table',
-            content: 'GSD hierarchy',
-            headers: ['Level', 'Description', 'Example'],
+            headers: ['Level', 'Description', 'Real Example'],
             rows: [
-              ['Milestone', 'A major version or product goal', '"Build MVP" or "v2.0 Launch"'],
-              ['Phase', 'A logical chunk of work within the milestone', '"Phase 1: Database schema" or "Phase 3: Auth"'],
-              ['Task', 'A specific, actionable work item', '"Create users table migration"'],
+              ['**Milestone**', 'A major product goal — a version or launch', '"v1 MVP: URL shortener with analytics"'],
+              ['**Phase**', 'A logical chunk of work within the milestone', '"Phase 2: Auth — sign-up, login, JWT tokens"'],
+              ['**Task**', 'A specific, file-level work item', '"Create src/lib/auth.ts with signToken() and verifyToken()"'],
             ],
+          },
+          {
+            type: 'text',
+            content: 'Here is a real example. You are building a SaaS analytics dashboard. Your first milestone is "v1 MVP". GSD breaks it into phases:',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# Milestone: v1 MVP — Analytics Dashboard
+
+Phase 1: Database schema & migrations
+  - Create users, events, and dashboards tables
+  - Write seed data for local dev
+
+Phase 2: Authentication
+  - Email/password sign-up and login
+  - JWT tokens with refresh logic
+  - Protected route middleware
+
+Phase 3: Event ingestion API
+  - POST /api/events endpoint
+  - Rate limiting per API key
+  - Async queue for high-volume writes
+
+Phase 4: Dashboard UI
+  - Chart components (line, bar, funnel)
+  - Real-time updates via SSE
+  - Export to CSV`,
           },
           {
             type: 'callout',
             calloutVariant: 'tip',
-            content: 'GSD\'s power comes from parallelism: independent tasks within a phase run as simultaneous sub-agents. A 10-task phase might complete in the time it takes to do 2-3 tasks sequentially.',
+            content: '**Why phases beat one big prompt**: independent tasks within a phase run as parallel sub-agents. A 10-task phase completes in roughly the time of 2–3 sequential tasks. And if something goes wrong, you know exactly which phase failed.',
           },
         ],
       },
       {
         id: 'lesson-3-2',
         title: 'Starting & Planning with GSD',
-        description: 'Initialize projects, create milestones, and generate detailed phase plans.',
+        description: 'Initialize projects, create milestones, and generate detailed phase plans — with real examples.',
         estimatedMinutes: 12,
         blocks: [
           {
             type: 'text',
-            content: 'GSD\'s planning workflow guides you from a rough idea to a detailed, executable plan. Each command builds context for the next.',
+            content: 'GSD\'s planning commands guide you from a rough idea to a detailed, executable PLAN.md. Each command builds on the previous one. Here is the full startup sequence with a real example.',
           },
           {
-            type: 'steps',
-            content: 'Starting a new GSD project',
-            steps: [
-              'Run /gsd:new-project — GSD interviews you about the project, tech stack, and goals. Creates PROJECT.md.',
-              'Run /gsd:new-milestone — Define the first milestone (e.g., "MVP"). Creates milestone section in PROJECT.md.',
-              'Run /gsd:plan-phase — Creates a detailed PLAN.md for Phase 1 with implementation tasks and verification criteria.',
-              'Review the plan, request adjustments if needed, then approve.',
-            ],
+            type: 'heading',
+            content: 'The Startup Sequence',
           },
           {
             type: 'code',
             language: 'bash',
-            content: `# Typical GSD project startup
-/gsd:new-project     # Gather project context → PROJECT.md
-/gsd:new-milestone   # Define Milestone 1 (e.g., "v1 MVP")
+            content: `# Run these in order when starting any new GSD project:
+/gsd:new-project     # GSD interviews you → creates PROJECT.md
+/gsd:new-milestone   # Define Milestone 1 → adds it to PROJECT.md
 /gsd:plan-phase      # Create PLAN.md for Phase 1`,
+          },
+          {
+            type: 'heading',
+            content: 'What /gsd:new-project Does',
+          },
+          {
+            type: 'text',
+            content: 'GSD asks you a series of questions: project name, tech stack, key goals, team constraints, and success criteria. Then it writes all of that into PROJECT.md. This file becomes the single source of truth for every phase that follows.',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# What the interview looks like in your terminal:
+
+> /gsd:new-project
+
+GSD: What is the name of this project?
+You: Analytics Dashboard SaaS
+
+GSD: What is the core problem it solves?
+You: Developers need to track custom events without a $500/mo Mixpanel bill
+
+GSD: What is the tech stack?
+You: Next.js 14, Postgres, Drizzle ORM, Clerk auth, Vercel
+
+GSD: What does a successful v1 look like?
+You: Users can sign up, install a JS snippet, and see a live event feed
+
+✓ Writing PROJECT.md...
+Done. PROJECT.md created with your project context.`,
+          },
+          {
+            type: 'heading',
+            content: 'What PLAN.md Looks Like',
+          },
+          {
+            type: 'text',
+            content: 'After /gsd:plan-phase, GSD generates a PLAN.md file. This is the contract for the phase — it specifies every task, the exact files to touch, and the acceptance criteria /gsd:verify-work will check:',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# Phase 1: Database Schema & Migrations
+
+## Goal
+Set up the Postgres schema for users, API keys, and events.
+
+## Tasks
+
+### Wave 1 (parallel)
+- [ ] Create src/db/schema.ts — define users, api_keys, events tables using Drizzle
+- [ ] Create src/db/migrate.ts — migration runner script
+- [ ] Create drizzle.config.ts — Drizzle Kit config pointing to DATABASE_URL
+
+### Wave 2 (after Wave 1)
+- [ ] Write src/db/seed.ts — seed 2 test users and 50 sample events
+- [ ] Update package.json — add "db:migrate" and "db:seed" scripts
+
+## Acceptance Criteria
+- [ ] npm run db:migrate completes without errors
+- [ ] npm run db:seed inserts test data
+- [ ] All tables visible in database inspector`,
           },
           {
             type: 'callout',
             calloutVariant: 'info',
-            content: 'PLAN.md is the contract for the phase. It lists every task, the files to create/modify, and the acceptance criteria. /gsd:execute-phase reads this file to know what to build.',
+            content: 'PLAN.md is the contract. `/gsd:execute-phase` reads it to know what to build. `/gsd:verify-work` reads it to know what to check. You can edit PLAN.md before executing if the generated plan needs adjustments.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Not sure about the approach before planning? Run `/gsd:discuss-phase` first for an interactive Q&A that shapes the plan, or `/gsd:research-phase` to have GSD investigate the codebase before writing the plan.',
           },
         ],
       },
       {
         id: 'lesson-3-3',
         title: 'Executing & Verifying Work',
-        description: 'Run phases, validate results, and manage the milestone lifecycle.',
+        description: 'Run phases with parallel agents, validate results against the plan, and ship with confidence.',
         estimatedMinutes: 12,
         blocks: [
           {
             type: 'text',
-            content: 'After planning comes execution. GSD\'s execute, verify, and audit commands ensure quality at each step — from individual phases to full milestone completion.',
+            content: 'Once PLAN.md exists, two commands take you from plan to shipped: `/gsd:execute-phase` builds everything, `/gsd:verify-work` checks that everything was built correctly. Here is what each looks like in practice.',
+          },
+          {
+            type: 'heading',
+            content: 'Running /gsd:execute-phase',
+          },
+          {
+            type: 'text',
+            content: 'GSD reads the waves in PLAN.md and spawns one sub-agent per task. Wave 1 tasks all run in parallel; Wave 2 starts only after Wave 1 completes. This is what it looks like in your terminal:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `> /gsd:execute-phase
+
+Reading PLAN.md... Phase 1: Database Schema & Migrations
+Launching Wave 1 (3 tasks in parallel):
+
+  ⠋ [Agent 1] Create src/db/schema.ts
+  ⠋ [Agent 2] Create src/db/migrate.ts
+  ⠋ [Agent 3] Create drizzle.config.ts
+
+  ✓ [Agent 3] drizzle.config.ts — done (8s)
+  ✓ [Agent 2] migrate.ts — done (11s)
+  ✓ [Agent 1] schema.ts — done (14s)
+
+Wave 1 complete. Launching Wave 2 (2 tasks in parallel):
+
+  ⠋ [Agent 4] Create src/db/seed.ts
+  ⠋ [Agent 5] Update package.json scripts
+
+  ✓ [Agent 5] package.json — done (6s)
+  ✓ [Agent 4] seed.ts — done (12s)
+
+Phase 1 execution complete. All 5 tasks finished.
+Run /gsd:verify-work to validate acceptance criteria.`,
+          },
+          {
+            type: 'heading',
+            content: 'Running /gsd:verify-work',
+          },
+          {
+            type: 'text',
+            content: '/gsd:verify-work reads the acceptance criteria from PLAN.md and checks each one. It runs tests, reads files, and asks you to confirm things it cannot verify automatically:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `> /gsd:verify-work
+
+Verifying Phase 1: Database Schema & Migrations
+
+✓ src/db/schema.ts exists — users, api_keys, events tables defined
+✓ src/db/migrate.ts exists — migration runner found
+✓ drizzle.config.ts exists — DATABASE_URL referenced correctly
+✓ package.json — "db:migrate" and "db:seed" scripts present
+
+Running: npm run db:migrate
+  ✓ Migration completed — 3 tables created
+
+Running: npm run db:seed
+  ✓ Seed complete — 2 users, 50 events inserted
+
+All 3 acceptance criteria passed.
+Phase 1 is verified. Mark as complete? (y/n)`,
+          },
+          {
+            type: 'heading',
+            content: 'Tracking Progress Across Phases',
+          },
+          {
+            type: 'text',
+            content: 'As you complete phases, `/gsd:progress` shows exactly where you are in the milestone:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `> /gsd:progress
+
+Milestone: v1 MVP — Analytics Dashboard
+Progress: ████████░░░░░░░░  2 / 4 phases complete (50%)
+
+✓ Phase 1: Database schema & migrations   [verified]
+✓ Phase 2: Authentication                 [verified]
+→ Phase 3: Event ingestion API            [in progress — PLAN.md exists]
+  Phase 4: Dashboard UI                   [not started]
+
+Next action: /gsd:execute-phase  (Phase 3 plan is ready)`,
           },
           {
             type: 'table',
-            content: 'Execution & verification commands',
-            headers: ['Command', 'Purpose'],
+            headers: ['Command', 'When to run it'],
             rows: [
-              ['/gsd:execute-phase', 'Run all tasks in the current PLAN.md using parallel sub-agents'],
-              ['/gsd:verify-work', 'Interactive UAT — validate each requirement from the plan was built correctly'],
-              ['/gsd:audit-milestone', 'Check if the entire milestone is complete before archiving'],
-              ['/gsd:complete-milestone', 'Archive the milestone, prepare for the next one'],
-              ['/gsd:progress', 'Show current milestone status, completed phases, and next action'],
+              ['/gsd:execute-phase', 'After PLAN.md is reviewed and approved'],
+              ['/gsd:verify-work', 'After every execution — before marking phase complete'],
+              ['/gsd:progress', 'Any time — shows milestone status and routes you to the next step'],
+              ['/gsd:audit-milestone', 'Before archiving — confirms the full milestone matches original intent'],
+              ['/gsd:complete-milestone', 'After the audit passes — archives everything and prepares next milestone'],
             ],
           },
           {
-            type: 'tip',
-            content: 'Always run /gsd:verify-work after execution before marking a phase complete. GSD\'s verification is conversational — it will point out gaps and create follow-up todos.',
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Never skip /gsd:verify-work. Execution can succeed (no errors) while still missing an acceptance criterion. Verification is what catches the gap between "it ran" and "it works".',
           },
         ],
       },
       {
         id: 'lesson-3-4',
         title: 'Advanced GSD Workflows',
-        description: 'Debug complex issues, map large codebases, and handle urgent work mid-phase.',
+        description: 'Real scenarios: debugging across resets, mapping new codebases, urgent hotfixes, and context handoffs.',
         estimatedMinutes: 10,
         blocks: [
           {
             type: 'text',
-            content: 'GSD has specialized commands for common real-world scenarios: debugging across context resets, mapping unfamiliar codebases, and slipping urgent work between planned phases.',
+            content: 'Beyond the core plan → execute → verify loop, GSD has commands for the situations that derail most AI-assisted development. Here are four real scenarios and the command that handles each.',
+          },
+          {
+            type: 'heading',
+            content: 'Scenario 1: A Bug That Keeps Losing Context',
+          },
+          {
+            type: 'text',
+            content: 'You are debugging a race condition in your event queue. You spend 20 minutes exploring, get close — then the context window resets and you lose everything. With `/gsd:debug`:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `> /gsd:debug
+
+GSD: Describe the bug.
+You: Events are being double-processed when two workers consume
+     from the queue simultaneously. Happens ~5% of the time.
+
+GSD creates .planning/debug/session-001.md and begins tracking:
+  - Hypothesis 1: missing row-level lock in dequeue query
+  - Test: add SELECT ... FOR UPDATE SKIP LOCKED
+  - Result: ✓ reduced to 0.1% — not fully fixed
+
+[context resets after 2 hours of work]
+
+> /gsd:resume-work
+  Restoring debug session: race condition in event queue
+  Last hypothesis: SELECT FOR UPDATE reduced rate but did not eliminate
+  Next test: check if workers share a DB connection pool
+  Picking up exactly where we left off.`,
+          },
+          {
+            type: 'heading',
+            content: 'Scenario 2: Joining an Unfamiliar Codebase',
+          },
+          {
+            type: 'text',
+            content: 'You just inherited a 50,000-line monolith. Before GSD can plan anything, it needs to understand the architecture. `/gsd:map-codebase` spawns multiple agents in parallel to analyze different parts simultaneously:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `> /gsd:map-codebase
+
+Launching 4 parallel mapper agents:
+  ⠋ [Tech mapper]    Analyzing stack, dependencies, build system
+  ⠋ [Arch mapper]    Mapping module structure and entry points
+  ⠋ [Quality mapper] Checking test coverage, lint config, CI setup
+  ⠋ [Concerns mapper] Identifying tech debt and risky areas
+
+All done. Writing to .planning/codebase/:
+  ✓ tech.md      — Next.js 14, Drizzle, Clerk, 47 dependencies
+  ✓ arch.md      — 12 modules, entry: src/app/, shared: src/lib/
+  ✓ quality.md   — 34% test coverage, no E2E tests, lint passing
+  ✓ concerns.md  — auth.ts is 800 lines, 3 circular imports found
+
+GSD will use these documents to inform all future phase plans.`,
+          },
+          {
+            type: 'heading',
+            content: 'Scenario 3: Urgent Hotfix Mid-Milestone',
+          },
+          {
+            type: 'text',
+            content: 'You are on Phase 3 of 4 when a production security issue is reported. You cannot wait until Phase 4. `/gsd:insert-phase` slots the fix between phases without renumbering your roadmap:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `> /gsd:insert-phase
+
+GSD: Insert after which phase? (current: Phase 3 in progress)
+You: After Phase 3 — before Phase 4
+
+GSD: Describe the urgent phase.
+You: Fix SQL injection vulnerability in the search endpoint
+
+✓ Phase 3.1 created: Security hotfix — search endpoint
+  Your roadmap is now: Phase 3 → Phase 3.1 → Phase 4
+
+Run /gsd:plan-phase when Phase 3 is done to plan Phase 3.1.`,
+          },
+          {
+            type: 'heading',
+            content: 'Scenario 4: Handing Off Mid-Session',
+          },
+          {
+            type: 'text',
+            content: 'You need to stop working mid-phase — switching to another project, going to a meeting, or handing off to a teammate. `/gsd:pause-work` captures the exact state so nothing is lost:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `> /gsd:pause-work
+
+Creating .planning/PAUSE.md...
+
+✓ Phase 3 status: 3 of 5 tasks complete
+✓ In progress: rate limiting middleware (50% done)
+✓ Blocker: need to decide between token bucket vs sliding window
+✓ Next: finish rate limiter, then run /gsd:verify-work
+
+PAUSE.md written. Share this file or run /gsd:resume-work
+in a new session to pick up exactly here.`,
           },
           {
             type: 'table',
-            content: 'Advanced GSD commands',
-            headers: ['Command', 'When to use'],
+            headers: ['Command', 'The scenario it solves'],
             rows: [
-              ['/gsd:debug', 'Persistent debugging that survives context resets'],
-              ['/gsd:map-codebase', 'Parallel analysis of a large, unfamiliar codebase'],
-              ['/gsd:quick', 'Execute a small task with GSD guarantees but skip planning agents'],
-              ['/gsd:insert-phase', 'Insert an urgent phase (e.g., 72.1) between existing phases'],
-              ['/gsd:pause-work', 'Create a context handoff document when switching sessions'],
-              ['/gsd:resume-work', 'Restore full context when returning to paused work'],
+              ['/gsd:debug', 'Bug investigation that needs to survive context resets'],
+              ['/gsd:map-codebase', 'First time working on a large or inherited codebase'],
+              ['/gsd:insert-phase', 'Urgent work (hotfix, security issue) that needs to happen before the next planned phase'],
+              ['/gsd:quick', 'A small, clearly-defined task that doesn\'t need full planning overhead'],
+              ['/gsd:pause-work', 'Stopping mid-phase — preserves state for yourself or a teammate'],
+              ['/gsd:resume-work', 'Returning to paused work — restores full context instantly'],
             ],
           },
           {
             type: 'callout',
             calloutVariant: 'success',
-            content: '/gsd:debug is particularly valuable for hard bugs. It writes its state (hypotheses, tests run, findings) to .planning/debug/ — so you can pick up exactly where you left off after a context reset.',
+            content: 'GSD is most valuable on projects that span multiple sessions, involve multiple phases, or require coordination across many files. For a 15-minute single-file fix, `/gsd:quick` or plain Claude Code is the right tool.',
           },
         ],
       },
