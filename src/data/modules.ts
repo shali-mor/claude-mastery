@@ -1979,42 +1979,181 @@ One growing context window holds all unrelated detail`,
       },
       {
         id: 'lesson-7-2',
-        title: 'Spawning Agents with the Task Tool',
-        description: 'Learn the exact parameters for launching sub-agents and how to write effective delegation prompts.',
+        title: 'Invoking Sub-Agents: What You Actually Type',
+        description: 'See exactly what to type in the Claude Code terminal to spawn agents — from a one-liner to a full delegation prompt.',
         estimatedMinutes: 15,
         blocks: [
           {
             type: 'text',
-            content: 'When you ask Claude Code to use a sub-agent, it calls the **Task tool** internally. You never write the tool call yourself — your job is to write the **delegation prompt**: the detailed instructions the sub-agent will receive. This lesson covers what parameters the Task tool accepts and how to write prompts that actually work.',
+            content: 'Claude Code is a terminal chat. You type messages; Claude responds. To spawn a sub-agent, you just **describe what you want delegated in your message** — Claude reads it and calls the Task tool internally. You never write JSON, you never call an API. You write plain English (or structured markdown for complex tasks).',
           },
           {
             type: 'heading',
-            content: 'Task Tool Parameters',
-          },
-          {
-            type: 'table',
-            headers: ['Parameter', 'Required', 'What It Does'],
-            rows: [
-              ['`subagent_type`', 'Yes', 'Which specialized agent to use (e.g. `Explore`, `Bash`, `general-purpose`)'],
-              ['`prompt`', 'Yes', 'The full delegation prompt — everything the sub-agent needs to know'],
-              ['`description`', 'Yes', 'A short 3–5 word label shown in the Claude Code UI'],
-              ['`run_in_background`', 'No', '`true` = launch without waiting for the result; use for parallel work'],
-              ['`model`', 'No', 'Override the model: `"haiku"` (fast/cheap), `"sonnet"`, or `"opus"` (most capable)'],
-              ['`isolation`', 'No', '`"worktree"` = agent gets its own isolated git branch, safe to write files'],
-            ],
-          },
-          {
-            type: 'heading',
-            content: 'How You Actually Trigger a Sub-Agent',
-          },
-          {
-            type: 'text',
-            content: 'You do not write JSON or call any API. You write a regular chat message in Claude Code describing what you want delegated — Claude Code reads it and decides to call the Task tool. The prompt below is an example of what you would **type in your Claude Code chat window**.',
+            content: 'Step 1 — Open Claude Code in Your Project',
           },
           {
             type: 'callout',
             calloutVariant: 'info',
-            content: '**Where this code goes**: Type it directly in your Claude Code chat (the terminal). This is your message to Claude Code — it will read it and spawn the sub-agent automatically. You can also save it as a file (e.g. `.claude/prompts/auth-audit.md`) and paste the contents when needed.',
+            content: '**Where**: Run this in your terminal, inside your project directory. Every example in this lesson happens inside this session.',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `cd my-nextjs-app
+claude`,
+          },
+          {
+            type: 'heading',
+            content: 'The Simplest Invocation — One Line',
+          },
+          {
+            type: 'text',
+            content: 'You can trigger a sub-agent with a single casual sentence. Claude recognises it as a search/exploration task and spawns an Explore agent automatically:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# What you type at the Claude Code prompt:
+> find all useEffect hooks in src/components — return file paths and line numbers
+
+# What you see in the terminal while it runs:
+⠋ Find useEffect usages [Explore]
+  ⎿ Reading src/components/Header.tsx
+  ⎿ Reading src/components/Sidebar.tsx
+  ⎿ Reading src/components/Modal.tsx
+  ⎿ (20 more files...)
+
+# Result Claude returns to you:
+Found useEffect in 4 files:
+- src/components/Header.tsx — lines 14, 28
+- src/components/Sidebar.tsx — line 9
+- src/components/Modal.tsx — lines 22, 45, 67
+- src/components/DataTable.tsx — line 31`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'A one-liner works for simple, well-understood tasks. The agent type, model, and other parameters are chosen automatically. For tasks where those details matter, you can control them explicitly — see below.',
+          },
+          {
+            type: 'heading',
+            content: 'Controlling Parameters — What You Say in the Chat',
+          },
+          {
+            type: 'text',
+            content: 'Every Task tool parameter has a natural-language equivalent you can say in your message. You do not set parameters with code — you mention them in plain English:',
+          },
+          {
+            type: 'table',
+            headers: ['What you say in the chat', 'Parameter it sets', 'Effect'],
+            rows: [
+              ['"Use an **Explore** agent"', '`subagent_type: Explore`', 'Fast read-only codebase search'],
+              ['"Use a **Bash** agent"', '`subagent_type: Bash`', 'Runs terminal commands (git, npm, etc.)'],
+              ['"Use a **general-purpose** agent"', '`subagent_type: general-purpose`', 'Multi-step tasks, writing code'],
+              ['"Use a **Plan** agent"', '`subagent_type: Plan`', 'Architecture and implementation planning'],
+              ['"Use **Haiku**" / "use a fast cheap model"', '`model: haiku`', '~20× cheaper, great for simple reads'],
+              ['"Use **Opus**" / "use the best model"', '`model: opus`', 'Most capable — for complex reasoning'],
+              ['"Run **in the background**" / "don\'t wait for it"', '`run_in_background: true`', 'Non-blocking; lets you keep chatting'],
+              ['"Use a **worktree**" / "use **isolation**"', '`isolation: worktree`', 'Agent gets its own git branch'],
+            ],
+          },
+          {
+            type: 'heading',
+            content: 'Terminal Example — Explicit Agent Type + Model',
+          },
+          {
+            type: 'text',
+            content: 'Here you explicitly request a Haiku-powered Explore agent. Haiku is cheaper and faster; perfect for a simple grep-style search:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# What you type:
+> Use a Haiku Explore agent to list every .ts file in src/lib that exports
+  a function named "validate". Return file paths and line numbers only.
+
+# What you see:
+⠋ Find validate exports [Explore · haiku]
+  ⎿ Scanning src/lib/auth.ts
+  ⎿ Scanning src/lib/forms.ts
+  ⎿ Scanning src/lib/payments.ts
+  ⎿ (12 more files...)
+
+# Result:
+- src/lib/auth.ts — line 12
+- src/lib/forms.ts — lines 7, 89`,
+          },
+          {
+            type: 'heading',
+            content: 'Terminal Example — Background Agent (Non-Blocking)',
+          },
+          {
+            type: 'text',
+            content: 'Adding "in the background" makes the agent run without blocking — you can keep chatting while it works. Claude notifies you when it is done:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# What you type:
+> Spawn a background Explore agent to count lines of code in every file
+  under src/components. Return a table: File | Lines.
+
+# What you see immediately (agent starts, you are NOT blocked):
+● Agent started in background: Count component LOC [Explore]
+  You can keep working — I'll notify you when it finishes.
+
+# You keep chatting... then later:
+● Background agent finished: Count component LOC
+  ⎿ src/components/Header.tsx     — 142 lines
+  ⎿ src/components/Sidebar.tsx    — 89 lines
+  ⎿ src/components/Modal.tsx      — 234 lines
+  ⎿ src/components/DataTable.tsx  — 317 lines`,
+          },
+          {
+            type: 'heading',
+            content: 'Terminal Example — Isolated Agent (Worktree)',
+          },
+          {
+            type: 'text',
+            content: 'Adding "worktree" or "isolated" gives the agent its own git branch. It can write files safely; changes only land in your working tree if you choose to merge them:',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# What you type:
+> Use an isolated general-purpose agent (worktree) to refactor src/lib/auth.ts:
+  extract the JWT decode logic into a separate helper called decodeToken().
+  Do not touch any other file.
+
+# What you see:
+⠋ Refactor auth helpers [general-purpose · worktree]
+  ⎿ Creating isolated git branch: worktree/refactor-auth-helpers
+  ⎿ Reading src/lib/auth.ts
+  ⎿ Writing src/lib/auth.ts
+
+# Result:
+Done. I extracted decodeToken() into src/lib/auth.ts (lines 1–18).
+
+Changes are isolated in branch: worktree/refactor-auth-helpers
+Review the diff and merge manually when ready, or ask me to merge it.`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: 'Worktree isolation is important any time an agent will **write or delete files**. Without it, the agent modifies your working tree directly — there is no easy undo if it goes wrong.',
+          },
+          {
+            type: 'heading',
+            content: 'For Complex Tasks — The Structured Delegation Prompt',
+          },
+          {
+            type: 'text',
+            content: 'One-liners work for simple tasks. For anything with specific requirements, edge cases, or a precise output format, use a structured prompt. You still just **paste this into the Claude Code chat** — the formatting helps Claude understand exactly what you need:',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where this goes**: Paste it directly into the Claude Code chat prompt (after the `>` in your terminal). The markdown sections are just for your own clarity — Claude reads them as part of your message.',
           },
           {
             type: 'code',
@@ -2029,60 +2168,38 @@ This is a Next.js 14 app. Auth logic lives in:
 ## Goal
 Find all places where JWTs are verified. For each location check:
 1. Is the expiry (exp claim) validated?
-2. Is the signature algorithm pinned — i.e. NOT set to 'none'?
-3. Are errors caught and handled, not silently swallowed?
+2. Is the signature algorithm pinned (NOT set to 'none')?
+3. Are errors caught and handled — not silently swallowed?
 
 ## Output Format
-Return a markdown list. For each location include:
+Return a markdown list. For each location:
 - File path and line number
 - Verdict: PASS / FAIL / NEEDS_REVIEW
-- One-line explanation of the verdict
+- One-line explanation
 
 ## Constraints
 - Read files only — do NOT modify anything
 - If a file does not exist, note it and continue`,
           },
           {
+            type: 'code',
+            language: 'bash',
+            content: `# What you see while it runs:
+⠋ Audit auth module [Explore]
+  ⎿ Reading src/app/api/auth/login/route.ts
+  ⎿ Reading src/app/api/auth/refresh/route.ts
+  ⎿ Reading src/lib/auth.ts
+
+# Result:
+- src/lib/auth.ts:34 — FAIL — exp claim is never checked after decoding
+- src/lib/auth.ts:41 — FAIL — algorithm is set to { algorithms: ['none', 'HS256'] }
+- src/app/api/auth/login/route.ts:18 — PASS — errors caught in try/catch
+- src/app/api/auth/refresh/route.ts:12 — NEEDS_REVIEW — catch block logs but doesn't return 401`,
+          },
+          {
             type: 'callout',
             calloutVariant: 'tip',
-            content: 'Notice the four sections: **Context** (what the agent needs to know upfront), **Goal** (what to do), **Output Format** (how to return the result), and **Constraints** (what NOT to do). All four sections together are what separate a useful result from a vague one.',
-          },
-          {
-            type: 'heading',
-            content: 'A Second Example: Code-Writing Sub-Agent',
-          },
-          {
-            type: 'text',
-            content: 'Here is another example — this time delegating a code-writing task, not just a read-only audit. Again, **type this in your Claude Code chat**:',
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'info',
-            content: '**Where this code goes**: Paste into your Claude Code chat. The sub-agent will create or modify the file in your project directory.',
-          },
-          {
-            type: 'code',
-            language: 'markdown',
-            content: `Spawn a general-purpose sub-agent to write a rate-limiting middleware.
-
-## Context
-This is a Next.js 14 app with the App Router. Middleware lives in src/middleware.ts.
-The \`@upstash/ratelimit\` package is already installed (verify in package.json).
-
-## Goal
-Write a rate-limiting middleware that:
-- Limits each IP address to 100 requests per minute
-- Returns a 429 response with a Retry-After header when the limit is exceeded
-- Skips rate-limiting for paths starting with /_next or /static
-
-## Constraints
-- Only write to src/middleware.ts — do not touch any other file
-- Use the existing @upstash/ratelimit package, do not add new dependencies
-
-## Output Format
-After writing the file, return:
-- The exact file path you wrote to
-- A 3-bullet summary of what you implemented`,
+            content: 'A good structured prompt has four sections: **Context** (what the agent needs to know), **Goal** (what to do), **Output Format** (how to return the result), and **Constraints** (what NOT to do). You can combine this with explicit parameters: "Use a Haiku Explore agent..." at the top sets the model.',
           },
           {
             type: 'heading',
@@ -2090,43 +2207,49 @@ After writing the file, return:
           },
           {
             type: 'table',
-            headers: ['Type', 'Best For', 'Typical Use'],
+            headers: ['Type', 'Best For', 'Example request phrase'],
             rows: [
-              ['`Explore`', 'Reading and searching the codebase', 'Find all files using a deprecated API, list components using useEffect'],
-              ['`Bash`', 'Running terminal commands', 'Run git log, execute tests, check installed packages'],
-              ['`general-purpose`', 'Multi-step tasks, writing code, open-ended research', 'Write a new module, refactor a file, research a library\'s API'],
-              ['`Plan`', 'Architecture decisions, implementation strategy', 'Design a database schema, plan a refactor approach'],
-              ['GSD agents (e.g. `gsd-executor`)', 'Full GSD workflow phases', 'Execute a planned phase, verify completed work'],
+              ['`Explore`', 'Read-only codebase search, answering questions about code', '"Use an Explore agent to find all..."'],
+              ['`Bash`', 'Running terminal commands (git, npm, tests)', '"Use a Bash agent to run the test suite and report failures"'],
+              ['`general-purpose`', 'Multi-step tasks, writing/editing code, research', '"Use a general-purpose agent to implement..."'],
+              ['`Plan`', 'Architecture decisions, implementation strategy', '"Use a Plan agent to design a schema for..."'],
+              ['GSD agents (e.g. `gsd-executor`)', 'Full GSD workflow phases', '"Use the gsd-executor to run phase 3"'],
             ],
           },
           {
             type: 'exercise',
-            content: 'Write a delegation prompt to find useEffect usages',
+            content: 'Write a one-liner and a structured prompt for the same task',
             exercise: {
-              prompt: 'Write a delegation prompt (in markdown, as you would type it in your Claude Code chat) asking an Explore sub-agent to find all React components in src/components that use the useEffect hook. The result should include file paths and line numbers.',
+              prompt: 'You want to find all React components in src/components that use the useEffect hook, returning file paths and line numbers.\n\n1. Write the shortest one-liner you could type at the Claude Code prompt.\n2. Write the full structured delegation prompt (with Context, Goal, Output Format, Constraints sections) for the same task.',
               hints: [
-                'Include a Context section explaining what to search and where to look',
-                'Include a Goal section describing exactly what to find',
-                'Include an Output Format section specifying file path + line number',
-                'Include a Constraints section stating this is read-only (no file modifications)',
+                'The one-liner should fit in a single sentence — mention useEffect and where to search',
+                'The structured prompt should start with the agent type you want ("Use an Explore agent...")',
+                'In the Output Format section, specify: file path + line numbers',
+                'In Constraints: read-only, only src/components',
               ],
-              solution: `Use an Explore sub-agent to find useEffect usages.
+              solution: `# One-liner (type this at the > prompt):
+find all useEffect hooks in src/components — return file:line for each
+
+---
+
+# Structured prompt (paste into chat for precise control):
+Use an Explore agent to find every useEffect usage in src/components.
 
 ## Context
-This is a React + TypeScript project. React components live in src/components/.
-File extensions are .tsx for components and .ts for utility files.
+This is a React + TypeScript project.
+Components live in src/components/ with .tsx extensions.
 
 ## Goal
-Find every file in src/components that imports or calls the useEffect hook.
+Find every file that imports or calls the useEffect hook.
 
 ## Output Format
-Return a markdown list. For each file:
+Markdown list. For each file:
 - File path (relative to project root)
 - Line numbers where useEffect appears
 
 ## Constraints
 - Read files only — do not modify anything
-- Only look inside src/components — ignore all other directories`,
+- Only look inside src/components/`,
               solutionLanguage: 'markdown',
             },
           },
