@@ -13,6 +13,7 @@ import { GuideAvatar, type AvatarMood } from '@/components/avatar/GuideAvatar';
 import { getQuizByModuleId } from '@/data/quizzes';
 import { useProgress } from '@/store';
 import type { Module, Lesson } from '@/types/module';
+import { getExerciseUrl } from '@/data/exercisePaths';
 
 interface LessonPageProps {
   module: Module;
@@ -236,7 +237,7 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
 
         {/* Exercises repo link */}
         <a
-          href={`https://github.com/shali-mor/claude-mastery-exercises/tree/main/${module.id}/${lesson.id}`}
+          href={getExerciseUrl(lesson.id)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 w-full rounded-xl px-5 py-4 bg-primary/15 hover:bg-primary/25 border-2 border-primary/50 hover:border-primary transition-all group"
