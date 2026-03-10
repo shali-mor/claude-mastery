@@ -191,16 +191,6 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
 
       {/* Footer actions */}
       <div className="mt-10 pt-6 border-t border-border">
-        {/* Complete button */}
-        {!isCompleted && (
-          <div className="mb-6">
-            <Button onClick={markComplete} className="w-full sm:w-auto" size="lg">
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Mark as Complete
-            </Button>
-          </div>
-        )}
-
         {/* Inline quiz on the last lesson */}
         {isLastLesson && moduleQuiz && (
           <motion.div
@@ -212,45 +202,51 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
           </motion.div>
         )}
 
-        {/* Exercises repo link */}
-        <div className="mb-6">
-          <a
-            href="https://github.com/shali-mor/claude-mastery-exercises"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 w-full rounded-xl px-5 py-4 bg-primary/15 hover:bg-primary/25 border-2 border-primary/50 hover:border-primary transition-all group"
-          >
-            <FolderGit2 className="h-5 w-5 text-primary shrink-0" />
-            <div>
-              <div className="text-sm font-semibold text-primary">Practice this lesson</div>
-              <div className="text-xs text-muted-foreground">Hands-on exercises repo →</div>
-            </div>
-          </a>
-        </div>
-
-        {/* Prev / Next navigation */}
-        <nav className="flex justify-between gap-4" aria-label="Lesson navigation">
-          {prevLesson ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/modules/${module.id}/${prevLesson.id}`}>
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                {prevLesson.title}
-              </Link>
-            </Button>
-          ) : (
-            <div />
-          )}
-          {nextLesson ? (
-            <Button asChild size="sm">
-              <Link href={`/modules/${module.id}/${nextLesson.id}`}>
-                {nextLesson.title}
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
-          ) : (
-            <div />
-          )}
+        {/* Complete button + Prev / Next navigation in one row */}
+        <nav className="flex items-center justify-between gap-4 mb-6" aria-label="Lesson navigation">
+          <div className="flex items-center gap-3">
+            {prevLesson && (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/modules/${module.id}/${prevLesson.id}`}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  {prevLesson.title}
+                </Link>
+              </Button>
+            )}
+            {!isCompleted && (
+              <Button onClick={markComplete} size="lg">
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Mark as Complete
+              </Button>
+            )}
+          </div>
+          <div>
+            {nextLesson ? (
+              <Button asChild size="sm">
+                <Link href={`/modules/${module.id}/${nextLesson.id}`}>
+                  {nextLesson.title}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            ) : (
+              <div />
+            )}
+          </div>
         </nav>
+
+        {/* Exercises repo link */}
+        <a
+          href="https://github.com/shali-mor/claude-mastery-exercises"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 w-full rounded-xl px-5 py-4 bg-primary/15 hover:bg-primary/25 border-2 border-primary/50 hover:border-primary transition-all group"
+        >
+          <FolderGit2 className="h-5 w-5 text-primary shrink-0" />
+          <div>
+            <div className="text-sm font-semibold text-primary">Practice this lesson</div>
+            <div className="text-xs text-muted-foreground">Hands-on exercises repo →</div>
+          </div>
+        </a>
       </div>
 
       <GuideAvatar message={avatarMessage} mood={avatarMood} />
