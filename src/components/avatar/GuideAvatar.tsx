@@ -210,7 +210,8 @@ export function GuideAvatar({ message, mood = 'happy' }: GuideAvatarProps) {
         aria-label={open ? 'Hide guide' : 'Show guide hint'}
         className="pointer-events-auto w-[56px] h-[56px] rounded-full overflow-hidden border-2 border-border hover:border-primary/50 shadow-lg transition-colors bg-card"
       >
-        <PersonSVG mood={mood} size={56} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/shali.png" alt="Shali Mor" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </motion.button>
     </div>
   );
