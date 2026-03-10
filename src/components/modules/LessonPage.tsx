@@ -236,7 +236,7 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
 
         {/* Exercises repo link */}
         <a
-          href="https://github.com/shali-mor/claude-mastery-exercises"
+          href={`https://github.com/shali-mor/claude-mastery-exercises/tree/main/${module.id}/${lesson.id}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 w-full rounded-xl px-5 py-4 bg-primary/15 hover:bg-primary/25 border-2 border-primary/50 hover:border-primary transition-all group"
