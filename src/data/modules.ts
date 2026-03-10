@@ -1901,12 +1901,46 @@ const client = new Anthropic({
         blocks: [
           {
             type: 'text',
-            content: 'A **sub-agent** is a separate Claude instance you spawn from inside a conversation. It runs autonomously, has its own context window, and reports back a single result when it finishes. Think of it like hiring a contractor: you give them a well-defined job, they go away and do it, and you get a deliverable back.',
+            content: 'A **sub-agent** is a separate Claude instance you spawn from inside a conversation. It starts with a completely clean slate, runs autonomously, does one specific job, and returns a single final answer. Think of it like hiring a contractor: you hand them a clear brief, they go away and do the work, and you get a deliverable back.',
           },
           {
             type: 'callout',
             calloutVariant: 'info',
-            content: 'Sub-agents are launched with the **Task tool** — the tool Claude Code uses internally when you ask it to delegate work. When you build your own agents with the Claude API, you give your model the same Task-like capability by providing tools that can call Claude recursively.',
+            content: 'Sub-agents are launched with the **Task tool** — a built-in Claude Code tool that spins up a new Claude instance. When you ask Claude Code to "delegate this work" or "use a sub-agent," it calls the Task tool internally. You never write the tool call yourself — you write the **delegation prompt**, which is the set of instructions the sub-agent will receive.',
+          },
+          {
+            type: 'heading',
+            content: 'A Concrete Before / After',
+          },
+          {
+            type: 'text',
+            content: 'Suppose you want to audit a Next.js app for three separate issues: authentication weaknesses, missing input validation, and missing rate limiting. Here is the difference between the two approaches:',
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: 'With sub-agents — parallel, fast',
+              code: `You tell Claude Code once:
+"Audit this app. Spawn 3 parallel agents:
+ - Agent 1: check src/app/api/auth/ for JWT issues
+ - Agent 2: check all API routes for missing validation
+ - Agent 3: check middleware.ts for rate-limit gaps
+Merge all findings when they finish."
+
+Total wall-clock time ≈ time for the slowest agent
+Each agent has a small, focused context window`,
+            },
+            dont: {
+              label: 'Without sub-agents — sequential, slow',
+              code: `You ask Claude Code three separate times:
+1. "Check auth issues..."   → waits → result
+2. "Check validation..."    → waits → result
+3. "Check rate limiting..." → waits → result
+
+Total time = sum of all three waits
+One growing context window holds all unrelated detail`,
+            },
           },
           {
             type: 'heading',
@@ -1916,42 +1950,42 @@ const client = new Anthropic({
             type: 'table',
             headers: ['Problem', 'Sub-Agent Solution'],
             rows: [
-              ['Context window fills up on large codebases', 'Delegate file exploration to an agent; get a summary back'],
-              ['Sequential tasks waste time', 'Run 3–5 agents in parallel, merge results'],
-              ['One conversation can\'t hold all the detail', 'Each agent gets only the context it needs'],
-              ['You want specialization', 'One agent writes, another reviews, another tests'],
+              ['Context window fills up reading a large codebase', 'Delegate exploration to a sub-agent; get a concise summary back instead of all raw content'],
+              ['Three independent tasks done one-by-one wastes time', 'Run all three in parallel — total time equals the slowest, not the sum'],
+              ['One conversation accumulates unrelated noise', 'Each agent receives only the context it needs — nothing else clutters its window'],
+              ['You want specialized focus', 'One agent researches, one designs, one implements, one reviews — each prompt tuned for its single role'],
             ],
           },
           {
             type: 'heading',
-            content: 'The Sub-Agent Mental Model',
+            content: 'The Sub-Agent Lifecycle',
           },
           {
             type: 'steps',
-            content: 'The sub-agent lifecycle',
+            content: 'Four steps every sub-agent goes through',
             steps: [
-              'Parent decides to delegate — the orchestrator identifies a well-scoped sub-task that benefits from isolation or parallelism.',
-              'Sub-agent is spawned with context — the parent passes a detailed prompt. The agent starts fresh with only that prompt and no memory of the parent conversation.',
-              'Sub-agent works autonomously — it uses its tools (Read, Grep, Bash, Write, etc.) to complete the task. The parent waits or continues with other work if non-blocking.',
-              'Result is returned — the sub-agent sends a single final message. The parent integrates the result and continues.',
+              'Parent decides to delegate — Claude Code (in your main chat) identifies a well-scoped subtask: "explore all API files and list the public endpoints."',
+              'Sub-agent is spawned with a delegation prompt — the parent passes a detailed prompt. The sub-agent starts completely fresh: no memory of your chat history, no knowledge of other agents running in parallel, no awareness of anything except what is written in that prompt.',
+              'Sub-agent works autonomously — it uses its available tools (Read, Grep, Bash, Write, etc.) to complete the task. The parent either waits for the result (blocking) or continues with other work (background / non-blocking).',
+              'Sub-agent returns one result — when done, it sends a single final message to the parent. The parent receives it, inspects it, and integrates it into the main conversation.',
             ],
           },
           {
             type: 'callout',
             calloutVariant: 'warning',
-            content: '**Key constraint**: sub-agents do not share memory with the parent. Anything the parent knows must be explicitly passed in the prompt. This is a feature — it forces clear communication — but it means sloppy prompts produce sloppy results.',
+            content: '**The most important thing to understand**: every sub-agent starts with zero memory. It does not know your project name, your tech stack, what you discussed five minutes ago, or what other sub-agents found. Everything the agent needs must be written explicitly in the delegation prompt. Missing context = wrong or incomplete results.',
           },
         ],
       },
       {
         id: 'lesson-7-2',
         title: 'Spawning Agents with the Task Tool',
-        description: 'Learn the exact API for launching sub-agents and writing effective delegation prompts.',
+        description: 'Learn the exact parameters for launching sub-agents and how to write effective delegation prompts.',
         estimatedMinutes: 15,
         blocks: [
           {
             type: 'text',
-            content: 'In Claude Code, sub-agents are launched via the **Task tool**. Each call spawns one agent with a specific `subagent_type`, a `prompt`, and optional parameters like `run_in_background` and `model`.',
+            content: 'When you ask Claude Code to use a sub-agent, it calls the **Task tool** internally. You never write the tool call yourself — your job is to write the **delegation prompt**: the detailed instructions the sub-agent will receive. This lesson covers what parameters the Task tool accepts and how to write prompts that actually work.',
           },
           {
             type: 'heading',
@@ -1959,49 +1993,96 @@ const client = new Anthropic({
           },
           {
             type: 'table',
-            headers: ['Parameter', 'Required', 'Description'],
+            headers: ['Parameter', 'Required', 'What It Does'],
             rows: [
-              ['`subagent_type`', 'Yes', 'Which specialized agent to use (e.g., `Bash`, `Explore`, `general-purpose`)'],
-              ['`prompt`', 'Yes', 'The full task description — treat it like a mini CLAUDE.md'],
-              ['`description`', 'Yes', 'Short 3–5 word label shown in the UI'],
-              ['`run_in_background`', 'No', 'Set `true` to launch without blocking — useful for parallel work'],
-              ['`model`', 'No', 'Override the model: `"haiku"`, `"sonnet"`, or `"opus"`'],
-              ['`isolation`', 'No', 'Set `"worktree"` to give the agent its own git branch'],
+              ['`subagent_type`', 'Yes', 'Which specialized agent to use (e.g. `Explore`, `Bash`, `general-purpose`)'],
+              ['`prompt`', 'Yes', 'The full delegation prompt — everything the sub-agent needs to know'],
+              ['`description`', 'Yes', 'A short 3–5 word label shown in the Claude Code UI'],
+              ['`run_in_background`', 'No', '`true` = launch without waiting for the result; use for parallel work'],
+              ['`model`', 'No', 'Override the model: `"haiku"` (fast/cheap), `"sonnet"`, or `"opus"` (most capable)'],
+              ['`isolation`', 'No', '`"worktree"` = agent gets its own isolated git branch, safe to write files'],
             ],
           },
           {
             type: 'heading',
-            content: 'Anatomy of a Good Delegation Prompt',
+            content: 'How You Actually Trigger a Sub-Agent',
+          },
+          {
+            type: 'text',
+            content: 'You do not write JSON or call any API. You write a regular chat message in Claude Code describing what you want delegated — Claude Code reads it and decides to call the Task tool. The prompt below is an example of what you would **type in your Claude Code chat window**.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where this code goes**: Type it directly in your Claude Code chat (the terminal). This is your message to Claude Code — it will read it and spawn the sub-agent automatically. You can also save it as a file (e.g. `.claude/prompts/auth-audit.md`) and paste the contents when needed.',
           },
           {
             type: 'code',
             language: 'markdown',
-            content: `# Task: Analyze authentication module
+            content: `Use an Explore sub-agent to audit the authentication module.
 
 ## Context
-You are reviewing the auth system in a Next.js 14 app.
-Relevant files are in \`src/app/api/auth/\` and \`src/lib/auth.ts\`.
+This is a Next.js 14 app. Auth logic lives in:
+- src/app/api/auth/   (API routes for login, logout, refresh)
+- src/lib/auth.ts     (JWT helper functions)
 
-## Your Goal
-Find all places where JWTs are verified and check whether:
-1. The expiry (\`exp\` claim) is validated
-2. The signature algorithm is pinned (not 'none')
-3. Errors are handled (not swallowed)
+## Goal
+Find all places where JWTs are verified. For each location check:
+1. Is the expiry (exp claim) validated?
+2. Is the signature algorithm pinned — i.e. NOT set to 'none'?
+3. Are errors caught and handled, not silently swallowed?
 
 ## Output Format
 Return a markdown list. For each location include:
 - File path and line number
 - Verdict: PASS / FAIL / NEEDS_REVIEW
-- One-line explanation
+- One-line explanation of the verdict
 
-## Important
-- Read files; do NOT modify anything
-- If a file is missing, note it and continue`,
+## Constraints
+- Read files only — do NOT modify anything
+- If a file does not exist, note it and continue`,
           },
           {
             type: 'callout',
             calloutVariant: 'tip',
-            content: 'A great delegation prompt has four parts: **Context** (what the agent needs to know), **Goal** (what done looks like), **Output Format** (how to return the result), and **Constraints** (what NOT to do).',
+            content: 'Notice the four sections: **Context** (what the agent needs to know upfront), **Goal** (what to do), **Output Format** (how to return the result), and **Constraints** (what NOT to do). All four sections together are what separate a useful result from a vague one.',
+          },
+          {
+            type: 'heading',
+            content: 'A Second Example: Code-Writing Sub-Agent',
+          },
+          {
+            type: 'text',
+            content: 'Here is another example — this time delegating a code-writing task, not just a read-only audit. Again, **type this in your Claude Code chat**:',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where this code goes**: Paste into your Claude Code chat. The sub-agent will create or modify the file in your project directory.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `Spawn a general-purpose sub-agent to write a rate-limiting middleware.
+
+## Context
+This is a Next.js 14 app with the App Router. Middleware lives in src/middleware.ts.
+The \`@upstash/ratelimit\` package is already installed (verify in package.json).
+
+## Goal
+Write a rate-limiting middleware that:
+- Limits each IP address to 100 requests per minute
+- Returns a 429 response with a Retry-After header when the limit is exceeded
+- Skips rate-limiting for paths starting with /_next or /static
+
+## Constraints
+- Only write to src/middleware.ts — do not touch any other file
+- Use the existing @upstash/ratelimit package, do not add new dependencies
+
+## Output Format
+After writing the file, return:
+- The exact file path you wrote to
+- A 3-bullet summary of what you implemented`,
           },
           {
             type: 'heading',
@@ -2009,31 +2090,44 @@ Return a markdown list. For each location include:
           },
           {
             type: 'table',
-            headers: ['Type', 'Best For'],
+            headers: ['Type', 'Best For', 'Typical Use'],
             rows: [
-              ['`Bash`', 'Git operations, running commands, terminal tasks'],
-              ['`Explore`', 'Finding files, searching code, answering codebase questions'],
-              ['`general-purpose`', 'Open-ended research, multi-step tasks, broad searches'],
-              ['`Plan`', 'Designing implementation strategies, architecture decisions'],
-              ['GSD agents (`gsd-executor`, etc.)', 'Full GSD workflow phases — planning, executing, verifying'],
+              ['`Explore`', 'Reading and searching the codebase', 'Find all files using a deprecated API, list components using useEffect'],
+              ['`Bash`', 'Running terminal commands', 'Run git log, execute tests, check installed packages'],
+              ['`general-purpose`', 'Multi-step tasks, writing code, open-ended research', 'Write a new module, refactor a file, research a library\'s API'],
+              ['`Plan`', 'Architecture decisions, implementation strategy', 'Design a database schema, plan a refactor approach'],
+              ['GSD agents (e.g. `gsd-executor`)', 'Full GSD workflow phases', 'Execute a planned phase, verify completed work'],
             ],
           },
           {
             type: 'exercise',
-            content: 'Write a delegation prompt for an Explore agent',
+            content: 'Write a delegation prompt to find useEffect usages',
             exercise: {
-              prompt: 'Write a Task tool call (as a JSON block) that spawns an `Explore` agent to find all React components in `src/components` that use the `useEffect` hook. The agent should return a list of file paths and line numbers. It should run in the foreground.',
+              prompt: 'Write a delegation prompt (in markdown, as you would type it in your Claude Code chat) asking an Explore sub-agent to find all React components in src/components that use the useEffect hook. The result should include file paths and line numbers.',
               hints: [
-                'The `subagent_type` should be `"Explore"`',
-                'The prompt should tell the agent exactly what to search for and how to format results',
-                'Set `description` to a short label like "Find useEffect usages"',
+                'Include a Context section explaining what to search and where to look',
+                'Include a Goal section describing exactly what to find',
+                'Include an Output Format section specifying file path + line number',
+                'Include a Constraints section stating this is read-only (no file modifications)',
               ],
-              solution: `{
-  "subagent_type": "Explore",
-  "description": "Find useEffect usages",
-  "prompt": "Search all .tsx and .ts files in src/components for usages of the useEffect hook.\\n\\nFor each file that uses useEffect:\\n- List the file path\\n- List the line numbers where useEffect appears\\n\\nReturn results as a markdown list. Do not modify any files."
-}`,
-              solutionLanguage: 'json',
+              solution: `Use an Explore sub-agent to find useEffect usages.
+
+## Context
+This is a React + TypeScript project. React components live in src/components/.
+File extensions are .tsx for components and .ts for utility files.
+
+## Goal
+Find every file in src/components that imports or calls the useEffect hook.
+
+## Output Format
+Return a markdown list. For each file:
+- File path (relative to project root)
+- Line numbers where useEffect appears
+
+## Constraints
+- Read files only — do not modify anything
+- Only look inside src/components — ignore all other directories`,
+              solutionLanguage: 'markdown',
             },
           },
         ],
@@ -2046,7 +2140,7 @@ Return a markdown list. For each location include:
         blocks: [
           {
             type: 'text',
-            content: 'The real power of sub-agents is **parallelism**. Instead of researching four topics sequentially, you launch four agents at once and collect all the results in roughly the time it takes to do one. This section covers the core patterns for parallel agent work.',
+            content: 'The real power of sub-agents is **parallelism**. Instead of researching four topics one-by-one, you launch four agents simultaneously and get all results in roughly the time of one. This lesson covers four core patterns for parallel agent work — including real prompts you can paste directly into Claude Code.',
           },
           {
             type: 'heading',
@@ -2054,30 +2148,37 @@ Return a markdown list. For each location include:
           },
           {
             type: 'text',
-            content: 'Break one large research question into N independent sub-questions and launch N agents simultaneously. Merge their findings in a final step.',
-          },
-          {
-            type: 'code',
-            language: 'markdown',
-            content: `# Parallel Research: API Security Audit
-
-Launch these 3 agents IN PARALLEL (single message, three Task calls):
-
-Agent 1 — Authentication:
-  Explore src/app/api/auth/ and report JWT handling issues.
-
-Agent 2 — Input Validation:
-  Explore all API route handlers, look for missing zod/validation.
-
-Agent 3 — Rate Limiting:
-  Check middleware.ts and API routes for rate-limit enforcement.
-
-After all three return, synthesize findings into a single report.`,
+            content: 'Break one large question into N independent sub-questions. Launch N agents at the same time. Merge all findings when they are done.',
           },
           {
             type: 'callout',
             calloutVariant: 'info',
-            content: '**Rule of thumb**: agents are independent when the output of one is NOT an input to another. If Agent B needs Agent A\'s result, they must be sequential. Everything else can be parallel.',
+            content: '**Where this prompt goes**: Type it in your Claude Code chat. Claude will spawn all three sub-agents in a single response, running them in parallel automatically.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `Launch 3 Explore sub-agents IN PARALLEL to audit this Next.js API:
+
+Agent 1 — Authentication
+  Search src/app/api/auth/ for JWT handling.
+  Report: file paths, line numbers, and any issues with expiry or algorithm validation.
+
+Agent 2 — Input Validation
+  Search all files in src/app/api/ that define route handlers (POST, PUT, PATCH).
+  Report: which routes use zod or another validation library, which do not.
+
+Agent 3 — Rate Limiting
+  Read src/middleware.ts and all API route files.
+  Report: whether a rate limiter is applied, and to which routes.
+
+After all three agents return, synthesize their findings into one security report
+with a severity rating (High / Medium / Low) for each issue found.`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Rule of thumb for parallelism**: agents are independent when the output of Agent A is NOT needed as input to Agent B. If B needs A\'s result, they must run in sequence. Everything else can — and should — run in parallel.',
           },
           {
             type: 'heading',
@@ -2085,15 +2186,39 @@ After all three return, synthesize findings into a single report.`,
           },
           {
             type: 'text',
-            content: 'Assign one agent per item in a list (map), then combine all results (reduce). Classic for processing many files, repos, or issues at once.',
+            content: 'Assign one agent per item in a list (the "map" phase), then combine all results with one final synthesis step (the "reduce" phase). Classic use: processing many files, modules, or tickets at once.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where this prompt goes**: Type it in your Claude Code chat. Claude will spawn four background agents (one per module), wait for all to finish, then produce the summary table.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `I have 4 feature modules: auth, payments, notifications, and analytics.
+
+For each module, spawn a background Explore agent to:
+- Count the number of exported functions
+- List any functions longer than 50 lines
+- Check whether each exported function has a JSDoc comment
+
+Assign one agent per module directory:
+- Agent 1: src/modules/auth/
+- Agent 2: src/modules/payments/
+- Agent 3: src/modules/notifications/
+- Agent 4: src/modules/analytics/
+
+Once all four finish, create a summary table:
+| Module | Exported Functions | Functions > 50 lines | Missing JSDoc |`,
           },
           {
             type: 'steps',
-            content: 'Map–Reduce execution',
+            content: 'How Map–Reduce executes internally',
             steps: [
-              'Map phase — for each item (file, module, ticket…), spawn one agent. Pass only the data for that item. All agents run in parallel with `run_in_background: true`.',
-              'Collect phase — wait for all background agents to finish. Use `TaskOutput` to retrieve results by agent ID.',
-              'Reduce phase — the orchestrator (or a dedicated synthesis agent) merges all agent outputs into one coherent result.',
+              'Map phase — Claude spawns one agent per item with run_in_background: true. All agents start immediately and run concurrently.',
+              'Collect phase — Claude waits for all background agents to complete. Results arrive as each agent finishes.',
+              'Reduce phase — Claude (or a dedicated synthesis agent) merges all results into one coherent output — a table, report, or decision.',
             ],
           },
           {
@@ -2102,33 +2227,64 @@ After all three return, synthesize findings into a single report.`,
           },
           {
             type: 'text',
-            content: 'Chain specialized agents where each stage feeds the next. This is sequential but lets each agent focus on one thing it does well.',
+            content: 'Chain specialized agents where each stage feeds the next. This pattern is sequential, not parallel — but each agent has one clear responsibility. Complex tasks become reliable when you separate research, planning, and execution into dedicated agents.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where this prompt goes**: Type it in your Claude Code chat to kick off a three-stage pipeline. Claude runs the stages in order, passing each result to the next.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `Implement a password strength validator using a three-stage pipeline:
+
+Stage 1 — Research (Explore agent)
+  Search src/lib/ for any existing validation utilities.
+  Return: list of files found, functions already available, and which could be reused.
+
+Stage 2 — Plan (Plan agent)
+  Using Stage 1's findings, design the password validator:
+  - Rules to enforce (length, complexity, common-password check)
+  - Which file to create or modify
+  - How to integrate it with the existing form validation
+  Return: a numbered implementation plan.
+
+Stage 3 — Execute (general-purpose agent)
+  Using Stage 2's plan, implement the password validator.
+  Write the code to the files specified in the plan.
+  Return: the list of files written and a brief description of each.
+
+Run each stage and pass its full output to the next before starting it.`,
           },
           {
             type: 'comparison',
             content: '',
             do: {
-              label: '✅ Specialist pipeline',
-              language: 'typescript',
-              code: `// Each agent has one focused job
-// 1. Researcher gathers facts
-const research = await Task({ type: 'Explore', prompt: '...' });
-// 2. Planner designs solution using research
-const plan = await Task({ type: 'Plan', prompt: \`Based on: \${research}\` });
-// 3. Executor implements the plan
-await Task({ type: 'gsd-executor', prompt: \`Execute: \${plan}\` });`,
+              label: '✅ Specialist pipeline — each agent focused',
+              code: `Stage 1: Research agent finds existing utilities
+  → result passed to Stage 2
+
+Stage 2: Plan agent designs solution using findings
+  → result passed to Stage 3
+
+Stage 3: Execute agent implements the approved plan
+
+Each agent has one job. Each prompt is short and clear.
+Debugging is easy: if something breaks, you know
+exactly which stage failed and why.`,
             },
             dont: {
-              label: '❌ Monolithic prompt',
-              language: 'typescript',
-              code: `// Stuffing research + planning + execution
-// into one gigantic prompt = context bloat,
-// confused output, harder to debug.
-await Task({
-  type: 'general-purpose',
-  prompt: \`Research everything, make a plan,
-           then implement it all at once...\`
-});`,
+              label: '❌ Monolithic prompt — one agent does everything',
+              code: `One general-purpose agent receives:
+"Search the codebase, figure out what exists,
+ design a password validator, implement it,
+ and make sure it integrates correctly."
+
+Problems:
+- Huge context window, confused output
+- If it fails, you cannot tell where it went wrong
+- Cannot re-run just the broken stage`,
             },
           },
           {
@@ -2137,12 +2293,35 @@ await Task({
           },
           {
             type: 'text',
-            content: 'Launch multiple agents to solve the same problem with different approaches. Pick the best result. Useful for creative tasks, architecture decisions, or when correctness is critical.',
+            content: 'Launch multiple agents to solve the same problem with different approaches. Review all results and pick the best one. Useful for architecture decisions or whenever correctness matters more than cost.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where this prompt goes**: Type it in your Claude Code chat. Claude will run both agents in parallel, then compare and recommend.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `I need a caching layer for the product listing API route.
+Run two competing agents IN PARALLEL — each with a different approach:
+
+Agent A — In-memory cache
+  Implement using a Map in src/lib/cache.ts.
+  Return: the implemented code and a one-paragraph trade-off analysis.
+
+Agent B — Redis cache
+  Implement using ioredis in src/lib/cache.ts.
+  Return: the implemented code and a one-paragraph trade-off analysis.
+
+After both finish, compare the two approaches and recommend which to use given:
+- This is a single-server deployment (not distributed)
+- Cache entries should survive a 30-minute idle period`,
           },
           {
             type: 'callout',
             calloutVariant: 'tip',
-            content: 'Use `model: "haiku"` for simple map-phase agents (fast + cheap) and `model: "opus"` for the reduce/synthesis agent where quality matters most.',
+            content: 'Cost tip: use `model: "haiku"` for map-phase agents doing simple file reads or grep searches (fast and roughly 20× cheaper than Opus). Reserve `model: "opus"` for the synthesis or reduce step where reasoning quality matters most.',
           },
         ],
       },
@@ -2154,21 +2333,77 @@ await Task({
         blocks: [
           {
             type: 'text',
-            content: 'Building reliable multi-agent systems requires more than just launching agents. You need to think about how context flows between them, how to handle failures, and how to avoid the common traps that make agent pipelines brittle.',
+            content: 'Launching agents is easy. Making them work reliably together is the real skill. This lesson covers how context flows between agents, how to handle failures gracefully, and the most common mistakes that break multi-agent pipelines.',
           },
           {
             type: 'heading',
             content: 'Context Passing Strategies',
           },
           {
+            type: 'text',
+            content: 'Every sub-agent starts fresh with zero memory. The parent must explicitly pass any information the sub-agent needs. Here are the four main strategies:',
+          },
+          {
             type: 'table',
             headers: ['Strategy', 'When to Use', 'Example'],
             rows: [
-              ['Inline in prompt', 'Small data (< 500 tokens)', 'Pass a list of file paths directly in the prompt string'],
-              ['File reference', 'Medium data', 'Write results to `/tmp/research.md`, tell the next agent to read it'],
-              ['Structured output', 'Machine-readable handoffs', 'Ask the first agent to return JSON, parse it, inject into next prompt'],
-              ['Shared state file', 'Long pipelines', 'Maintain a `.planning/state.md` that each agent reads and updates'],
+              ['**Inline in the prompt**', 'Small data — a list of paths, a config value, a prior result under ~500 tokens', 'Paste 10 file paths directly into the delegation prompt string'],
+              ['**File reference**', 'Medium data — a research report, findings from a previous agent', 'Agent 1 writes results to `.planning/research.md`; delegation prompt for Agent 2 says "read .planning/research.md first"'],
+              ['**Structured output (JSON)**', 'When Agent B needs to parse Agent A\'s results programmatically', 'Tell Agent A to return JSON; the parent parses it and injects specific fields into Agent B\'s prompt'],
+              ['**Shared state file**', 'Long pipelines with 4+ stages', 'Maintain a `.planning/state.md` that each agent reads on start and appends its output when done'],
             ],
+          },
+          {
+            type: 'heading',
+            content: 'Using a File as a Context Bridge',
+          },
+          {
+            type: 'text',
+            content: 'The "file reference" strategy is the most common pattern for multi-stage pipelines. Here is a complete two-agent example: the first agent audits and writes findings to a file; the second agent reads that file and implements the fixes.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where these prompts go**: Each block below is a separate message you type in Claude Code chat — first the one labeled "Message 1", then after it finishes, "Message 2". The file `.planning/auth-findings.md` will be created in your project root by Agent 1.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `--- Message 1 (type this first) ---
+
+Use an Explore agent to audit src/app/api/auth/ for JWT issues.
+
+Write your findings to .planning/auth-findings.md in this exact format:
+
+# JWT Audit Findings
+
+## Issues Found
+- [file path:line] FAIL — reason
+- [file path:line] NEEDS_REVIEW — reason
+
+## Summary
+[2–3 sentence summary of overall security posture]
+
+Do not modify any source files.`,
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `--- Message 2 (type this after Message 1 finishes) ---
+
+Use a general-purpose agent to fix the JWT issues from the audit.
+
+## Context
+Read .planning/auth-findings.md — it contains all issues found in the previous step.
+This is a Next.js 14 app. JWT logic lives in src/app/api/auth/ and src/lib/auth.ts.
+
+## Goal
+For each FAIL item in the findings file, implement the fix in the relevant source file.
+For each NEEDS_REVIEW item, add a TODO comment explaining the concern.
+
+## Output
+After finishing, append a "## Fixes Applied" section to .planning/auth-findings.md
+listing each change made, the file path, and a one-line description.`,
           },
           {
             type: 'heading',
@@ -2176,12 +2411,12 @@ await Task({
           },
           {
             type: 'steps',
-            content: 'Handling failures gracefully',
+            content: 'How to handle agent failures gracefully',
             steps: [
-              'Check the result before continuing — a sub-agent can return a partial or error result. Always inspect the output for failure signals ("I could not find…", "Error:", empty string) before using it downstream.',
-              'Retry with more context, not the same prompt — if an agent fails, diagnose why. Add the missing context or sharpen the goal. Re-running the identical prompt usually produces the same failure.',
-              'Use isolation for risky work — set `isolation: "worktree"` when an agent will write files or make commits. Changes are isolated until you explicitly merge them.',
-              'Limit scope with explicit constraints — include "do NOT modify files", "read only", or "stop after X steps" in the prompt. Agents without constraints can over-reach.',
+              'Inspect the result before continuing — a sub-agent can return a partial or error result. Look for failure signals like "I could not find…", "Error:", or an empty string. Never blindly feed one agent\'s output into the next without checking it.',
+              'Retry with more context, not the same prompt — if an agent fails, diagnose why. Add the missing context or sharpen the goal. Re-running the exact same prompt on the same data almost always produces the same failure.',
+              'Use isolation for risky work — set `isolation: "worktree"` when an agent will write files or make commits. Its changes stay on an isolated git branch until you explicitly merge them, giving you a safe undo.',
+              'Limit scope with explicit constraints — include "read-only", "do NOT modify files outside src/auth/", or "stop after listing 10 results" in your prompt. Agents without scope constraints can over-reach in unexpected ways.',
             ],
           },
           {
@@ -2190,64 +2425,121 @@ await Task({
           },
           {
             type: 'checklist',
-            content: 'Watch out for these common pitfalls',
+            content: 'Before you launch an agent, check for these mistakes',
             items: [
               {
-                text: 'Prompt too vague',
-                description: '"Analyze the codebase" — for what? By what criteria? What should the output look like? Vague prompts produce vague answers.',
+                text: 'Vague prompt',
+                description: '"Analyze the codebase" — for what purpose? By what criteria? What should the output look like? Vague prompts produce meandering, hard-to-use answers. Every delegation prompt needs a Goal and an Output Format.',
               },
               {
                 text: 'Forgetting agents start fresh',
-                description: 'Every sub-agent has zero memory of the parent conversation. If the agent needs a config value, file path, or prior decision — put it in the prompt.',
+                description: 'Sub-agents have zero memory of your conversation. If the agent needs to know the tech stack, a file path, a config value, or a prior decision — write it in the prompt explicitly. It cannot "just know" these things.',
               },
               {
                 text: 'Parallelizing dependent tasks',
-                description: 'If Agent B needs Agent A\'s output, they are NOT independent. Run them sequentially; run independent tasks in parallel.',
+                description: 'If Agent B needs Agent A\'s output as input, they are NOT independent. They must run sequentially. Only tasks that can run with zero knowledge of each other should run in parallel.',
               },
               {
                 text: 'Using Opus for everything',
-                description: 'Haiku is 20× cheaper and fast enough for most map-phase tasks (reading files, running grep, listing results). Reserve Opus for synthesis and complex reasoning.',
+                description: 'Haiku handles most map-phase work (reading files, running grep, listing results) perfectly well and is roughly 20× cheaper than Opus. Use Haiku for straightforward tasks, Opus for complex synthesis and reasoning.',
               },
               {
                 text: 'No output format specified',
-                description: 'Without a format spec, agents return prose. Prose is hard to parse programmatically. Ask for JSON, markdown tables, or numbered lists.',
+                description: 'Without a format spec, agents return free-form prose. Prose is hard to parse and hard to pass cleanly to the next agent. Always specify: JSON, markdown table, numbered list, or bullet list.',
               },
             ],
           },
           {
             type: 'heading',
-            content: 'Designing Trustworthy Pipelines',
+            content: 'The Sub-Agent Prompt Template',
+          },
+          {
+            type: 'text',
+            content: 'Use this template every time you write a delegation prompt. It forces you to answer the four questions every sub-agent needs answered before it can do good work.',
           },
           {
             type: 'callout',
-            calloutVariant: 'tip',
-            content: '**The Golden Rule of Sub-Agents**: a pipeline is only as reliable as its weakest prompt. Spend 80% of your design time on the delegation prompt — context, goal, output format, and constraints. The infrastructure is easy; clear communication is hard.',
+            calloutVariant: 'info',
+            content: '**Where this template goes**: Copy it, fill in each section, and paste it into your Claude Code chat. You can also save it as `.claude/prompts/<task-name>.md` in your project root and paste the contents when you need it.',
           },
           {
             type: 'code',
             language: 'markdown',
-            content: `# Sub-Agent Prompt Template
+            content: `# Task: [Short name — e.g. "Audit rate limiting"]
 
 ## Context
-[What the agent needs to know about the project, codebase, or prior decisions]
+[What the agent needs to know upfront:
+ - Tech stack and framework
+ - Relevant file paths or directories to look in
+ - Any prior decisions or constraints from earlier in the project]
 
 ## Goal
-[Specific, measurable outcome — what "done" looks like]
+[Specific, measurable outcome — what "done" looks like.
+ Be concrete: "Find all X", "Write a function that does Y", "Verify that Z is present"]
 
 ## Constraints
-- [What NOT to do: read-only, don't modify X, stop after Y]
-- [Scope limits: only look in src/foo, only up to 5 files]
+- [What NOT to do: read-only, do not modify files outside src/auth/, stop after 5 files]
+- [Scope limits: only look in src/payments/, only files changed in the last 7 days]
 
 ## Output Format
-[Exact structure: JSON schema / markdown list / table with columns]
+[Exact structure the agent should return — pick one:
+ - Markdown list with file:line and verdict
+ - JSON array: [{ "file": "...", "line": 0, "issue": "...", "severity": "High" }]
+ - Table with columns: Module | Status | Notes]
 
 ## If Blocked
-[What to do if something is missing or ambiguous — fail loudly, not silently]`,
+[What to do when something is missing or ambiguous:
+ - "If a file is missing, note it and continue"
+ - "If you are unsure, return NEEDS_REVIEW rather than FAIL"
+ - "Do not guess — fail loudly if key information is absent"]`,
+          },
+          {
+            type: 'heading',
+            content: 'Filled-In Example',
+          },
+          {
+            type: 'text',
+            content: 'Here is the same template fully filled in for a real task. This is exactly what you would paste into your Claude Code chat:',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where this goes**: Paste it directly into your Claude Code chat. Claude will read it and spawn the appropriate sub-agent.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# Task: Audit rate limiting
+
+## Context
+This is a Next.js 14 app using the App Router.
+API routes live in src/app/api/.
+The @upstash/ratelimit package may be installed — check package.json to confirm.
+Middleware (if any) is in src/middleware.ts.
+
+## Goal
+Determine whether rate limiting is applied to each public API route.
+A route is "protected" if it is covered by the middleware rate limiter
+OR has its own per-route rate limiting logic.
+
+## Constraints
+- Read files only — do not modify anything
+- Only look in src/app/api/ and src/middleware.ts
+
+## Output Format
+Return a markdown table:
+
+| Route | Method | Rate Limited? | Notes |
+|-------|--------|---------------|-------|
+
+## If Blocked
+If src/middleware.ts does not exist, note it and continue with per-route analysis.
+If @upstash/ratelimit is not in package.json, note it as a finding in the table.`,
           },
           {
             type: 'callout',
             calloutVariant: 'success',
-            content: 'Sub-agents transform Claude Code from a single-threaded assistant into a **multi-agent workforce**. Mastering delegation prompts, parallelism patterns, and context passing is what separates a 10× engineer from a 100× one.',
+            content: '**The Golden Rule of Sub-Agents**: a multi-agent pipeline is only as reliable as its weakest delegation prompt. Spend 80% of your design time on the prompts — context, goal, output format, and constraints. The infrastructure choices (which agent type, background vs. foreground) take 20% of the thought. Clear communication is the hard part.',
           },
         ],
       },
