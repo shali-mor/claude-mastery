@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import {
   Code2, BookOpen, Terminal, DollarSign, Layers, Github,
-  Sparkles, Zap, FlaskConical, MessageSquare, Database, ShieldCheck,
+  Sparkles, Zap, FlaskConical, MessageSquare, Database, ShieldCheck, FolderGit2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +53,13 @@ const features = [
     desc: 'A floating AI guide that surfaces contextual hints as you move through lessons and quizzes, keeping you on track.',
     color: 'text-pink-500',
     bg: 'bg-pink-500/10',
+  },
+  {
+    icon: FolderGit2,
+    label: 'Hands-on Exercises',
+    desc: 'A companion GitHub repo with starter blueprints, TODO placeholders, solutions, and check.sh validators for every lesson.',
+    color: 'text-teal-500',
+    bg: 'bg-teal-500/10',
   },
 ];
 
@@ -187,17 +194,28 @@ export default function AboutPage() {
         </div>
 
         {/* ── Footer ── */}
-        <div className="flex items-center justify-between pt-6 border-t border-border text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-6 border-t border-border text-xs text-muted-foreground">
           <span>© 2026 Shali Mor</span>
-          <a
-            href="https://github.com/shali-mor/claude-mastery"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-          >
-            <Github className="h-3.5 w-3.5" />
-            shali-mor/claude-mastery
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://github.com/shali-mor/claude-mastery"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+            >
+              <Github className="h-3.5 w-3.5" />
+              shali-mor/claude-mastery
+            </a>
+            <a
+              href="https://github.com/shali-mor/claude-mastery-exercises"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+            >
+              <FolderGit2 className="h-3.5 w-3.5" />
+              Exercises repo
+            </a>
+          </div>
         </div>
 
       </motion.div>

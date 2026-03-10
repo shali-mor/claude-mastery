@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Clock, CheckCircle, Award, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, CheckCircle, Award, Sparkles, FolderGit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -211,6 +211,19 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
             <QuizRunner quiz={moduleQuiz} module={module} inline />
           </motion.div>
         )}
+
+        {/* Exercises repo link */}
+        <div className="mb-6">
+          <a
+            href="https://github.com/shali-mor/claude-mastery-exercises"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-md px-3 py-2 bg-muted/30 hover:bg-muted/60"
+          >
+            <FolderGit2 className="h-3.5 w-3.5" />
+            Practice this lesson — hands-on exercises repo
+          </a>
+        </div>
 
         {/* Prev / Next navigation */}
         <nav className="flex justify-between gap-4" aria-label="Lesson navigation">
