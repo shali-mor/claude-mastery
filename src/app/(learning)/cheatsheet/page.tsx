@@ -172,16 +172,28 @@ export default function CheatsheetPage() {
 
           {/* 5 — Project File Structure */}
           <SectionCard n={5} title="Project File Structure">
-            <pre className="bg-muted rounded-md font-mono text-[10px] p-2.5 overflow-x-auto whitespace-pre leading-tight text-foreground">{`your-project/
-  CLAUDE.md
-  .claude/
-    settings.json
-    settings.local.json
-    commands/
-      skill.md
-    hooks/
-      guard.sh
-  .gitignore`}</pre>
+            <div className="bg-muted rounded-md p-2.5 font-mono text-[10px] leading-5 text-foreground select-none">
+              <span className="text-primary font-semibold">your-project/</span>
+              <div className="ml-1 mt-0.5 pl-2 border-l border-border space-y-0.5">
+                <div>CLAUDE.md</div>
+                <div>
+                  <span className="text-primary">.claude/</span>
+                  <div className="ml-1 mt-0.5 pl-2 border-l border-border space-y-0.5">
+                    <div>settings.json</div>
+                    <div>settings.local.json</div>
+                    <div>
+                      <span className="text-primary">commands/</span>
+                      <div className="ml-1 mt-0.5 pl-2 border-l border-border">skill.md</div>
+                    </div>
+                    <div>
+                      <span className="text-primary">hooks/</span>
+                      <div className="ml-1 mt-0.5 pl-2 border-l border-border">guard.sh</div>
+                    </div>
+                  </div>
+                </div>
+                <div>.gitignore</div>
+              </div>
+            </div>
             <div className="space-y-0.5">
               <p><Cmd>CLAUDE.md</Cmd> — auto-loaded every session</p>
               <p><Cmd>commands/skill.md</Cmd> — becomes <Cmd>/skill</Cmd></p>
