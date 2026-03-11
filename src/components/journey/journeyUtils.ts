@@ -86,14 +86,16 @@ export function getModuleStatus(
   lessonIds: string[],
   completedLessons: string[],
   quizId: string,
-  quizResults: Record<string, { passed: boolean; score: number }>,
+  quizResults: Record<string, { score: number; total: number }>,
   lastVisitedLessonId: string | null,
 ): ModuleStatus {
   if (lessonIds.length === 0) return 'not-started';
 
   const completedCount = lessonIds.filter((id) => completedLessons.includes(id)).length;
 
-  if (completedCount === lessonIds.length && quizResults[quizId]?.passed) {
+  const qr = quizResults[quizId];
+  const quizPassed = qr !== undefined && qr.total > 0 && qr.score / qr.total >= 0.7;
+  if (completedCount === lessonIds.length && quizPassed) {
     return 'complete';
   }
 

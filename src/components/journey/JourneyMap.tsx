@@ -37,7 +37,8 @@ export function JourneyMap() {
         const completedCount = lessonIds.filter((id) => completedLessons.includes(id)).length;
         const progressPct =
           lessonIds.length > 0 ? Math.round((completedCount / lessonIds.length) * 100) : 0;
-        const quizPassed = quizResults[mod.quizId]?.passed === true;
+        const qr = quizResults[mod.quizId];
+        const quizPassed = qr !== undefined && qr.total > 0 && qr.score / qr.total >= 0.7;
         const status = getModuleStatus(
           lessonIds,
           completedLessons,

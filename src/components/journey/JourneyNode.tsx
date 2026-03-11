@@ -101,10 +101,9 @@ export function JourneyNode({
           {isComplete ? (
             <CheckCircle2 className="h-6 w-6 text-green-400" />
           ) : (
-            <Icon
-              className={cn('h-5 w-5 transition-colors', isStarted ? '' : 'text-white/25')}
-              style={isStarted ? { color: tokens.hex } : undefined}
-            />
+            <div style={isStarted ? { color: tokens.hex } : undefined}>
+              <Icon className={cn('h-5 w-5 transition-colors', isStarted ? '' : 'text-white/25')} />
+            </div>
           )}
         </div>
 
