@@ -1,5 +1,7 @@
 ---
 description: Thorough code review of recent changes or a specific file/diff
+argument-hint: [file-path or git-ref — omit to review all staged changes]
+allowed-tools: [Bash, Read, Grep, Glob]
 ---
 
 # Code Review

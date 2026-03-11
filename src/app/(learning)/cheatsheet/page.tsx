@@ -209,20 +209,35 @@ export default function CheatsheetPage() {
           <SectionCard n={6} title="Writing Skills">
             <Code>{`---
 description: Generate commit message
+argument-hint: [optional: scope]
+allowed-tools: [Bash, Read]
+context: fork
 ---
 
 # /commit-msg
 
 Analyse staged diff and write a
 conventional commit message.
-
-Run \`git diff --staged\` first.
-Use $ARGUMENTS for user input.`}</Code>
+Use $ARGUMENTS for scope hint.`}</Code>
             <div className="space-y-0.5">
               <Bullet>Filename = command: <Cmd>review.md</Cmd> → <Cmd>/review</Cmd></Bullet>
-              <Bullet>Use <Cmd>$ARGUMENTS</Cmd> for user-supplied context</Bullet>
-              <Bullet><Cmd>~/.claude/commands/</Cmd> = global (all projects)</Bullet>
-              <Bullet>One job per file. Specific beats vague.</Bullet>
+              <Bullet><Cmd>$ARGUMENTS</Cmd> · <Cmd>$1</Cmd> <Cmd>$2</Cmd> for positional args</Bullet>
+              <Bullet><Cmd>~/.claude/commands/</Cmd> = global · <Cmd>.claude/commands/</Cmd> = project</Bullet>
+            </div>
+            <div className="space-y-0.5 mt-1">
+              {[
+                ['description', 'Auto-activates skill when relevant'],
+                ['argument-hint', 'Shows in autocomplete'],
+                ['allowed-tools', 'Restrict tools this skill can use'],
+                ['context: fork', 'Run in isolated subagent'],
+                ['user-invocable: false', 'Claude-only, hidden from menu'],
+                ['model', 'Pin a specific model'],
+              ].map(([field, desc]) => (
+                <div key={field} className="flex gap-2 border-b border-border/40 pb-0.5 last:border-0">
+                  <Cmd>{field}</Cmd>
+                  <span className="text-muted-foreground">{desc}</span>
+                </div>
+              ))}
             </div>
           </SectionCard>
 

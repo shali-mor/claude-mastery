@@ -1,5 +1,8 @@
 ---
 description: Find untested code and write missing Vitest tests
+argument-hint: [src/ path — omit to scan the whole project]
+allowed-tools: [Bash, Read, Write, Glob, Grep]
+context: fork
 ---
 
 # Test Coverage

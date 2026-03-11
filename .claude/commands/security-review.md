@@ -1,5 +1,7 @@
 ---
-description: Security-focused audit of recent changes or a specified file
+description: OWASP security audit of recent changes or a specified file
+argument-hint: [file-path — omit to audit all recent changes]
+allowed-tools: [Bash, Read, Grep, Glob]
 ---
 
 # Security Review

@@ -398,6 +398,43 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
             calloutVariant: 'warning',
             content: 'Don\'t write a skill for a one-off task. Skills are for **repeatable workflows**. Over-engineering your `.claude/` directory is just as wasteful as not using it at all.',
           },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Skills → Plugins: distributing at scale',
+          },
+          {
+            type: 'text',
+            content: 'A **skill** is a single `.md` file you use on your own project. A **plugin** is a bundled package of multiple skills, scripts, and assets — designed to be shared with the wider community via a marketplace.',
+          },
+          {
+            type: 'table',
+            headers: ['', 'Skill', 'Plugin'],
+            rows: [
+              ['Unit', 'Single `.md` file', 'Bundle: skills + scripts + assets'],
+              ['Distribution', 'Committed to your repo', 'Marketplace or GitHub URL'],
+              ['Command namespace', '`/my-command`', '`/plugin-name:command`'],
+              ['Install', 'Copy the `.md` file', '`/plugin` → Discover → Install'],
+              ['Best for', 'Your team\'s workflows', 'Sharing with the community'],
+            ],
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# Browse and install plugins interactively
+/plugin
+
+# Install directly from a GitHub repo
+/plugin install https://github.com/org/my-plugin
+
+# Use an installed plugin skill
+/my-plugin:skill-name`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Browse the official marketplace with `/plugin` → Discover tab. Submit your own plugin at `claude.ai/settings/plugins/submit`. The plugin system uses the open **AgentSkills standard** (agentskills.io) — skills you write today work across multiple AI tools.',
+          },
         ],
       },
 
@@ -474,7 +511,52 @@ Cover:
 
 Keep explanations concise. Use bullet points.`,
               },
+              {
+                label: 'Advanced fields',
+                language: 'markdown',
+                content: `---
+description: Run full test suite and fix any failures
+argument-hint: [src/ path — omit for whole project]
+allowed-tools: [Bash, Read, Write, Glob, Grep]
+context: fork
+model: claude-sonnet-4-6
+---
+
+# /fix-tests
+
+Run \`npm test\` and fix every failing test in $ARGUMENTS.
+
+Steps:
+1. Run \`npm test\` and capture failures
+2. Read each failing test file and the source it tests
+3. Fix the source (not the test) to make it pass
+4. Re-run \`npm test\` to confirm green
+5. Report a summary of what was changed`,
+              },
             ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Frontmatter field reference',
+          },
+          {
+            type: 'table',
+            headers: ['Field', 'Purpose', 'Example'],
+            rows: [
+              ['`description`', 'Claude reads this to auto-activate the skill when relevant', '`Review code for security issues`'],
+              ['`argument-hint`', 'Hint shown in autocomplete when typing the command', '`[file-path or git-ref]`'],
+              ['`allowed-tools`', 'Restrict which tools Claude can use during this skill', '`[Bash, Read, Grep]`'],
+              ['`context: fork`', 'Run the skill in an isolated subagent (no shared state)', '`context: fork`'],
+              ['`model`', 'Pin a specific Claude model for this skill', '`claude-opus-4-6`'],
+              ['`user-invocable: false`', 'Hide from the `/` menu — Claude can still auto-invoke it', '`user-invocable: false`'],
+              ['`disable-model-invocation: true`', 'Prevent Claude from auto-invoking; manual `/command` only', '`disable-model-invocation: true`'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Auto-activation:** When you add a `description:` field, Claude reads all skill descriptions at session start and will automatically invoke the right skill when your message matches — no `/command` needed. The more specific your description, the more accurately Claude triggers it.',
           },
           {
             type: 'heading',
