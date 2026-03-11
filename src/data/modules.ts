@@ -17,6 +17,11 @@ export const modules: Module[] = [
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Want everything on one page?** The [Cheatsheet](/cheatsheet) covers all key commands, memory layers, skills, hooks, context management, and keyboard shortcuts — great to keep open while you work through the course.',
+          },
+          {
             type: 'text',
             content: 'Claude Code is an agentic coding tool that operates directly in your terminal, understands your codebase, and helps you ship code faster through natural language commands.',
           },

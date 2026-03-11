@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BookOpen, Terminal, DollarSign,
-  Code2, X, Home, Award, Info
+  Code2, X, Home, Award, Info, BookMarked
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProgress } from '@/store';
@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
   { href: '/commands', label: 'Commands', icon: <Terminal className="h-4 w-4" /> },
   { href: '/calculator', label: 'Cost Calculator', icon: <DollarSign className="h-4 w-4" /> },
   { href: '/playground', label: 'Playground', icon: <Code2 className="h-4 w-4" /> },
+  { href: '/cheatsheet', label: 'Cheatsheet', icon: <BookMarked className="h-4 w-4" /> },
   { href: '/about', label: 'About', icon: <Info className="h-4 w-4" /> },
 ];
 
