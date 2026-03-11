@@ -233,11 +233,8 @@ export default function WhatsNewPage() {
                                 className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
                               >
                                 <ExternalLink className="h-3 w-3" />
-                                Official docs
+                                {entry.version ? `v${entry.version} release notes` : 'Release notes'}
                               </a>
-                            )}
-                            {entry.version && (
-                              <span className="text-[10px] text-muted-foreground/50">v{entry.version}</span>
                             )}
                           </div>
                         </div>

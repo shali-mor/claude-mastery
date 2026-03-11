@@ -11,7 +11,7 @@ export interface WhatsNewEntry {
   lessonRef?: string; // lesson ID if covered in tutorial
   tutorialCovered: boolean;
   isBreaking?: boolean;
-  sourceUrl?: string; // link to official docs page
+  sourceUrl?: string; // link to the specific GitHub release that introduced this feature
 }
 
 export const whatsNew: WhatsNewEntry[] = [
@@ -23,9 +23,10 @@ export const whatsNew: WhatsNewEntry[] = [
     title: 'Plugin marketplace launched',
     summary: 'Browse, install, and publish plugins via the /plugin command. Official Anthropic marketplace plus community marketplaces via GitHub URLs.',
     detail: 'Plugins bundle multiple skills, scripts, and assets into a distributable package. Skills in plugins are namespaced (/plugin-name:command). Submit your own at claude.ai/settings/plugins/submit.',
+    version: '2.0.73',
     lessonRef: 'lesson-2-1',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/plugins',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.0.73',
   },
   {
     id: 'skill-frontmatter-fields-2026',
@@ -34,9 +35,10 @@ export const whatsNew: WhatsNewEntry[] = [
     title: 'New skill frontmatter fields',
     summary: 'Skills now support argument-hint, allowed-tools, context: fork, model, user-invocable, and disable-model-invocation in YAML frontmatter.',
     detail: 'argument-hint shows in autocomplete. allowed-tools restricts which tools the skill can use. context: fork runs in an isolated subagent. model pins a specific Claude model for the skill.',
+    version: '2.1.0',
     lessonRef: 'lesson-2-2',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/slash-commands',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.0',
   },
   {
     id: 'skill-auto-activation-2026',
@@ -44,9 +46,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'skill',
     title: 'Skills auto-activate from description',
     summary: 'Claude reads all skill description fields at session start and automatically invokes the matching skill — no /command needed.',
+    version: '2.1.0',
     lessonRef: 'lesson-2-2',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/slash-commands',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.0',
   },
   {
     id: 'agentskills-standard-2026',
@@ -56,7 +59,6 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Claude Code skills now follow the AgentSkills open standard (agentskills.io), making them compatible across multiple AI tools.',
     lessonRef: 'lesson-2-1',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/slash-commands',
   },
   {
     id: 'prewrite-hook-2026',
@@ -67,7 +69,6 @@ export const whatsNew: WhatsNewEntry[] = [
     detail: 'Like PreToolUse but scoped specifically to file write operations. Exit code 2 blocks the write.',
     lessonRef: 'lesson-2-3',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
   },
   {
     id: 'notification-hook-2026',
@@ -75,9 +76,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'hook',
     title: 'Notification hook event',
     summary: 'New Notification hook event fires when Claude sends a notification (e.g. task complete, attention needed).',
+    version: '2.1.0',
     lessonRef: 'lesson-2-3',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.0',
   },
   // ── 2025 ────────────────────────────────────────────────────────────────
   {
@@ -87,9 +89,10 @@ export const whatsNew: WhatsNewEntry[] = [
     title: 'Agent worktree isolation',
     summary: 'Pass `isolation: "worktree"` when spawning an Agent to run it in a separate git branch. Changes are isolated until you review and merge — no risk of polluting main.',
     detail: 'The worktree is created automatically on a new branch. If the agent makes no changes, the worktree is cleaned up silently. If it does make changes, the branch and path are returned so you can review with `git diff main...branch`, then merge and remove with `git worktree remove`.',
+    version: '2.1.50',
     lessonRef: 'lesson-7-6',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.50',
   },
   {
     id: 'btw-command-2025',
@@ -99,7 +102,6 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Ask a quick question without it being saved to conversation history. /btw spawns a temporary agent that answers and disappears.',
     lessonRef: 'lesson-1-2',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
   },
   {
     id: 'fork-command-2025',
@@ -107,9 +109,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'command',
     title: '/fork — branch conversation',
     summary: 'Branch the current conversation from this point, preserving context while allowing you to explore a different direction.',
+    version: '2.1.19',
     lessonRef: 'lesson-1-2',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.19',
   },
   {
     id: 'rewind-command-2025',
@@ -117,9 +120,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'command',
     title: '/rewind — roll back to checkpoint',
     summary: 'Roll the conversation back to a previous state, undoing recent changes and letting you take a different approach.',
+    version: '2.1.19',
     lessonRef: 'lesson-1-2',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.19',
   },
   {
     id: 'auto-memory-2025',
@@ -127,9 +131,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'behavior',
     title: 'Auto-memory per project',
     summary: 'Claude automatically persists notes across sessions in ~/.claude/projects/<hash>/memory/. Edit with /memory.',
+    version: '2.1.59',
     lessonRef: 'lesson-2-6',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/memory',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.59',
   },
   {
     id: 'context-command-2025',
@@ -137,9 +142,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'command',
     title: '/context — visualize token usage',
     summary: 'Shows a color-coded grid of your context window usage, helping you decide when to /compact or /clear.',
+    version: '2.0.74',
     lessonRef: 'lesson-1-2',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.0.74',
   },
   {
     id: 'plan-mode-2025',
@@ -147,9 +153,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'command',
     title: '/plan — plan mode',
     summary: 'Enter plan mode to have Claude lay out its approach before executing. Review and edit the plan before any changes are made.',
+    version: '2.1.0',
     lessonRef: 'lesson-8-1',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.0',
   },
   {
     id: 'hooks-system-2025',
@@ -157,9 +164,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'hook',
     title: 'Hooks system launched',
     summary: 'Shell scripts that fire on Claude Code events (PreToolUse, PostToolUse, UserPromptSubmit, Stop). Exit code 2 blocks the action.',
+    version: '2.1.0',
     lessonRef: 'lesson-2-3',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.0',
   },
   {
     id: 'mcp-support-2025',
@@ -167,9 +175,10 @@ export const whatsNew: WhatsNewEntry[] = [
     category: 'behavior',
     title: 'MCP server support',
     summary: 'Connect Claude Code to any MCP (Model Context Protocol) server to add tools, resources, and capabilities.',
+    version: '2.1.70',
     lessonRef: 'lesson-9-1',
     tutorialCovered: true,
-    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/mcp',
+    sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.70',
   },
 ];
 
