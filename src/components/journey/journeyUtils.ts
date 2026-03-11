@@ -16,9 +16,14 @@ export function getNodePosition(i: number, containerWidth: number): NodePosition
   const isMobile = containerWidth < 640;
 
   if (isMobile) {
+    // 2-column boustrophedon on mobile so the path snakes and the walker is visible
+    const MOBILE_COLS = 2;
+    const row = Math.floor(i / MOBILE_COLS);
+    const col = i % MOBILE_COLS;
+    const effectiveCol = row % 2 === 0 ? col : (MOBILE_COLS - 1 - col);
     return {
-      x: containerWidth * 0.5,
-      y: 70 + i * 110,
+      x: containerWidth * (effectiveCol === 0 ? 0.28 : 0.72),
+      y: 80 + row * 140,
     };
   }
 

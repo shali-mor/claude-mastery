@@ -149,10 +149,10 @@ function WalkerFigure({ svgPath, moduleNodes }: { svgPath: string; moduleNodes: 
 
         {/* ── Walking pose ── */}
         <g opacity={isWalking ? 1 : 0}>
-          <ellipse cx="0" cy="10.5" rx="6" ry="1.8" fill="#000" fillOpacity="0.18" />
+          <ellipse cx="0" cy="10.5" rx="6" ry="1.8" fill="black" fillOpacity="0.15" />
           <circle cy="-10" r="4" fill={C} fillOpacity="0.95" />
-          <circle cx="1.5" cy="-11" r="0.7" fill="#0d1117" />
-          <path d="M -1.5 -9 Q 0 -7.5 1.5 -9" fill="none" stroke="#0d1117" strokeWidth="0.6" strokeLinecap="round" />
+          <circle cx="1.5" cy="-11" r="0.7" fill="white" fillOpacity="0.9" />
+          <path d="M -1.5 -9 Q 0 -7.5 1.5 -9" fill="none" stroke="white" strokeOpacity="0.8" strokeWidth="0.6" strokeLinecap="round" />
           <line x1="0" y1="-6.5" x2="0" y2="2" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeOpacity="0.9" />
           <rect x="1" y="-6" width="3.5" height="4.5" rx="1" fill={C} fillOpacity="0.35" stroke={C} strokeWidth="0.5" strokeOpacity="0.55" />
           {/* Arms */}
@@ -190,7 +190,7 @@ function WalkerFigure({ svgPath, moduleNodes }: { svgPath: string; moduleNodes: 
           <circle cy="-10" r="4" fill={C} fillOpacity="0.95" />
           <circle cx="1.5" cy="-11" r="0.7" fill="#0d1117" />
           {/* Neutral/waiting expression */}
-          <line x1="-1.5" y1="-8.5" x2="1.5" y2="-8.5" stroke="#0d1117" strokeWidth="0.7" strokeLinecap="round" />
+          <line x1="-1.5" y1="-8.5" x2="1.5" y2="-8.5" stroke="white" strokeOpacity="0.8" strokeWidth="0.7" strokeLinecap="round" />
           <line x1="0" y1="-6.5" x2="0" y2="2" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeOpacity="0.9" />
           <rect x="1" y="-6" width="3.5" height="4.5" rx="1" fill={C} fillOpacity="0.35" stroke={C} strokeWidth="0.5" strokeOpacity="0.55" />
           {/* Static arms */}
@@ -228,16 +228,15 @@ export function JourneyCanvas({ moduleNodes }: JourneyCanvasProps) {
       style={{ height: canvasHeight }}
     >
       {/* ── Background ── */}
-      <div className="absolute inset-0"
-        style={{ background: 'linear-gradient(160deg, #0d1117 0%, #0f1623 40%, #0a1020 100%)' }} />
-      <div className="absolute inset-0 opacity-[0.04]"
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 dark:from-[#0d1117] dark:via-[#0f1623] dark:to-[#0a1020]" />
+      <div className="absolute inset-0 opacity-[0.05]"
         style={{
-          backgroundImage: 'linear-gradient(#4ade80 1px, transparent 1px), linear-gradient(90deg, #4ade80 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(rgba(99,102,241,1) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,1) 1px, transparent 1px)',
           backgroundSize: '40px 40px',
         }} />
       <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         {BG_TERMS.map(({ text, x, y, rot, size }) => (
-          <span key={text} className="absolute font-mono text-emerald-400/[0.07]"
+          <span key={text} className="absolute font-mono text-slate-900/[0.05] dark:text-emerald-400/[0.07]"
             style={{ left: x, top: y, fontSize: size, transform: `rotate(${rot}deg)`, whiteSpace: 'nowrap' }}>
             {text}
           </span>
@@ -277,7 +276,8 @@ export function JourneyCanvas({ moduleNodes }: JourneyCanvasProps) {
         {/* Connector path */}
         {svgPath && (
           <>
-            <path d={svgPath} fill="none" stroke="#ffffff" strokeWidth="1.5" strokeOpacity="0.06" />
+            <path d={svgPath} fill="none" strokeWidth="1.5"
+              className="stroke-slate-900/10 dark:stroke-white/[0.06]" />
             <motion.path d={svgPath} fill="none" stroke="#f97316" strokeWidth="1.5"
               strokeLinecap="round" strokeOpacity="0.35"
               initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
