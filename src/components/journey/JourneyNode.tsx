@@ -50,7 +50,7 @@ export function JourneyNode({
     ? '#22c55e'
     : status === 'current' || status === 'in-progress'
       ? '#f97316'
-      : '#374151';
+      : '#94a3b8'; // slate-400 — visible on both light and dark backgrounds
 
   const effectiveDash = status === 'complete' ? CIRCUMFERENCE : dash;
   const effectiveGap = status === 'complete' ? 0 : gap;
@@ -96,24 +96,24 @@ export function JourneyNode({
             ? 'bg-green-500/20 shadow-green-500/10'
             : isStarted
               ? tokens.bg
-              : 'bg-white/5',
+              : 'bg-slate-200 dark:bg-white/5',
         )}>
           {isComplete ? (
             <CheckCircle2 className="h-6 w-6 text-green-400" />
           ) : (
             <div style={isStarted ? { color: tokens.hex } : undefined}>
-              <Icon className={cn('h-5 w-5 transition-colors', isStarted ? '' : 'text-white/25')} />
+              <Icon className={cn('h-5 w-5 transition-colors', isStarted ? '' : 'text-slate-400 dark:text-white/25')} />
             </div>
           )}
         </div>
 
         {/* Step badge */}
         <span className={cn(
-          'absolute -bottom-1 -right-0 z-20 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold shadow border border-white/10',
+          'absolute -bottom-1 -right-0 z-20 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold shadow border border-black/5 dark:border-white/10',
           isComplete ? 'bg-green-500 text-white' :
           isCurrent  ? 'bg-orange-500 text-white' :
-          isStarted  ? 'bg-white/15 text-white/80' :
-                       'bg-white/8 text-white/30',
+          isStarted  ? 'bg-slate-300 text-slate-700 dark:bg-white/15 dark:text-white/80' :
+                       'bg-slate-200 text-slate-500 dark:bg-white/8 dark:text-white/30',
         )}>
           {index + 1}
         </span>
@@ -129,11 +129,11 @@ export function JourneyNode({
       {/* Title label */}
       <span className={cn(
         'text-center text-[11px] font-medium leading-tight max-w-[110px] transition-colors',
-        isComplete ? 'text-green-400' :
-        isCurrent  ? 'text-orange-400' :
-        isStarted  ? 'text-white/80' :
-                     'text-white/35',
-        'group-hover:text-white/90',
+        isComplete ? 'text-green-600 dark:text-green-400' :
+        isCurrent  ? 'text-orange-500 dark:text-orange-400' :
+        isStarted  ? 'text-slate-700 dark:text-white/80' :
+                     'text-slate-400 dark:text-white/35',
+        'group-hover:text-slate-900 dark:group-hover:text-white/90',
       )}>
         {title}
       </span>
