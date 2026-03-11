@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, BookOpen, ExternalLink } from 'lucide-react';
+import { Sparkles, BookOpen, ExternalLink, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 import {
   whatsNew,
@@ -135,19 +135,20 @@ export default function WhatsNewPage() {
       </motion.div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
-        {/* Filters — single row */}
-        <div className="flex flex-wrap items-center gap-2 mb-6">
-          {/* Time range segmented control */}
-          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 gap-0.5">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6">
+          {/* Time range group */}
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             {TIME_RANGES.map(({ value, label }) => (
               <button
                 key={value}
                 onClick={() => setTimeRange(value)}
                 className={cn(
-                  'px-3 py-1 rounded-md text-xs font-medium transition-all',
+                  'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
                   timeRange === value
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
                 )}
               >
                 {label}
@@ -157,21 +158,24 @@ export default function WhatsNewPage() {
 
           <div className="w-px h-5 bg-border shrink-0" />
 
-          {/* Category pills */}
-          {FILTERS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setFilter(value)}
-              className={cn(
-                'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
-                filter === value
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
-              )}
-            >
-              {label}
-            </button>
-          ))}
+          {/* Category group */}
+          <div className="flex items-center gap-1.5">
+            <Tag className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            {FILTERS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setFilter(value)}
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
+                  filter === value
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Timeline */}
