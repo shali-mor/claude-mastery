@@ -74,6 +74,16 @@ export const whatsNew: WhatsNewEntry[] = [
   },
   // ── 2025 ────────────────────────────────────────────────────────────────
   {
+    id: 'isolation-worktree-2025',
+    date: '2025-11',
+    category: 'behavior',
+    title: 'Agent worktree isolation',
+    summary: 'Pass `isolation: "worktree"` when spawning an Agent to run it in a separate git branch. Changes are isolated until you review and merge — no risk of polluting main.',
+    detail: 'The worktree is created automatically on a new branch. If the agent makes no changes, the worktree is cleaned up silently. If it does make changes, the branch and path are returned so you can review with `git diff main...branch`, then merge and remove with `git worktree remove`.',
+    lessonRef: 'lesson-7-6',
+    tutorialCovered: true,
+  },
+  {
     id: 'btw-command-2025',
     date: '2025-11',
     category: 'command',

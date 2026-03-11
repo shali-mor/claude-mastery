@@ -10,7 +10,8 @@ export type ContentBlockType =
   | 'tabs'
   | 'exercise'
   | 'checklist'
-  | 'comparison';
+  | 'comparison'
+  | 'visual';
 
 export type CalloutVariant = 'info' | 'warning' | 'success' | 'error' | 'tip';
 
@@ -59,6 +60,8 @@ export interface ContentBlock {
   // comparison — do vs don't side-by-side
   do?: ComparisonSide;
   dont?: ComparisonSide;
+  // visual — embeddable interactive diagram
+  visualId?: string;
 }
 
 export interface Lesson {

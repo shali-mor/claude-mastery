@@ -61,10 +61,10 @@ function formatDate(dateStr: string) {
   return `${months[parseInt(month) - 1]} ${year}`;
 }
 
-// Only show entries from the last 1 month
+// Show entries from the last 6 months so recently-added entries stay visible
 function isRecent(dateStr: string) {
   const now = new Date();
-  const cutoff = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const cutoff = new Date(now.getFullYear(), now.getMonth() - 6, 1);
   const [year, month] = dateStr.split('-').map(Number);
   return new Date(year, month - 1, 1) >= cutoff;
 }

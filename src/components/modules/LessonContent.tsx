@@ -6,9 +6,15 @@ import {
   Info, AlertTriangle, CheckCircle, XCircle, Lightbulb,
   ChevronDown, Eye, EyeOff, Square, CheckSquare, Minus, Plus,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { cn } from '@/lib/utils';
 import type { ContentBlock, CalloutVariant, ChecklistItem } from '@/types/module';
+
+const ContextVsSkillsVisual = dynamic(
+  () => import('@/components/lessons/ContextVsSkillsVisual'),
+  { ssr: false },
+);
 
 // ─── Inline text: renders `backtick code` and **bold** inline ───────────────
 function InlineText({ text }: { text: string }) {
@@ -425,6 +431,12 @@ export function LessonContent({ blocks }: LessonContentProps) {
             return block.do && block.dont ? (
               <ComparisonBlock key={i} doSide={block.do} dontSide={block.dont} />
             ) : null;
+
+          case 'visual':
+            if (block.visualId === 'context-vs-skills') {
+              return <ContextVsSkillsVisual key={i} />;
+            }
+            return null;
 
           default:
             return null;

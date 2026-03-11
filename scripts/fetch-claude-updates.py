@@ -19,18 +19,19 @@ with open(whats_new_path, "r") as f:
 
 prompt = f"""You are maintaining the "What's New" feed for a Claude Code tutorial website.
 
-Current whats-new.ts (first 4000 chars):
-{current_data[:4000]}
+Current whats-new.ts:
+{current_data[:6000]}
 
 Latest @anthropic-ai/claude-code version: {latest_version}
 
 Changelog / release notes fetched today:
-{changelog[:2000] if changelog else "(unavailable — use your knowledge of recent Claude Code updates)"}
+{changelog[:4000] if changelog else "(unavailable — use your knowledge of recent Claude Code updates)"}
 
 Task:
 1. Identify Claude Code features, commands, skills, hooks, or behaviors that are NEW and NOT already listed in the whats-new.ts above.
-2. Only include things that are confirmed and specific — not vague or speculative.
-3. For each new item, output a TypeScript object in this exact format (as a JSON array for easy parsing):
+2. Focus especially on: new slash commands, new hook events, new Agent parameters (like isolation), new skill frontmatter fields, settings.json additions, sub-agent capabilities, MCP improvements, context window tools, cost/model features.
+3. Only include things that are confirmed and specific — not vague or speculative.
+4. For each new item, output a TypeScript object in this exact format (as a JSON array for easy parsing):
 
 Output format — a JSON array of objects:
 [
@@ -50,7 +51,7 @@ If there are no new items to add, output exactly: NO_NEW_UPDATES
 Only output the JSON array or NO_NEW_UPDATES — no other text."""
 
 req_data = json.dumps({
-    "model": "claude-3-5-haiku-20241022",
+    "model": "claude-haiku-4-5-20251001",
     "max_tokens": 2048,
     "messages": [{"role": "user", "content": prompt}]
 }).encode()
