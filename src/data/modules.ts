@@ -446,6 +446,16 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         estimatedMinutes: 18,
         blocks: [
           {
+            type: 'heading',
+            level: 2,
+            content: 'Context vs Skills — the key distinction',
+          },
+          {
+            type: 'visual',
+            visualId: 'context-vs-skills',
+            content: '',
+          },
+          {
             type: 'text',
             content: 'A skill is a plain Markdown file in `.claude/commands/` (project-level) or `~/.claude/commands/` (global). The filename becomes the slash command — `write-test.md` becomes `/write-test`. That\'s it. No configuration, no registration.',
           },
@@ -3000,6 +3010,167 @@ If @upstash/ratelimit is not in package.json, note it as a finding in the table.
             type: 'callout',
             calloutVariant: 'success',
             content: '**The Golden Rule of Sub-Agents**: a multi-agent pipeline is only as reliable as its weakest delegation prompt. Spend 80% of your design time on the prompts — context, goal, output format, and constraints. The infrastructure choices (which agent type, background vs. foreground) take 20% of the thought. Clear communication is the hard part.',
+          },
+        ],
+      },
+      {
+        id: 'lesson-7-6',
+        title: 'Worktree Isolation: Safe File-Writing Agents',
+        description: 'Learn how git worktree isolation protects your working directory — and the full workflow for reviewing, merging, or discarding agent changes.',
+        estimatedMinutes: 12,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Any agent that writes or deletes files is modifying your working directory directly. If it goes wrong — refactors the wrong function, deletes the wrong file, half-implements a feature — there is no clean undo. **Worktree isolation** solves this by giving the agent its own isolated git branch and working directory. Your main branch stays completely untouched until you decide to merge.',
+          },
+          {
+            type: 'heading',
+            content: 'What Actually Happens Under the Hood',
+          },
+          {
+            type: 'text',
+            content: 'When you ask for worktree isolation, Claude Code calls `git worktree add` internally to create a temporary working directory linked to a new branch. The agent runs entirely inside that directory. Your main working directory is never touched.',
+          },
+          {
+            type: 'code',
+            language: 'bash',
+            content: `# What Claude Code does internally when you request isolation:
+git worktree add .claude/worktrees/agent-abc123 -b worktree/agent-abc123
+
+# The agent now has its own isolated working directory:
+# .claude/worktrees/agent-abc123/   ← agent reads/writes here
+# Your project root stays clean     ← never modified by the agent
+
+# After the agent finishes, the branch exists until you act on it:
+git worktree list
+# /Users/you/my-project                                   13c1afc [main]
+# /Users/you/my-project/.claude/worktrees/agent-abc123   361649c [worktree/agent-abc123]`,
+          },
+          {
+            type: 'heading',
+            content: 'How to Request Worktree Isolation',
+          },
+          {
+            type: 'text',
+            content: 'Just say "worktree" or "isolated" in your message — Claude Code handles the git setup:',
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: 'Writing files → use worktree',
+              code: `> Use an isolated general-purpose agent to add
+  rate limiting to every route in src/app/api/.
+  Do not modify files outside that directory.
+
+⠋ Add rate limiting [general-purpose · worktree]
+  ⎿ Creating isolated git branch: worktree/add-rate-limiting
+  ⎿ Reading src/app/api/users/route.ts
+  ⎿ Writing src/app/api/users/route.ts
+  ...
+
+Changes isolated in: worktree/add-rate-limiting
+Review diff and merge when ready.`,
+            },
+            dont: {
+              label: 'No isolation → risky for file writes',
+              code: `> Add rate limiting to every route in src/app/api/.
+
+# Agent writes directly to YOUR working directory.
+# If it goes wrong, git restore . may not help —
+# newly created files are not tracked and won't
+# be restored by a simple reset.`,
+            },
+          },
+          {
+            type: 'heading',
+            content: 'The Full Workflow After the Agent Finishes',
+          },
+          {
+            type: 'steps',
+            content: 'From "agent done" to merged (or discarded)',
+            steps: [
+              '**Review the diff** — ask Claude "show me a diff of the worktree changes", or run `git diff main...worktree/<branch>` yourself. The agent\'s final message will also include a summary of what it changed.',
+              '**Navigate into the worktree** (optional) — run `git worktree list` to get the exact path, then `cd` there to browse files or run tests against the isolated branch before committing to a merge.',
+              '**Merge when satisfied** — ask Claude "merge the worktree into main", or run `git merge worktree/<branch>` from your main branch. Claude will handle the merge commit message.',
+              '**Clean up** — after merging (or if you want to discard), remove the worktree: `git worktree remove .claude/worktrees/agent-abc123`. The linked branch is deleted automatically.',
+            ],
+          },
+          {
+            type: 'heading',
+            content: 'Git Commands Reference',
+          },
+          {
+            type: 'table',
+            headers: ['Command', 'What it does'],
+            rows: [
+              ['`git worktree list`', 'Show all active worktrees — paths and their branches'],
+              ['`cd .claude/worktrees/<name>`', 'Navigate into the isolated working directory to inspect or test'],
+              ['`git diff main...worktree/<branch>`', 'Review every file the agent changed vs your main branch'],
+              ['`git merge worktree/<branch>`', 'Merge the agent\'s changes into main (from the main branch)'],
+              ['`git worktree remove <path>`', 'Remove the worktree directory and delete its branch'],
+              ['`git branch -d worktree/<branch>`', 'Delete just the branch if you already removed the directory'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Claude handles this for you.** You can say "show me a diff of the worktree changes", "merge the worktree into main", or "discard the worktree" — Claude Code will run the git commands. You only need the manual commands when working in a separate terminal window.',
+          },
+          {
+            type: 'heading',
+            content: 'Pattern: Parallel Agents on Separate Worktrees',
+          },
+          {
+            type: 'text',
+            content: 'The real power comes from combining parallelism with isolation. Each agent gets its own worktree — they all run simultaneously with zero risk of overwriting each other\'s changes.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# One message — three isolated parallel agents, each on its own branch:
+
+Spawn 3 isolated agents in parallel:
+
+Agent 1 (worktree, general-purpose):
+  Add zod validation to all routes in src/app/api/users/.
+  Do not touch any other directory.
+
+Agent 2 (worktree, general-purpose):
+  Add zod validation to all routes in src/app/api/payments/.
+  Do not touch any other directory.
+
+Agent 3 (worktree, general-purpose):
+  Add zod validation to all routes in src/app/api/auth/.
+  Do not touch any other directory.
+
+When all three finish, show me a summary of changes per agent.
+I will review each diff before merging.`,
+          },
+          {
+            type: 'text',
+            content: 'Claude creates three branches (`worktree/users-validation`, `worktree/payments-validation`, `worktree/auth-validation`), runs all three agents at once, and reports when each finishes. You review three independent diffs and merge each one on its own terms. A conflict in the auth agent does not affect the others.',
+          },
+          {
+            type: 'heading',
+            content: 'When to Use Worktree Isolation',
+          },
+          {
+            type: 'table',
+            headers: ['Scenario', 'Use worktree?'],
+            rows: [
+              ['Agent will **write or modify files**', '✅ Always'],
+              ['Agent will **create new files**', '✅ Always'],
+              ['Agent will **make git commits**', '✅ Always'],
+              ['**Parallel agents** touching different files', '✅ Strongly recommended — prevents accidental conflicts'],
+              ['Agent is **read-only** (Explore, grep, search)', '❌ Not needed — no files are changed'],
+              ['Agent runs **bash commands** but no file writes', '❌ Optional — no file safety benefit'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'success',
+            content: '**Default rule**: if in doubt, use a worktree. The overhead is one `git worktree add` call. The safety is total. The only cost is one extra step to review and merge — which you should be doing before any agent-written code reaches your main branch anyway.',
           },
         ],
       },
