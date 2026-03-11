@@ -135,46 +135,43 @@ export default function WhatsNewPage() {
       </motion.div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
-        {/* Time range + category filters */}
-        <div className="flex flex-col gap-3 mb-6">
-          {/* Time range — segmented control */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground shrink-0">Show:</span>
-            <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 gap-0.5">
-              {TIME_RANGES.map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setTimeRange(value)}
-                  className={cn(
-                    'px-3 py-1 rounded-md text-xs font-medium transition-all',
-                    timeRange === value
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Category pills */}
-          <div className="flex flex-wrap gap-2">
-            {FILTERS.map(({ value, label }) => (
+        {/* Filters — single row */}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {/* Time range segmented control */}
+          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 gap-0.5">
+            {TIME_RANGES.map(({ value, label }) => (
               <button
                 key={value}
-                onClick={() => setFilter(value)}
+                onClick={() => setTimeRange(value)}
                 className={cn(
-                  'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
-                  filter === value
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
+                  'px-3 py-1 rounded-md text-xs font-medium transition-all',
+                  timeRange === value
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {label}
               </button>
             ))}
           </div>
+
+          <div className="w-px h-5 bg-border shrink-0" />
+
+          {/* Category pills */}
+          {FILTERS.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setFilter(value)}
+              className={cn(
+                'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
+                filter === value
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
+              )}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Timeline */}
