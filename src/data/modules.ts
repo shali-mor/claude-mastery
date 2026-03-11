@@ -1325,6 +1325,207 @@ git commit -m "chore: add Claude Code skill library"`,
           },
         ],
       },
+
+      // ── Lesson 2-6: Memory & Context ────────────────────────────────────
+      {
+        id: 'lesson-2-6',
+        title: 'Memory & Context — How Claude Remembers',
+        description: 'Master the four memory layers and the context window so Claude always has exactly the right information — without burning tokens on noise.',
+        estimatedMinutes: 15,
+        blocks: [
+          {
+            type: 'text',
+            content: 'Claude Code has no persistent memory by default — every session starts blank. But it gives you four distinct layers to inject exactly the right context. Understanding which layer to use (and when) is the difference between Claude that feels like a specialist and Claude that feels like a stranger.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'The four memory layers',
+          },
+          {
+            type: 'table',
+            headers: ['Layer', 'Where it lives', 'Scope', 'Best for'],
+            rows: [
+              ['Global CLAUDE.md', '`~/.claude/CLAUDE.md`', 'Every project on your machine', 'Personal preferences: code style, preferred tools, how you like responses formatted'],
+              ['Project CLAUDE.md', '`.claude/CLAUDE.md` (committed)', 'Everyone on the team, every session', 'Stack, conventions, do-nots, key file map'],
+              ['Auto-memory', '`~/.claude/projects/<hash>/memory/`', 'Persists across sessions for that project', 'Facts Claude discovers mid-session that you want it to remember next time'],
+              ['In-session context', 'The live conversation window', 'Current session only — gone when you /clear', 'Everything Claude is actively working with right now'],
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Layer 1 — Global CLAUDE.md',
+          },
+          {
+            type: 'text',
+            content: 'Lives at `~/.claude/CLAUDE.md`. Loaded automatically in every project on your machine. Use it for personal preferences that have nothing to do with any specific codebase.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# My Global Preferences
+
+## Response style
+- Be concise. Skip preamble — go straight to the answer.
+- Use bullet points over paragraphs for lists.
+- Show diffs for code changes, not full rewrites.
+
+## Tools I always have installed
+- pnpm (not npm), bun for scripts
+- GitHub CLI (gh) for any GitHub operations
+- fd, ripgrep (rg) instead of find/grep
+
+## My conventions
+- Prefer named exports over default exports
+- Always use const over let where possible
+- TypeScript: strict mode always on`,
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Layer 2 — Project CLAUDE.md',
+          },
+          {
+            type: 'text',
+            content: 'Lives at `.claude/CLAUDE.md` inside your project, committed to Git. This is the team-shared instruction manual covered in lesson 2-4. Run `/init` to generate a first draft, then edit it. Run `/memory` to open it for edits at any time.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Both files load together.** Global preferences + project conventions are merged in every session. Keep them separate — global is about *you*, project is about *the codebase*.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Layer 3 — Auto-memory',
+          },
+          {
+            type: 'text',
+            content: 'Claude Code can save facts between sessions automatically. When Claude discovers something worth remembering — an API quirk, a decision you made, a pattern in your codebase — it can write it to a memory file that gets loaded next session.',
+          },
+          {
+            type: 'steps',
+            content: 'How to use auto-memory',
+            steps: [
+              'Tell Claude to remember something: "Remember that we use snake_case for database columns but camelCase in TypeScript"',
+              'Claude writes it to `~/.claude/projects/<hash>/memory/MEMORY.md`',
+              'Next session, that fact is automatically injected into context',
+              'Run `/memory` to view and edit all memory files at once',
+            ],
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: '✅ Good things to save in memory',
+              language: 'text',
+              code: `- Architectural decisions: "We chose Zustand over Redux because..."
+- Codebase quirks: "The auth module has a known issue with..."
+- Team preferences discovered mid-session
+- File locations you keep having to rediscover
+- API keys or env var names (never values)`,
+            },
+            dont: {
+              label: '❌ Bad things to save in memory',
+              language: 'text',
+              code: `- Temporary task context ("we're fixing the login bug")
+- Things already in CLAUDE.md (duplication = noise)
+- Sensitive data, secrets, passwords
+- Anything that will be stale in a week`,
+            },
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Layer 4 — The context window',
+          },
+          {
+            type: 'text',
+            content: 'The context window is the live conversation: every message, every tool result, every file Claude has read. It is powerful but finite — Claude Code runs on models with 200K token windows, but costs grow with every turn.',
+          },
+          {
+            type: 'table',
+            headers: ['What\'s in the context window', 'Rough token cost'],
+            rows: [
+              ['System prompt (CLAUDE.md files)', '~1–3K tokens per session'],
+              ['Each message you send', '~50–500 tokens'],
+              ['Each file Claude reads', '~200–5K tokens per file'],
+              ['Tool call results (bash output, etc.)', '~100–2K tokens each'],
+              ['Claude\'s responses', '~200–2K tokens each'],
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Managing the context window',
+          },
+          {
+            type: 'steps',
+            content: 'Four tools for staying in control',
+            steps: [
+              '`/context` — visualize how full the window is as a color grid (green → yellow → red)',
+              '`/cost` — see exact token counts and USD cost for the current session',
+              '`/compact [focus instructions]` — summarize the conversation, keeping key context at ~10% of the token cost. Add focus instructions like "focus on the auth changes" to preserve what matters.',
+              '`/clear` — start completely fresh when switching to an unrelated task',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**Context ≠ Memory.** When you `/clear` or start a new session, the context window is wiped — but CLAUDE.md files and auto-memory persist. This is why you put stable facts in CLAUDE.md, not just in the conversation.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Best practices: memory vs context',
+          },
+          {
+            type: 'table',
+            headers: ['Information type', 'Where to put it', 'Why'],
+            rows: [
+              ['Tech stack, conventions, do-nots', 'Project CLAUDE.md', 'Needs to be available every session, for every teammate'],
+              ['Personal code style preferences', 'Global CLAUDE.md', 'Applies to all your projects, not just this one'],
+              ['Mid-session discoveries', 'Ask Claude to auto-remember it', 'Survives session end without manual maintenance'],
+              ['Current task files and context', 'Let it live in context window', 'Temporary — no need to persist'],
+              ['Long-running conversation', '/compact then continue', 'Reduces cost while preserving direction'],
+              ['Completely new task', '/clear then start fresh', 'Dirty context from the old task degrades quality'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**The 3-layer rule:** Put it in CLAUDE.md if it\'s always true. Ask Claude to remember it if it\'s true for this project going forward. Let it stay in context if it\'s only relevant today.',
+          },
+          {
+            type: 'exercise',
+            content: 'Set up your memory stack',
+            exercise: {
+              prompt: 'Create a global CLAUDE.md at `~/.claude/CLAUDE.md` with your personal preferences. Then open your current project\'s CLAUDE.md with `/memory` and add one architectural decision you\'ve made recently that Claude should always know about.',
+              hints: [
+                'Global CLAUDE.md: focus on how YOU like to work, not project specifics',
+                'Use /init if you don\'t have a project CLAUDE.md yet',
+                'Keep both files under 200 lines — brevity beats completeness',
+              ],
+              solution: `# ~/.claude/CLAUDE.md (global — your preferences)
+## My style
+- Skip preamble. Answer first, explain second.
+- Use short, direct sentences.
+- Prefer pnpm over npm.
+- TypeScript strict mode always.
+
+---
+
+# .claude/CLAUDE.md addition (project — architectural decision)
+## Architecture decisions
+- We use server-side rendering for all data fetching (no client-side fetch).
+  Rationale: SEO + simpler auth token handling.
+  Decision date: 2024-Q1. Do not add useEffect data fetching.`,
+              solutionLanguage: 'markdown',
+            },
+          },
+        ],
+      },
     ],
   },
   {
