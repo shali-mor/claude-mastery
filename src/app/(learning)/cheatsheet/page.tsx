@@ -172,16 +172,16 @@ export default function CheatsheetPage() {
 
           {/* 5 — Project File Structure */}
           <SectionCard n={5} title="Project File Structure">
-            <Code>{`your-project/
-├── CLAUDE.md             ← auto-loaded
+            <pre className="bg-muted rounded-md font-mono text-[9.5px] p-2.5 overflow-x-auto whitespace-pre leading-relaxed text-foreground">{`your-project/
+├── CLAUDE.md        ← auto-loaded
 ├── .claude/
-│   ├── settings.json     ← hooks config
+│   ├── settings.json    ← hooks
 │   ├── settings.local.json
 │   ├── commands/
-│   │   └── skill.md      ← /skill
+│   │   └── skill.md   ← /skill
 │   └── hooks/
 │       └── guard.sh
-└── .gitignore`}</Code>
+└── .gitignore`}</pre>
             <div className="space-y-0.5">
               <Bullet>Commit <Cmd>.claude/commands/</Cmd> to Git — whole team gets skills</Bullet>
               <Bullet>Add <Cmd>settings.local.json</Cmd> to .gitignore</Bullet>
