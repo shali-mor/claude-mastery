@@ -42,9 +42,21 @@ Output format — a JSON array of objects:
     "title": "Short title (max 60 chars)",
     "summary": "One sentence describing what changed and why it matters.",
     "detail": "Optional extra context or usage example. Can be empty string.",
-    "tutorialCovered": false
+    "tutorialCovered": false,
+    "sourceUrl": "https://docs.anthropic.com/en/docs/claude-code/<relevant-page>"
   }}
 ]
+
+For sourceUrl, use the most relevant official docs page. Common values:
+- commands/slash commands: https://docs.anthropic.com/en/docs/claude-code/cli-reference
+- hooks: https://docs.anthropic.com/en/docs/claude-code/hooks
+- memory: https://docs.anthropic.com/en/docs/claude-code/memory
+- MCP: https://docs.anthropic.com/en/docs/claude-code/mcp
+- sub-agents/worktrees: https://docs.anthropic.com/en/docs/claude-code/sub-agents
+- settings: https://docs.anthropic.com/en/docs/claude-code/settings
+- skills/slash commands: https://docs.anthropic.com/en/docs/claude-code/slash-commands
+- plugins: https://docs.anthropic.com/en/docs/claude-code/plugins
+- overview: https://docs.anthropic.com/en/docs/claude-code/overview
 
 If there are no new items to add, output exactly: NO_NEW_UPDATES
 

@@ -11,6 +11,7 @@ export interface WhatsNewEntry {
   lessonRef?: string; // lesson ID if covered in tutorial
   tutorialCovered: boolean;
   isBreaking?: boolean;
+  sourceUrl?: string; // link to official docs page
 }
 
 export const whatsNew: WhatsNewEntry[] = [
@@ -24,6 +25,7 @@ export const whatsNew: WhatsNewEntry[] = [
     detail: 'Plugins bundle multiple skills, scripts, and assets into a distributable package. Skills in plugins are namespaced (/plugin-name:command). Submit your own at claude.ai/settings/plugins/submit.',
     lessonRef: 'lesson-2-1',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/plugins',
   },
   {
     id: 'skill-frontmatter-fields-2026',
@@ -34,6 +36,7 @@ export const whatsNew: WhatsNewEntry[] = [
     detail: 'argument-hint shows in autocomplete. allowed-tools restricts which tools the skill can use. context: fork runs in an isolated subagent. model pins a specific Claude model for the skill.',
     lessonRef: 'lesson-2-2',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/slash-commands',
   },
   {
     id: 'skill-auto-activation-2026',
@@ -43,6 +46,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Claude reads all skill description fields at session start and automatically invokes the matching skill — no /command needed.',
     lessonRef: 'lesson-2-2',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/slash-commands',
   },
   {
     id: 'agentskills-standard-2026',
@@ -52,6 +56,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Claude Code skills now follow the AgentSkills open standard (agentskills.io), making them compatible across multiple AI tools.',
     lessonRef: 'lesson-2-1',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/slash-commands',
   },
   {
     id: 'prewrite-hook-2026',
@@ -62,6 +67,7 @@ export const whatsNew: WhatsNewEntry[] = [
     detail: 'Like PreToolUse but scoped specifically to file write operations. Exit code 2 blocks the write.',
     lessonRef: 'lesson-2-3',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
   },
   {
     id: 'notification-hook-2026',
@@ -71,6 +77,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'New Notification hook event fires when Claude sends a notification (e.g. task complete, attention needed).',
     lessonRef: 'lesson-2-3',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
   },
   // ── 2025 ────────────────────────────────────────────────────────────────
   {
@@ -82,6 +89,7 @@ export const whatsNew: WhatsNewEntry[] = [
     detail: 'The worktree is created automatically on a new branch. If the agent makes no changes, the worktree is cleaned up silently. If it does make changes, the branch and path are returned so you can review with `git diff main...branch`, then merge and remove with `git worktree remove`.',
     lessonRef: 'lesson-7-6',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/sub-agents',
   },
   {
     id: 'btw-command-2025',
@@ -91,6 +99,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Ask a quick question without it being saved to conversation history. /btw spawns a temporary agent that answers and disappears.',
     lessonRef: 'lesson-1-2',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
   },
   {
     id: 'fork-command-2025',
@@ -100,6 +109,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Branch the current conversation from this point, preserving context while allowing you to explore a different direction.',
     lessonRef: 'lesson-1-2',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
   },
   {
     id: 'rewind-command-2025',
@@ -109,6 +119,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Roll the conversation back to a previous state, undoing recent changes and letting you take a different approach.',
     lessonRef: 'lesson-1-2',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
   },
   {
     id: 'auto-memory-2025',
@@ -118,6 +129,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Claude automatically persists notes across sessions in ~/.claude/projects/<hash>/memory/. Edit with /memory.',
     lessonRef: 'lesson-2-6',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/memory',
   },
   {
     id: 'context-command-2025',
@@ -127,6 +139,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Shows a color-coded grid of your context window usage, helping you decide when to /compact or /clear.',
     lessonRef: 'lesson-1-2',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
   },
   {
     id: 'plan-mode-2025',
@@ -136,6 +149,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Enter plan mode to have Claude lay out its approach before executing. Review and edit the plan before any changes are made.',
     lessonRef: 'lesson-8-1',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/cli-reference',
   },
   {
     id: 'hooks-system-2025',
@@ -145,6 +159,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Shell scripts that fire on Claude Code events (PreToolUse, PostToolUse, UserPromptSubmit, Stop). Exit code 2 blocks the action.',
     lessonRef: 'lesson-2-3',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/hooks',
   },
   {
     id: 'mcp-support-2025',
@@ -154,6 +169,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Connect Claude Code to any MCP (Model Context Protocol) server to add tools, resources, and capabilities.',
     lessonRef: 'lesson-9-1',
     tutorialCovered: true,
+    sourceUrl: 'https://docs.anthropic.com/en/docs/claude-code/mcp',
   },
 ];
 

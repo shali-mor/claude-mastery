@@ -225,6 +225,17 @@ export default function WhatsNewPage() {
                                 Not yet in tutorial
                               </span>
                             )}
+                            {entry.sourceUrl && (
+                              <a
+                                href={entry.sourceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                Official docs
+                              </a>
+                            )}
                             {entry.version && (
                               <span className="text-[10px] text-muted-foreground/50">v{entry.version}</span>
                             )}
