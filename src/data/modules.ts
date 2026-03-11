@@ -301,9 +301,50 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
             headers: ['Extension', 'What it is', 'When to use it'],
             rows: [
               ['Slash command', 'Built-in Claude Code command (`/help`, `/compact`, `/clear`)', 'Standard Claude Code actions — cannot be added, only used'],
+              ['Bundled skill', 'A skill pre-installed by Anthropic (`/simplify`, `/batch`, `/loop`)', 'Ships with Claude Code — use them as-is, no setup needed'],
               ['Skill (custom command)', 'A Markdown file in `.claude/commands/` invoked with `/name`', 'Reusable prompts or workflows specific to **your project or team**'],
               ['Hook', 'A shell script that fires automatically on Claude Code events', 'Automations that run **without user input** — lint on save, block dangerous commands, log all actions'],
             ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Commands vs Skills — what\'s the real difference?',
+          },
+          {
+            type: 'text',
+            content: 'Commands and skills both use `/name` syntax, which makes them easy to confuse. The difference is **where the logic lives**.',
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: 'Slash command (built-in)',
+              language: 'text',
+              code: `/compact
+/btw what does Array.at() do?
+/plan
+/fork
+
+→ Hardcoded into the Claude Code binary.
+→ No .md file involved.
+→ Works on any machine, always.`,
+            },
+            dont: {
+              label: 'Skill (.md file)',
+              language: 'text',
+              code: `/simplify        ← bundled skill (Anthropic)
+/my-review       ← your custom skill
+
+→ Driven by a Markdown prompt file.
+→ Lives in .claude/commands/ or ~/.claude/commands/
+→ Only available where the file exists.`,
+            },
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Quick test:** If it works on a fresh machine with no `.claude/` folder, it\'s a command. If it needs a `.md` file somewhere, it\'s a skill.\n\n**Bundled skills** like `/simplify`, `/batch`, `/loop`, and `/claude-api` are the middle ground — they\'re Anthropic-authored `.md` files that ship inside the Claude Code installation, so they\'re always available without any setup on your part.',
           },
           {
             type: 'heading',
