@@ -27,6 +27,15 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: 'api', label: 'API' },
 ];
 
+type TimeRange = '1m' | '3m' | '6m' | 'all';
+
+const TIME_RANGES: { value: TimeRange; label: string }[] = [
+  { value: '1m', label: 'Last month' },
+  { value: '3m', label: 'Last 3 months' },
+  { value: '6m', label: 'Last 6 months' },
+  { value: 'all', label: 'All time' },
+];
+
 function getLessonTitle(lessonRef: string) {
   for (const mod of modules) {
     const lesson = mod.lessons.find(l => l.id === lessonRef);
@@ -61,28 +70,30 @@ function formatDate(dateStr: string) {
   return `${months[parseInt(month) - 1]} ${year}`;
 }
 
-// Show entries from the last 6 months so recently-added entries stay visible
-function isRecent(dateStr: string) {
+function isWithinRange(dateStr: string, range: TimeRange) {
+  if (range === 'all') return true;
+  const months = range === '1m' ? 1 : range === '3m' ? 3 : 6;
   const now = new Date();
-  const cutoff = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+  const cutoff = new Date(now.getFullYear(), now.getMonth() - months, 1);
   const [year, month] = dateStr.split('-').map(Number);
   return new Date(year, month - 1, 1) >= cutoff;
 }
 
 export default function WhatsNewPage() {
   const [filter, setFilter] = useState<Filter>(ALL);
+  const [timeRange, setTimeRange] = useState<TimeRange>('6m');
   const [showUncovered, setShowUncovered] = useState(false);
 
-  const recent = whatsNew.filter(e => isRecent(e.date));
+  const inRange = whatsNew.filter(e => isWithinRange(e.date, timeRange));
 
-  const filtered = recent.filter(e => {
+  const filtered = inRange.filter(e => {
     if (filter !== ALL && e.category !== filter) return false;
     if (showUncovered && e.tutorialCovered) return false;
     return true;
   });
 
   const grouped = groupByDate(filtered);
-  const uncoveredCount = recent.filter(e => !e.tutorialCovered).length;
+  const uncoveredCount = inRange.filter(e => !e.tutorialCovered).length;
 
   return (
     <div className="min-h-screen pb-20">
@@ -124,22 +135,46 @@ export default function WhatsNewPage() {
       </motion.div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {FILTERS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setFilter(value)}
-              className={cn(
-                'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
-                filter === value
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
-              )}
-            >
-              {label}
-            </button>
-          ))}
+        {/* Time range + category filters */}
+        <div className="flex flex-col gap-3 mb-6">
+          {/* Time range — segmented control */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground shrink-0">Show:</span>
+            <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 gap-0.5">
+              {TIME_RANGES.map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setTimeRange(value)}
+                  className={cn(
+                    'px-3 py-1 rounded-md text-xs font-medium transition-all',
+                    timeRange === value
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Category pills */}
+          <div className="flex flex-wrap gap-2">
+            {FILTERS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setFilter(value)}
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
+                  filter === value
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Timeline */}
