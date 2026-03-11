@@ -5377,24 +5377,267 @@ return results;`,
       {
         id: 'lesson-13-4',
         title: 'Claude as the Swing Trading Analyst',
-        description: 'Structure the stock data as context, craft the swing trading prompt, and format the Telegram message.',
-        estimatedMinutes: 15,
+        description: 'Structure the stock data as context, craft the swing trading prompt, format the Telegram message, and deploy the complete bot.',
+        estimatedMinutes: 20,
         blocks: [
+          // ── Intro ──────────────────────────────────────────────────────────
           {
             type: 'text',
-            content: 'With clean, structured signal data for each stock, we now ask Claude to act as a swing trading analyst. The key is giving Claude a clear strategy definition, the data in a scannable format, and a structured output requirement so n8n can format the Telegram message reliably.',
+            content: 'This is the final lesson — we wire everything together. You now have clean, scored signal data for each stock. In this lesson you\'ll:\n\n1. Pass that data to Claude with a precise swing-trading prompt\n2. Parse Claude\'s structured JSON response\n3. Format and deliver the picks as a Telegram message\n4. Add an error branch so you\'re alerted if anything breaks\n5. Deploy and test the bot end-to-end',
+          },
+
+          // ── Do I need a Git repo? ──────────────────────────────────────────
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Do I need a separate Git repo for this?**\n\nNo — n8n workflows live entirely inside n8n, not in your filesystem. All the JavaScript snippets in this lesson go into n8n **Code nodes** (copy-paste into the node editor). You do not need to create a project, run npm install, or push code anywhere.\n\nThe only external file you might want to version-control is your workflow JSON export (n8n → Export workflow → save to your repo). That\'s optional but recommended for backup.',
+          },
+
+          // ── Workflow map ───────────────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Complete Workflow Architecture',
+            level: 2,
+          },
+          {
+            type: 'text',
+            content: 'Here is the full 13-node pipeline. Use this as your reference as you build each node:',
+          },
+          {
+            type: 'visual',
+            visualId: 'stock-bot-workflow',
+          },
+
+          // ── Node 1 & 2: Triggers ──────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Nodes 1 & 2 — Triggers',
+            level: 2,
+          },
+          {
+            type: 'table',
+            headers: ['Setting', 'Schedule Trigger', 'Telegram Trigger'],
+            rows: [
+              ['Node type', 'Schedule Trigger', 'Telegram Trigger'],
+              ['Cron expression', '`0 8 * * 1-5`', '—'],
+              ['Human time', 'Mon–Fri at 8:00 AM', '—'],
+              ['Telegram event', '—', 'Message received'],
+              ['Command filter', '—', '`/picks`'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Connect both triggers to the **Merge** node. Set the Merge node to "Respond to All Inputs." This lets the workflow run on a schedule **and** on demand — whichever trigger fires first wins.',
+          },
+
+          // ── Node 3: Merge ─────────────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 3 — Merge',
+            level: 2,
+          },
+          {
+            type: 'table',
+            headers: ['Setting', 'Value'],
+            rows: [
+              ['Node type', 'Merge'],
+              ['Mode', 'Passthrough (respond to each input independently)'],
+              ['Purpose', 'Allows both Schedule and Telegram triggers to start the same pipeline'],
+            ],
+          },
+
+          // ── Node 4: Set Watchlist ─────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 4 — Set Watchlist (Code node)',
+            level: 2,
+          },
+          {
+            type: 'text',
+            content: 'Paste this code into a **Code node** named "Set Watchlist." It defines the 20 tickers you want to screen every day.',
           },
           {
             type: 'code',
             language: 'javascript',
-            content: `// n8n Code node — build the Claude prompt from all stock signals
+            content: `// ── Paste into: Code node → "Set Watchlist" ──────────────────────────────
+// Edit this list to match your watchlist.
+// Keep it at 20–30 tickers; Yahoo Finance rate-limits at ~50/min.
+
+const tickers = [
+  'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META',
+  'AMZN', 'TSLA', 'JPM', 'V',    'MA',
+  'UNH',  'LLY',  'XOM', 'CVX',  'HD',
+  'COST', 'AVGO', 'ASML', 'AMD', 'NFLX',
+];
+
+return tickers.map(ticker => ({ json: { ticker } }));`,
+          },
+
+          // ── Node 5: Yahoo Finance HTTP ────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 5 — HTTP Request: Yahoo Finance',
+            level: 2,
+          },
+          {
+            type: 'table',
+            headers: ['Setting', 'Value'],
+            rows: [
+              ['Node type', 'HTTP Request'],
+              ['Method', 'GET'],
+              ['URL', '`https://query1.finance.yahoo.com/v8/finance/chart/{{ $json.ticker }}?interval=1d&range=90d`'],
+              ['Send headers?', 'No (Yahoo Finance does not require auth)'],
+              ['Loop over items?', 'Yes — n8n runs this node once per ticker automatically'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: 'Yahoo Finance is a public, unofficial endpoint. It works reliably for personal projects but has no SLA. If you get 429 errors, add a **Wait node** (0.5s) before the HTTP Request to throttle the loop.',
+          },
+
+          // ── Node 6: Compute Signals ────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 6 — Code: Compute Signals',
+            level: 2,
+          },
+          {
+            type: 'text',
+            content: 'Paste this into a **Code node** named "Compute Signals." It runs after the Yahoo Finance HTTP node and computes RSI, MACD, 50-day SMA, and volume ratio from the raw OHLCV data.',
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// ── Paste into: Code node → "Compute Signals" ───────────────────────────
+// This node receives one item per ticker from the Yahoo Finance HTTP node.
+
+const item = $input.first().json;
+const ticker = item.meta?.symbol ?? 'UNKNOWN';
+
+// Yahoo Finance response structure
+const closes  = item.indicators?.quote?.[0]?.close  ?? [];
+const volumes = item.indicators?.quote?.[0]?.volume ?? [];
+
+if (closes.length < 50) {
+  return [{ json: { ticker, error: 'Insufficient data' } }];
+}
+
+// ── RSI (14-period) ────────────────────────────────────────────────────────
+function calcRSI(prices, period = 14) {
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const diff = prices[i] - prices[i - 1];
+    if (diff > 0) gains  += diff;
+    else          losses -= diff;
+  }
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  for (let i = period + 1; i < prices.length; i++) {
+    const diff = prices[i] - prices[i - 1];
+    avgGain = (avgGain * (period - 1) + Math.max(diff, 0)) / period;
+    avgLoss = (avgLoss * (period - 1) + Math.max(-diff, 0)) / period;
+  }
+  return avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
+}
+
+// ── EMA helper ─────────────────────────────────────────────────────────────
+function calcEMA(prices, period) {
+  const k = 2 / (period + 1);
+  let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  for (let i = period; i < prices.length; i++) {
+    ema = prices[i] * k + ema * (1 - k);
+  }
+  return ema;
+}
+
+// ── MACD (12/26/9) ─────────────────────────────────────────────────────────
+const ema12 = calcEMA(closes, 12);
+const ema26 = calcEMA(closes, 26);
+const macdLine   = ema12 - ema26;
+const signalLine = calcEMA(closes.slice(-9).map((_, i) =>
+  calcEMA(closes.slice(0, closes.length - 9 + i + 1), 12) -
+  calcEMA(closes.slice(0, closes.length - 9 + i + 1), 26)
+), 9);
+
+// ── 50-day SMA ─────────────────────────────────────────────────────────────
+const sma50 = closes.slice(-50).reduce((a, b) => a + b, 0) / 50;
+
+// ── Volume ratio (last 5 days vs 20-day avg) ───────────────────────────────
+const recentVol = volumes.slice(-5).reduce((a, b) => a + b, 0) / 5;
+const avgVol20  = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+const volumeRatio = avgVol20 > 0 ? recentVol / avgVol20 : 1;
+
+// ── 30-day price change ────────────────────────────────────────────────────
+const price30dAgo    = closes[closes.length - 31] ?? closes[0];
+const currentPrice   = closes[closes.length - 1];
+const priceChange30d = ((currentPrice - price30dAgo) / price30dAgo) * 100;
+
+return [{
+  json: {
+    ticker,
+    currentPrice:   Math.round(currentPrice * 100) / 100,
+    rsi:            Math.round(calcRSI(closes) * 10) / 10,
+    macdLine:       Math.round(macdLine * 100) / 100,
+    macdCrossingUp: macdLine > signalLine && macdLine > 0,
+    aboveSMA50:     currentPrice > sma50,
+    volumeRatio:    Math.round(volumeRatio * 100) / 100,
+    priceChange30d: Math.round(priceChange30d * 10) / 10,
+  },
+}];`,
+          },
+
+          // ── Node 7: Filter ────────────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 7 — Filter',
+            level: 2,
+          },
+          {
+            type: 'table',
+            headers: ['Setting', 'Value'],
+            rows: [
+              ['Node type', 'Filter'],
+              ['Condition 1', '`rsi` is less than `70` (drop overbought stocks)'],
+              ['Condition 2', '`priceChange30d` is less than `20` (drop stocks already extended)'],
+              ['Combine with', 'AND (both conditions must pass)'],
+              ['Purpose', 'Pre-filters the list before sending to Claude — reduces token usage and noise'],
+            ],
+          },
+
+          // ── Node 8: Build Prompt ───────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 8 — Code: Build Prompt',
+            level: 2,
+          },
+          {
+            type: 'text',
+            content: 'This **Code node** (named "Build Prompt") collects **all** filtered stocks at once and constructs the full message for Claude. It runs once after all tickers have been processed.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'In n8n, set this Code node to **"Run Once for All Items"** mode. This aggregates all filtered ticker items into a single array so you send one API call to Claude instead of one per stock.',
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// ── Paste into: Code node → "Build Prompt" (Run Once for All Items) ────────
+
 const stocks = $input.all().map(i => i.json);
 
 const stockTable = stocks.map(s =>
-  \`\${s.ticker}: price=\$\${s.currentPrice} RSI=\${s.rsi} MACD=\${s.macdLine}(\${s.macdCrossingUp ? 'crossing up' : 'flat'}) vs50SMA=\${s.aboveSMA50 ? 'above' : 'below'} volRatio=\${s.volumeRatio}x 30d%=\${s.priceChange30d}%\`
+  \`\${s.ticker}: price=\$\${s.currentPrice} RSI=\${s.rsi} ` +
+  `MACD=\${s.macdLine}(\${s.macdCrossingUp ? 'crossing up' : 'flat'}) ` +
+  `vs50SMA=\${s.aboveSMA50 ? 'above' : 'below'} ` +
+  `volRatio=\${s.volumeRatio}x 30d%=\${s.priceChange30d}%\`
 ).join('\\n');
 
-const prompt = \`You are a swing trading analyst. The investor's strategy is to hold positions for 1–2 months, targeting 10–25% gains by riding medium-term momentum.
+const prompt = \`You are a swing trading analyst. ` +
+`The investor's strategy is to hold positions for 1–2 months, ` +
+`targeting 10–25% gains by riding medium-term momentum.
 
 Today's screening data for \${stocks.length} stocks:
 \${stockTable}
@@ -5411,14 +5654,14 @@ Task:
 2. Select the TOP 3 buy candidates
 3. For each pick, give: ticker, score, one-sentence reason, and one key risk to watch
 
-Respond in this exact JSON format:
+Respond ONLY in this exact JSON format (no markdown fences, no commentary):
 {
   "date": "YYYY-MM-DD",
   "picks": [
     {
       "ticker": "AAPL",
       "score": 4,
-      "reason": "RSI recovering from 48 with MACD crossover and volume surge — momentum building.",
+      "reason": "RSI recovering from 48 with MACD crossover and volume surge.",
       "risk": "Watch for broad market selloff given high beta."
     }
   ],
@@ -5427,32 +5670,141 @@ Respond in this exact JSON format:
 
 return [{ json: { prompt, stockCount: stocks.length } }];`,
           },
+
+          // ── Node 9: Claude API ─────────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 9 — HTTP Request: Claude API',
+            level: 2,
+          },
+          {
+            type: 'table',
+            headers: ['Setting', 'Value'],
+            rows: [
+              ['Node type', 'HTTP Request'],
+              ['Method', 'POST'],
+              ['URL', '`https://api.anthropic.com/v1/messages`'],
+              ['Authentication', 'Generic Credential Type → Header Auth'],
+              ['Header name', '`x-api-key`'],
+              ['Header value', 'Your Anthropic API key (from credential store)'],
+              ['Header: anthropic-version', '`2023-06-01`'],
+              ['Body (JSON)', 'See snippet below'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**Store your API key in n8n\'s Credential store — never paste it directly into the node.**\n\nIn n8n: Settings → Credentials → New → Generic Credential Type → Header Auth. Name it "Anthropic" and use `x-api-key` as the header name.',
+          },
+          {
+            type: 'code',
+            language: 'json',
+            content: `{
+  "model": "claude-haiku-4-5-20251001",
+  "max_tokens": 1024,
+  "messages": [
+    {
+      "role": "user",
+      "content": "{{ $json.prompt }}"
+    }
+  ]
+}`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Use `claude-haiku-4-5-20251001` for this task — it\'s ~20× cheaper than Opus and handles structured JSON output with reasoning perfectly. Three picks with scores and reasoning easily fit in 1024 tokens.',
+          },
+
+          // ── Error branch ───────────────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Error Branch — Nodes 9a & 9b',
+            level: 2,
+          },
+          {
+            type: 'text',
+            content: 'Connect an **error output** from the Claude API HTTP node. If the call fails (network error, 429, invalid key), n8n routes to this branch instead of silently failing.',
+          },
           {
             type: 'steps',
-            content: 'Wire Claude API call and format Telegram message',
             steps: [
-              'Add an HTTP Request node: POST https://api.anthropic.com/v1/messages',
-              'Headers: x-api-key (from credential), anthropic-version: 2023-06-01',
-              'Body: model claude-haiku-4-5-20251001, max_tokens: 1024, messages with the prompt',
-              'Add a Code node to parse Claude\'s JSON response and format a Telegram message',
-              'Add the Telegram node to send the formatted message',
+              'Click the Claude API HTTP node → open Settings → toggle **"Continue on Fail"** OFF',
+              'Hover the node and click the red **error** output dot (bottom-right corner)',
+              'Connect a **Code node** ("Error Message") with the snippet below',
+              'Connect that to a **Telegram node** ("Send Error") so you get an instant alert',
             ],
           },
           {
             type: 'code',
             language: 'javascript',
-            content: `// n8n Code node — parse Claude response and format Telegram HTML message
-const raw = $input.first().json.content[0].text;
+            content: `// ── Paste into: Code node → "Error Message" (error branch) ─────────────────
+
+const err = $input.first().json.error ?? 'Unknown error';
+
+return [{
+  json: {
+    message: \`❌ <b>Stock Bot Error</b>\\n\\n\` +
+             \`The daily picks run failed.\\n\` +
+             \`<code>\${err}</code>\\n\\n\` +
+             \`Check n8n → Executions for the full trace.\`
+  }
+}];`,
+          },
+
+          // ── Node 10: Parse Response ────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 10 — Code: Parse Response',
+            level: 2,
+          },
+          {
+            type: 'text',
+            content: 'Paste this into a **Code node** named "Parse Response." It extracts the text from the Claude API response and safely parses the JSON, handling any markdown fences Claude might add.',
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// ── Paste into: Code node → "Parse Response" ───────────────────────────────
+
+const raw = $input.first().json.content?.[0]?.text ?? '';
 
 let data;
 try {
-  // Claude sometimes wraps JSON in markdown fences — strip them
-  data = JSON.parse(raw.replace(/^\`\`\`json\\n?|\\n?\`\`\`$/g, '').trim());
+  // Claude sometimes wraps JSON in markdown fences — strip them just in case
+  const cleaned = raw.replace(/^\`\`\`json\\s*|\\s*\`\`\`$/g, '').trim();
+  data = JSON.parse(cleaned);
 } catch (e) {
-  return [{ json: { message: '❌ Could not parse Claude response. Try again.' } }];
+  return [{
+    json: {
+      message: '❌ Could not parse Claude\'s response. Check n8n → Executions.',
+      parseError: String(e),
+      rawResponse: raw,
+    }
+  }];
 }
 
-const medals = ['🥇','🥈','🥉'];
+return [{ json: data }];`,
+          },
+
+          // ── Node 11: Format Telegram ───────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 11 — Code: Format Telegram Message',
+            level: 2,
+          },
+          {
+            type: 'text',
+            content: 'Paste this into a **Code node** named "Format Message." It builds a nicely formatted Telegram HTML message from Claude\'s parsed picks.',
+          },
+          {
+            type: 'code',
+            language: 'javascript',
+            content: `// ── Paste into: Code node → "Format Message" ───────────────────────────────
+
+const data = $input.first().json;
+const medals = ['🥇', '🥈', '🥉'];
+
 const lines = [
   \`📈 <b>Swing Trade Picks — \${data.date}</b>\\n\`,
   \`<i>\${data.summary}</i>\\n\`,
@@ -5462,19 +5814,49 @@ data.picks.forEach((p, i) => {
   lines.push(
     \`\${medals[i]} <b>\${p.ticker}</b> (score: \${p.score}/5)\`,
     \`💡 \${p.reason}\`,
-    \`⚠️ Risk: \${p.risk}\\n\`
+    \`⚠️ Risk: \${p.risk}\\n\`,
   );
 });
 
-lines.push('\\n<i>Not financial advice. Do your own research.</i>');
+lines.push('<i>Not financial advice. Do your own research.</i>');
 
 return [{ json: { message: lines.join('\\n') } }];`,
           },
+
+          // ── Node 12: Telegram Send ─────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Node 12 — Telegram: Send Picks',
+            level: 2,
+          },
+          {
+            type: 'table',
+            headers: ['Setting', 'Value'],
+            rows: [
+              ['Node type', 'Telegram'],
+              ['Credential', 'Your Telegram bot token (from BotFather)'],
+              ['Operation', 'Send Message'],
+              ['Chat ID', 'Your personal Telegram chat ID (or a group ID)'],
+              ['Text', '`{{ $json.message }}`'],
+              ['Parse Mode', 'HTML'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**How to get your Telegram chat ID:** Message @userinfobot in Telegram — it replies with your chat ID. For a group, add @userinfobot to the group, it will send the group\'s ID.',
+          },
+
+          // ── Example output ─────────────────────────────────────────────────
+          {
+            type: 'heading',
+            content: 'Example Telegram Output',
+            level: 2,
+          },
           {
             type: 'code',
-            language: 'json',
-            content: `// Example Telegram message output
-📈 Daily Swing Trade Picks — 2026-03-08
+            language: 'text',
+            content: `📈 Swing Trade Picks — 2026-03-11
 
 Market consolidating after last week's rally — momentum
 stocks showing early rotation into tech.
@@ -5496,22 +5878,54 @@ stocks showing early rotation into tech.
 
 Not financial advice. Do your own research.`,
           },
+
+          // ── Deployment steps ───────────────────────────────────────────────
           {
-            type: 'checklist',
-            content: 'Full workflow checklist',
-            items: [
-              { text: 'Schedule Trigger: 0 8 * * 1-5 (8 AM weekdays)', description: 'Fires before US market open.' },
-              { text: 'Telegram Trigger: listen for /picks command', description: 'Allows on-demand runs any time.' },
-              { text: 'Anthropic API key stored in n8n Credential store', description: 'Never hardcoded.' },
-              { text: 'Error branch → Telegram alert if Claude call fails', description: 'You\'ll know if the bot silently broke.' },
-              { text: 'max_tokens set to 1024', description: 'Three picks with reasoning fit comfortably in 1024 tokens.' },
-              { text: 'Disclaimer line in every message', description: 'This is educational output, not financial advice.' },
+            type: 'heading',
+            content: 'Deploying the Bot',
+            level: 2,
+          },
+          {
+            type: 'steps',
+            steps: [
+              'In n8n, open the workflow and click **"Activate"** (top-right toggle). The workflow is now live.',
+              'Test the Schedule Trigger by clicking "Execute Workflow" — this runs the full pipeline immediately without waiting for 8 AM.',
+              'To test the Telegram trigger, send `/picks` to your bot in Telegram.',
+              'Check n8n → Executions to see the run log and debug any node failures.',
+              '**Export your workflow** (n8n → ⋯ menu → Export) and save the JSON to your repo as `stock-bot-workflow.json` for backup.',
             ],
           },
+
+          // ── Backup callout ─────────────────────────────────────────────────
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Version-control your workflow export. The JSON file captures every node, connection, and credential reference. If n8n is self-hosted, also back up your `~/.n8n/` directory or the Docker volume — it contains your credentials and execution history.',
+          },
+
+          // ── Full checklist ─────────────────────────────────────────────────
+          {
+            type: 'checklist',
+            content: 'Pre-launch checklist',
+            items: [
+              { text: 'Schedule Trigger: `0 8 * * 1-5` (8 AM weekdays)', description: 'Fires before US market open.' },
+              { text: 'Telegram Trigger: responds to `/picks` command', description: 'Allows on-demand runs any time.' },
+              { text: 'Anthropic API key in n8n Credential store', description: 'Never hardcoded in a node.' },
+              { text: 'Telegram bot token in n8n Credential store', description: 'From BotFather — never in code.' },
+              { text: '"Compute Signals" Code node runs per-item, "Build Prompt" runs once for all items', description: 'Aggregation mode must match.' },
+              { text: 'Error branch wired from Claude API node → Telegram error alert', description: 'Silent failures are the worst kind.' },
+              { text: 'Parse Response handles JSON markdown fences', description: 'Claude occasionally wraps JSON in ```json``` fences.' },
+              { text: 'Telegram parse mode set to HTML', description: 'Required for <b> bold, <i> italic, <code> tags.' },
+              { text: 'Disclaimer in every message', description: 'This is educational output, not financial advice.' },
+              { text: 'Workflow exported to JSON and saved to repo', description: 'Backup before making changes.' },
+            ],
+          },
+
+          // ── Success callout ────────────────────────────────────────────────
           {
             type: 'callout',
             calloutVariant: 'success',
-            content: 'Your stock picks bot is ready to deploy. Every weekday morning — or whenever you send /picks — it fetches live price data, computes swing trading signals for 20 stocks, and delivers Claude\'s top 3 ranked candidates with reasoning directly to your Telegram. Extend the watchlist, tune the strategy criteria, or swap Telegram for WhatsApp — the architecture is the same.',
+            content: '**Your stock picks bot is live.** Every weekday morning — or whenever you send /picks — it fetches 90 days of price data for 20 stocks, computes RSI/MACD/SMA/volume signals, filters out overbought names, and asks Claude to rank the best swing trade candidates with reasoning. All delivered to your Telegram in under 10 seconds.\n\nNext ideas: expand to 50 tickers, add sector diversification logic, tune the Claude scoring prompt for your personal strategy, or wire a second branch that generates a weekly recap every Friday.',
           },
         ],
       },

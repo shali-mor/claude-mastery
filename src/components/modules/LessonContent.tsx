@@ -16,6 +16,11 @@ const ContextVsSkillsVisual = dynamic(
   { ssr: false },
 );
 
+const StockBotWorkflow = dynamic(
+  () => import('@/components/lessons/StockBotWorkflow'),
+  { ssr: false },
+);
+
 // ─── Inline text: renders `backtick code` and **bold** inline ───────────────
 function InlineText({ text }: { text: string }) {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
@@ -435,6 +440,9 @@ export function LessonContent({ blocks }: LessonContentProps) {
           case 'visual':
             if (block.visualId === 'context-vs-skills') {
               return <ContextVsSkillsVisual key={i} />;
+            }
+            if (block.visualId === 'stock-bot-workflow') {
+              return <StockBotWorkflow key={i} />;
             }
             return null;
 
