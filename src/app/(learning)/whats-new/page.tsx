@@ -61,18 +61,28 @@ function formatDate(dateStr: string) {
   return `${months[parseInt(month) - 1]} ${year}`;
 }
 
+// Only show entries from the last 1 month
+function isRecent(dateStr: string) {
+  const now = new Date();
+  const cutoff = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const [year, month] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, 1) >= cutoff;
+}
+
 export default function WhatsNewPage() {
   const [filter, setFilter] = useState<Filter>(ALL);
   const [showUncovered, setShowUncovered] = useState(false);
 
-  const filtered = whatsNew.filter(e => {
+  const recent = whatsNew.filter(e => isRecent(e.date));
+
+  const filtered = recent.filter(e => {
     if (filter !== ALL && e.category !== filter) return false;
     if (showUncovered && e.tutorialCovered) return false;
     return true;
   });
 
   const grouped = groupByDate(filtered);
-  const uncoveredCount = whatsNew.filter(e => !e.tutorialCovered).length;
+  const uncoveredCount = recent.filter(e => !e.tutorialCovered).length;
 
   return (
     <div className="min-h-screen pb-20">
