@@ -432,36 +432,72 @@ function Dashboard() {
 
       {/* Module quick-start */}
       <div>
-        <h2 className="text-xl font-semibold mb-3">Learning Path</h2>
-        <div className="rounded-xl border border-border overflow-hidden">
+        <h2 className="text-xl font-semibold mb-4">Learning Path</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ perspective: 1000 }}>
           {modules.map((module, i) => {
             const lessonIds = module.lessons.map(l => l.id);
             const completed = completedLessons.filter(id => lessonIds.includes(id)).length;
             const progress = lessonIds.length > 0 ? Math.round((completed / lessonIds.length) * 100) : 0;
             const hasQuiz = !!quizResults[module.quizId];
+            const isDone = progress === 100;
+            const isActive = progress > 0 && !isDone;
+
+            // SVG ring
+            const r = 14, circ = 2 * Math.PI * r;
+            const dash = (progress / 100) * circ;
 
             return (
               <motion.div
                 key={module.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + i * 0.05 }}
-                whileHover={{ x: 3, backgroundColor: 'hsl(var(--muted) / 0.5)' }}
-                className={i !== 0 ? 'border-t border-border' : ''}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 + i * 0.05 }}
               >
                 <Link href={`/modules/${module.id}/${module.lessons[0]?.id}`}>
-                  <div className="flex items-center gap-3 px-4 py-2.5 group cursor-pointer">
-                    <span className="flex-shrink-0 w-5 text-xs font-bold text-muted-foreground text-right">{i + 1}</span>
-                    <div className="flex-1 min-w-0 flex items-center gap-3">
-                      <span className="text-sm font-medium truncate group-hover:text-primary transition-colors">{module.title}</span>
-                      {hasQuiz && <Award className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
-                      <div className="flex items-center gap-2 ml-auto">
-                        <Progress value={progress} className="h-1 w-20" />
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">{completed}/{lessonIds.length}</span>
+                  <TiltCard>
+                    <div className={`group relative rounded-xl border p-4 cursor-pointer transition-all duration-200 hover:shadow-lg
+                      ${isDone
+                        ? 'border-green-500/30 bg-green-500/5 hover:border-green-500/50'
+                        : isActive
+                          ? 'border-primary/30 bg-primary/5 hover:border-primary/50'
+                          : 'border-border hover:border-primary/30'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Circular progress ring */}
+                        <div className="relative flex-shrink-0 w-9 h-9">
+                          <svg viewBox="0 0 36 36" className="w-9 h-9 -rotate-90">
+                            <circle cx="18" cy="18" r={r} fill="none" strokeWidth="2.5"
+                              className="stroke-muted" />
+                            <circle cx="18" cy="18" r={r} fill="none" strokeWidth="2.5"
+                              strokeDasharray={`${dash} ${circ}`}
+                              strokeLinecap="round"
+                              className={isDone ? 'stroke-green-500' : 'stroke-primary'}
+                              style={{ transition: 'stroke-dasharray 0.5s ease' }}
+                            />
+                          </svg>
+                          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                            {i + 1}
+                          </span>
+                        </div>
+
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="text-sm font-semibold leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                              {module.title}
+                            </span>
+                            {hasQuiz && <Award className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className={`text-xs font-medium ${isDone ? 'text-green-600 dark:text-green-400' : isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                              {isDone ? 'Complete' : isActive ? `${progress}%` : 'Not started'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{completed}/{lessonIds.length} lessons</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-                  </div>
+                  </TiltCard>
                 </Link>
               </motion.div>
             );
