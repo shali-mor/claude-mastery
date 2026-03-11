@@ -11,7 +11,8 @@ export type ContentBlockType =
   | 'exercise'
   | 'checklist'
   | 'comparison'
-  | 'visual';
+  | 'visual'
+  | 'section-tabs';
 
 export type CalloutVariant = 'info' | 'warning' | 'success' | 'error' | 'tip';
 
@@ -62,6 +63,8 @@ export interface ContentBlock {
   dont?: ComparisonSide;
   // visual — embeddable interactive diagram
   visualId?: string;
+  // section-tabs — full-content tabs (each tab holds an array of blocks)
+  sectionTabs?: { label: string; blocks: ContentBlock[] }[];
 }
 
 export interface Lesson {

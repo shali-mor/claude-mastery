@@ -387,6 +387,45 @@ function TableBlock({ headers, rows }: { headers?: string[]; rows?: string[][] }
   );
 }
 
+// ─── Section tabs block (full content tabs) ───────────────────────────────────
+function SectionTabsBlock({ sectionTabs }: { sectionTabs: NonNullable<import('@/types/module').ContentBlock['sectionTabs']> }) {
+  const [active, setActive] = useState(0);
+  return (
+    <div className="rounded-xl border border-border overflow-hidden">
+      {/* Tab bar */}
+      <div className="flex overflow-x-auto bg-muted/40 border-b border-border">
+        {sectionTabs.map((tab, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            className={cn(
+              'px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors',
+              active === i
+                ? 'bg-card border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {/* Tab content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={active}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="p-5 space-y-6"
+        >
+          <LessonContent blocks={sectionTabs[active].blocks} />
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ─── Main renderer ────────────────────────────────────────────────────────────
 interface LessonContentProps {
   blocks: ContentBlock[];
@@ -440,6 +479,11 @@ export function LessonContent({ blocks }: LessonContentProps) {
           case 'comparison':
             return block.do && block.dont ? (
               <ComparisonBlock key={i} doSide={block.do} dontSide={block.dont} />
+            ) : null;
+
+          case 'section-tabs':
+            return block.sectionTabs ? (
+              <SectionTabsBlock key={i} sectionTabs={block.sectionTabs} />
             ) : null;
 
           case 'visual':
