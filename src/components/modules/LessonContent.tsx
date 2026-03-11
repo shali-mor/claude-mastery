@@ -21,6 +21,11 @@ const StockBotWorkflow = dynamic(
   { ssr: false },
 );
 
+const N8nIntro = dynamic(
+  () => import('@/components/lessons/N8nIntro'),
+  { ssr: false },
+);
+
 // ─── Inline text: renders `backtick code` and **bold** inline ───────────────
 function InlineText({ text }: { text: string }) {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
@@ -443,6 +448,9 @@ export function LessonContent({ blocks }: LessonContentProps) {
             }
             if (block.visualId === 'stock-bot-workflow') {
               return <StockBotWorkflow key={i} />;
+            }
+            if (block.visualId === 'n8n-intro') {
+              return <N8nIntro key={i} />;
             }
             return null;
 

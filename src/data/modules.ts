@@ -4235,6 +4235,10 @@ in a new session to pick up exactly here.`,
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'visual',
+            visualId: 'n8n-intro',
+          },
+          {
             type: 'text',
             content: 'n8n is an open-source visual workflow automation platform. Unlike SaaS tools like Zapier or Make.com, n8n is self-hostable — you run it on your own infrastructure, pay nothing per workflow execution, and keep all data within your network.',
           },
