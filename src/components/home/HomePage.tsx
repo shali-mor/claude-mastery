@@ -432,8 +432,8 @@ function Dashboard() {
 
       {/* Module quick-start */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Learning Path</h2>
-        <div className="space-y-3">
+        <h2 className="text-xl font-semibold mb-3">Learning Path</h2>
+        <div className="rounded-xl border border-border overflow-hidden">
           {modules.map((module, i) => {
             const lessonIds = module.lessons.map(l => l.id);
             const completed = completedLessons.filter(id => lessonIds.includes(id)).length;
@@ -445,42 +445,23 @@ function Dashboard() {
                 key={module.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + i * 0.07 }}
-                whileHover={{ x: 4 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                whileHover={{ x: 3, backgroundColor: 'hsl(var(--muted) / 0.5)' }}
+                className={i !== 0 ? 'border-t border-border' : ''}
               >
                 <Link href={`/modules/${module.id}/${module.lessons[0]?.id}`}>
-                  <Card className="hover:border-primary/40 hover:shadow-md transition-all group cursor-pointer">
-                    <CardContent className="py-4 px-5">
-                      <div className="flex items-center gap-4">
-                        <motion.div
-                          className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary"
-                          whileHover={{ scale: 1.15, backgroundColor: 'hsl(var(--primary) / 0.2)' }}
-                        >
-                          {i + 1}
-                        </motion.div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-sm">{module.title}</span>
-                            {hasQuiz && (
-                              <motion.span
-                                animate={{ rotate: [0, 10, -10, 0] }}
-                                transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-                              >
-                                <Award className="h-3.5 w-3.5 text-yellow-500" />
-                              </motion.span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Progress value={progress} className="h-1 flex-1 max-w-32" />
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
-                              {completed}/{lessonIds.length} lessons
-                            </span>
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  <div className="flex items-center gap-3 px-4 py-2.5 group cursor-pointer">
+                    <span className="flex-shrink-0 w-5 text-xs font-bold text-muted-foreground text-right">{i + 1}</span>
+                    <div className="flex-1 min-w-0 flex items-center gap-3">
+                      <span className="text-sm font-medium truncate group-hover:text-primary transition-colors">{module.title}</span>
+                      {hasQuiz && <Award className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
+                      <div className="flex items-center gap-2 ml-auto">
+                        <Progress value={progress} className="h-1 w-20" />
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">{completed}/{lessonIds.length}</span>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                  </div>
                 </Link>
               </motion.div>
             );
