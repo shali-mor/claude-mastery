@@ -61,7 +61,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'New PreWrite hook fires before any file write, allowing you to block or transform writes before they happen.',
     detail: 'Like PreToolUse but scoped specifically to file write operations. Exit code 2 blocks the write.',
     lessonRef: 'lesson-2-3',
-    tutorialCovered: false,
+    tutorialCovered: true,
   },
   {
     id: 'notification-hook-2026',
@@ -70,7 +70,7 @@ export const whatsNew: WhatsNewEntry[] = [
     title: 'Notification hook event',
     summary: 'New Notification hook event fires when Claude sends a notification (e.g. task complete, attention needed).',
     lessonRef: 'lesson-2-3',
-    tutorialCovered: false,
+    tutorialCovered: true,
   },
   // ── 2025 ────────────────────────────────────────────────────────────────
   {
