@@ -363,6 +363,80 @@ Use $ARGUMENTS for user input.`}</Code>
             </div>
           </SectionCard>
 
+          {/* 13 — What to Put in CLAUDE.md */}
+          <SectionCard n={13} title="What to Put in CLAUDE.md">
+            <Code>{`# Project
+Stack: Next.js 14, TypeScript, Tailwind
+Test: npm test | Lint: npm run lint
+
+# Code Style
+- Named exports only (no default)
+- Functional components, no classes
+- zod for all external data validation
+
+# DO NOT
+- Never use \`any\` type
+- Don't commit .env files
+- Don't add console.log in prod code
+
+# Key Paths
+- API routes: src/app/api/
+- Components: src/components/`}</Code>
+            <div className="space-y-0.5">
+              <Bullet>Include <strong>how to run</strong> tests, lint, build</Bullet>
+              <Bullet>List <strong>forbidden patterns</strong> — saves corrections</Bullet>
+              <Bullet>Keep under <strong>200 lines</strong> — every token counts</Bullet>
+              <Bullet>Run <Cmd>/init</Cmd> to generate a starter from your codebase</Bullet>
+            </div>
+          </SectionCard>
+
+          {/* 14 — Non-Interactive / CI Mode */}
+          <SectionCard n={14} title="Non-Interactive / CI Mode">
+            <Code>{`# One-shot task (no UI)
+claude -p "fix the TypeScript errors"
+
+# Pipe input
+cat error.log | claude -p "diagnose"
+git diff | claude -p "write commit msg"
+
+# CI — skip permission prompts
+claude --dangerously-skip-permissions \\
+  -p "run tests and fix failures"
+
+# JSON output for scripting
+claude -p "list todos" --output-format json
+
+# Resume last session
+claude --continue`}</Code>
+            <div className="space-y-0.5">
+              <Bullet><Cmd>-p</Cmd> exits after one response — no interactive session</Bullet>
+              <Bullet>Set <Cmd>ANTHROPIC_API_KEY</Cmd> env var for headless auth</Bullet>
+              <Bullet>Use <Cmd>--model</Cmd> to pin model in CI scripts</Bullet>
+            </div>
+          </SectionCard>
+
+          {/* 15 — Effective Prompting */}
+          <SectionCard n={15} title="Effective Prompting">
+            <div className="space-y-1.5">
+              {[
+                { tag: 'Be specific', color: 'bg-green-500/15 text-green-700 dark:text-green-400', tip: 'Name the exact file and function, not "the auth code"' },
+                { tag: 'Say what not to change', color: 'bg-red-500/15 text-red-600 dark:text-red-400', tip: '"Fix the bug but don\'t refactor anything else"' },
+                { tag: 'Give the why', color: 'bg-blue-500/15 text-blue-700 dark:text-blue-400', tip: 'Context lets Claude make better tradeoffs' },
+                { tag: 'Scope the step', color: 'bg-purple-500/15 text-purple-700 dark:text-purple-400', tip: '"Stop after step 1, wait for my review"' },
+                { tag: 'Plan first', color: 'bg-orange-500/15 text-orange-700 dark:text-orange-400', tip: 'Use /plan before any multi-file change' },
+                { tag: 'Correct fast', color: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400', tip: 'Use /rewind early — don\'t let wrong paths grow' },
+              ].map(({ tag, color, tip }) => (
+                <div key={tag} className="flex gap-2 items-start border-b border-border/40 pb-1.5 last:border-0">
+                  <Tag color={color}>{tag}</Tag>
+                  <span>{tip}</span>
+                </div>
+              ))}
+            </div>
+            <div className="bg-muted/60 rounded p-2 text-[10px] mt-1">
+              <strong>Rule of thumb:</strong> if you would send 3 Slack messages to a colleague, write 3 sentences to Claude.
+            </div>
+          </SectionCard>
+
         </div>
 
         {/* Footer */}
