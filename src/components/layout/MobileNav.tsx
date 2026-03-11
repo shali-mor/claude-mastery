@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, Terminal, Code2, BookMarked, Sparkles } from 'lucide-react';
+import { Home, BookOpen, Terminal, Code2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const items = [
@@ -10,7 +10,6 @@ const items = [
   { href: '/modules', label: 'Learn', icon: BookOpen },
   { href: '/commands', label: 'Commands', icon: Terminal },
   { href: '/playground', label: 'Playground', icon: Code2 },
-  { href: '/cheatsheet', label: 'Cheatsheet', icon: BookMarked },
   { href: '/whats-new', label: "What's New", icon: Sparkles },
 ];
 
