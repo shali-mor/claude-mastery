@@ -27,9 +27,8 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
   const prevCompleteRef = useRef(false);
 
   // Reset justCompleted when navigating to a different lesson
-  useEffect(() => {
-    setJustCompleted(false);
-  }, [lesson.id]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setJustCompleted(false); }, [lesson.id]);
 
   const lessonIndex = module.lessons.findIndex(l => l.id === lesson.id);
   const prevLesson = lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null;
@@ -48,6 +47,7 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
   }, [lesson.id, setLastVisited]);
 
   // Fire celebration when module flips to complete for the first time
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (allLessonsComplete && !prevCompleteRef.current) {
       setShowCelebration(true);
@@ -56,6 +56,7 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
     }
     prevCompleteRef.current = allLessonsComplete;
   }, [allLessonsComplete]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const markComplete = () => {
     completeLesson(lesson.id);

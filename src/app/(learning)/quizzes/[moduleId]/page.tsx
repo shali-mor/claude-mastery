@@ -13,15 +13,15 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props) {
   const { moduleId } = await params;
-  const module = modules.find(m => m.id === moduleId);
-  return { title: `${module?.title ?? 'Module'} Quiz — Claude Mastery` };
+  const mod = modules.find(m => m.id === moduleId);
+  return { title: `${mod?.title ?? 'Module'} Quiz — Claude Mastery` };
 }
 
 export default async function QuizPage({ params }: Props) {
   const { moduleId } = await params;
   const quiz = getQuizByModuleId(moduleId);
-  const module = modules.find(m => m.id === moduleId);
-  if (!quiz || !module) notFound();
+  const mod = modules.find(m => m.id === moduleId);
+  if (!quiz || !mod) notFound();
 
-  return <QuizRunner quiz={quiz} module={module} />;
+  return <QuizRunner quiz={quiz} module={mod} />;
 }

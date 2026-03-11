@@ -108,7 +108,7 @@ export default function AboutPage() {
         </Card>
 
         {/* ── Features grid ── */}
-        <h2 className="text-base font-semibold mb-4">What's inside</h2>
+        <h2 className="text-base font-semibold mb-4">What&apos;s inside</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
           {features.map((f, i) => (
             <motion.div

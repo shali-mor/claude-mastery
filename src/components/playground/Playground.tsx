@@ -56,7 +56,7 @@ export function Playground() {
       id: generateId(),
       role: 'user',
       content: text,
-      timestamp: Date.now(),
+      timestamp: Date.now(), // eslint-disable-line react-hooks/purity
     };
     addMessage(activeSessionId, userMsg);
 
@@ -78,7 +78,7 @@ export function Playground() {
         id: generateId(),
         role: 'assistant',
         content: `Error: ${err instanceof Error ? err.message : 'Unknown error'}`,
-        timestamp: Date.now(),
+        timestamp: Date.now(), // eslint-disable-line react-hooks/purity
       };
       addMessage(activeSessionId, errorMsg);
     }

@@ -164,9 +164,8 @@ export function GuideAvatar({ message, mood = 'happy' }: GuideAvatarProps) {
   const [open, setOpen] = useState(true);
 
   // Re-open whenever the message changes (new lesson / quiz state)
-  useEffect(() => {
-    setOpen(true);
-  }, [message]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setOpen(true); }, [message]);
 
   return (
     <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">

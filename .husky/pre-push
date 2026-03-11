@@ -1,0 +1,5 @@
+#!/bin/sh
+# Runs before every push — full test suite + type check
+echo "🔍 Running pre-push checks..."
+npx tsc --noEmit && npm test
+echo "✅ All checks passed"

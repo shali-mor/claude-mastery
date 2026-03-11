@@ -163,15 +163,8 @@ export function QuizRunner({ quiz, module, inline = false }: QuizRunnerProps) {
     const percent = Math.round((score / quiz.questions.length) * 100);
     const passed = percent >= 70;
 
-    const ResultsWrapper = ({ children }: { children: React.ReactNode }) =>
-      inline ? (
-        <div className={containerClass}>{children}</div>
-      ) : (
-        <div className={containerClass}>{children}</div>
-      );
-
     return (
-      <ResultsWrapper>
+      <div className={containerClass}>
         {!inline && <GuideAvatar message={avatarMessage} mood={avatarMood} />}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -231,7 +224,7 @@ export function QuizRunner({ quiz, module, inline = false }: QuizRunnerProps) {
             )}
           </div>
         </motion.div>
-      </ResultsWrapper>
+      </div>
     );
   }
 
