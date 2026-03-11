@@ -47,6 +47,7 @@ export const EXERCISE_PATHS: Record<string, string> = {
   'lesson-7-3': 'module-05-sub-agents/lesson-02-task-tool',
   'lesson-7-4': 'module-05-sub-agents/lesson-03-parallelization',
   'lesson-7-5': 'module-05-sub-agents/lesson-04-agent-communication',
+  'lesson-7-6': 'module-05-sub-agents/lesson-05-worktree-isolation',
 
   // Module 8 (Plan Mode) → module-06-plan-mode
   'lesson-8-1': 'module-06-plan-mode/lesson-01-what-is-plan-mode',
