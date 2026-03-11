@@ -1,0 +1,235 @@
+name: Weekly Claude Code Update Check
+
+on:
+  # Runs every Monday at 9:00 UTC
+  schedule:
+    - cron: '0 9 * * 1'
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch Claude Code release info
+        id: fetch
+        run: |
+          # Latest npm version
+          LATEST_VERSION=$(npm view @anthropic-ai/claude-code version 2>/dev/null || echo "unknown")
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "Latest claude-code version: $LATEST_VERSION"
+
+          # Try changelog sources
+          CHANGELOG=""
+          for URL in \
+            "https://code.claude.com/docs/en/changelog" \
+            "https://code.claude.com/docs/en/release-notes" \
+            "https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md"; do
+            CONTENT=$(curl -sL --max-time 10 "$URL" 2>/dev/null | head -300)
+            if [ -n "$CONTENT" ] && [ ${#CONTENT} -gt 100 ]; then
+              CHANGELOG="$CONTENT"
+              echo "Fetched changelog from: $URL"
+              break
+            fi
+          done
+
+          # Fallback: npm package description
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG=$(npm view @anthropic-ai/claude-code --json 2>/dev/null | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              print(f\"Version: {d.get('version','?')}\")
+              print(f\"Description: {d.get('description','?')}\")
+              versions = list(d.get('time', {}).keys())[-10:]
+              print('Recent versions: ' + ', '.join(versions))
+          except: pass
+          " 2>/dev/null || echo "npm info unavailable")
+          fi
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Analyze with Claude API
+        id: analyze
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python3 << 'PYTHON'
+          import os, json, urllib.request, sys
+
+          api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+          if not api_key:
+              print("No ANTHROPIC_API_KEY — skipping analysis")
+              sys.exit(0)
+
+          latest_version = os.environ.get('LATEST_VERSION', 'unknown')
+          changelog = os.environ.get('CHANGELOG', '')
+
+          with open('src/data/whats-new.ts', 'r') as f:
+              current_data = f.read()
+
+          prompt = f"""You are maintaining the "What's New" feed for a Claude Code tutorial website.
+
+Current whats-new.ts (first 4000 chars):
+{current_data[:4000]}
+
+Latest @anthropic-ai/claude-code version: {latest_version}
+
+Changelog / release notes fetched today:
+{changelog[:2000] if changelog else "(unavailable — use your knowledge of recent Claude Code updates)"}
+
+Task:
+1. Identify Claude Code features, commands, skills, hooks, or behaviors that are NEW and NOT already listed in the whats-new.ts above.
+2. Only include things that are confirmed and specific — not vague or speculative.
+3. For each new item, output a TypeScript object in this exact format (as a JSON array for easy parsing):
+
+Output format — a JSON array of objects:
+[
+  {{
+    "id": "unique-kebab-id-YYYY",
+    "date": "YYYY-MM",
+    "category": "command|skill|plugin|hook|behavior|api|security",
+    "title": "Short title (max 60 chars)",
+    "summary": "One sentence describing what changed and why it matters.",
+    "detail": "Optional extra context or usage example. Can be empty string.",
+    "tutorialCovered": false
+  }}
+]
+
+If there are no new items to add, output exactly: NO_NEW_UPDATES
+
+Only output the JSON array or NO_NEW_UPDATES — no other text."""
+
+          req_data = json.dumps({
+              "model": "claude-haiku-4-5-20251001",
+              "max_tokens": 2048,
+              "messages": [{"role": "user", "content": prompt}]
+          }).encode()
+
+          req = urllib.request.Request(
+              "https://api.anthropic.com/v1/messages",
+              data=req_data,
+              headers={
+                  "x-api-key": api_key,
+                  "anthropic-version": "2023-06-01",
+                  "content-type": "application/json",
+              }
+          )
+
+          try:
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  result = json.loads(resp.read())
+                  text = result['content'][0]['text'].strip()
+                  print(f"Claude response: {text[:200]}")
+
+                  if text == "NO_NEW_UPDATES" or "NO_NEW_UPDATES" in text:
+                      print("No new updates found.")
+                      sys.exit(0)
+
+                  # Parse the JSON array
+                  try:
+                      entries = json.loads(text)
+                      if not isinstance(entries, list) or len(entries) == 0:
+                          print("Empty or invalid response.")
+                          sys.exit(0)
+
+                      with open('NEW_UPDATES.json', 'w') as f:
+                          json.dump(entries, f, indent=2)
+                      print(f"Found {len(entries)} new entries.")
+                  except json.JSONDecodeError as e:
+                      print(f"Could not parse JSON response: {e}")
+                      # Save raw for issue
+                      with open('NEW_UPDATES_RAW.txt', 'w') as f:
+                          f.write(text)
+
+          except Exception as e:
+              print(f"Claude API error: {e}")
+              sys.exit(0)
+          PYTHON
+        env:
+          LATEST_VERSION: ${{ steps.fetch.outputs.latest_version }}
+          CHANGELOG: ${{ steps.fetch.outputs.changelog }}
+
+      - name: Apply updates to whats-new.ts
+        id: apply
+        run: |
+          if [ ! -f "NEW_UPDATES.json" ]; then
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          python3 << 'PYTHON'
+          import json, re
+
+          with open('NEW_UPDATES.json') as f:
+              new_entries = json.load(f)
+
+          with open('src/data/whats-new.ts', 'r') as f:
+              content = f.read()
+
+          # Build TypeScript entries
+          ts_entries = []
+          for e in new_entries:
+              detail_line = f"\n    detail: '{e.get('detail','').replace(chr(39), chr(34))}'" if e.get('detail') else ''
+              entry = f"""  {{
+    id: '{e['id']}',
+    date: '{e['date']}',
+    category: '{e['category']}',
+    title: '{e['title'].replace(chr(39), chr(34))}',
+    summary: '{e['summary'].replace(chr(39), chr(34))}',{detail_line}
+    tutorialCovered: false,
+  }},"""
+              ts_entries.append(entry)
+
+          # Insert before the closing ]; of the whatsNew array
+          insertion = '\n  // ── Auto-detected ──────────────────────────────────────────────────────\n' + '\n'.join(ts_entries) + '\n'
+          updated = re.sub(r'(export const whatsNew: WhatsNewEntry\[\] = \[)', r'\1' + insertion, content, count=1)
+
+          if updated == content:
+              # Fallback: insert before closing ];
+              updated = content.replace('\n];\n', insertion + '\n];\n', 1)
+
+          with open('src/data/whats-new.ts', 'w') as f:
+              f.write(updated)
+
+          print(f"Added {len(new_entries)} entries to whats-new.ts")
+          PYTHON
+
+          echo "has_updates=true" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.apply.outputs.has_updates == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "feat(whats-new): auto-detected Claude Code updates"
+          title: "🆕 New Claude Code features detected"
+          body: |
+            ## Automated update — What's New feed
+
+            The weekly update check found new Claude Code features not yet in the tutorial.
+
+            **Review checklist:**
+            - [ ] Verify each entry is accurate and specific
+            - [ ] Set `tutorialCovered: true` + add `lessonRef` for anything already in a lesson
+            - [ ] For `tutorialCovered: false` entries, decide if a lesson update is needed
+            - [ ] Run `/check-updates` in Claude Code for a deeper analysis
+
+            Merge when satisfied, or close and run `/check-updates` manually to apply selectively.
+          branch: "auto/claude-updates-${{ github.run_number }}"
+          labels: "tutorial-update,automated"
+          delete-branch: true
