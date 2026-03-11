@@ -3,7 +3,7 @@
 Fetches Claude Code release info and calls the Claude API to identify new features.
 Writes NEW_UPDATES.json if new entries are found.
 """
-import os, json, urllib.request, sys
+import os, json, urllib.request, urllib.error, sys
 
 api_key = os.environ.get("ANTHROPIC_API_KEY", "")
 latest_version = os.environ.get("LATEST_VERSION", "unknown")
@@ -50,7 +50,7 @@ If there are no new items to add, output exactly: NO_NEW_UPDATES
 Only output the JSON array or NO_NEW_UPDATES — no other text."""
 
 req_data = json.dumps({
-    "model": "claude-haiku-4-5-20251001",
+    "model": "claude-3-5-haiku-20241022",
     "max_tokens": 2048,
     "messages": [{"role": "user", "content": prompt}]
 }).encode()
@@ -90,6 +90,10 @@ try:
                 f.write(text)
             print("Saved raw response to NEW_UPDATES_RAW.txt")
 
+except urllib.error.HTTPError as e:
+    body = e.read().decode("utf-8", errors="replace")
+    print(f"Claude API HTTP error {e.code}: {body[:500]}")
+    sys.exit(0)
 except Exception as e:
     print(f"Claude API error: {e}")
     sys.exit(0)
