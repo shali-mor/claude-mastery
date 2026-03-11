@@ -81,7 +81,7 @@ function isWithinRange(dateStr: string, range: TimeRange) {
 
 export default function WhatsNewPage() {
   const [filter, setFilter] = useState<Filter>(ALL);
-  const [timeRange, setTimeRange] = useState<TimeRange>('6m');
+  const [timeRange, setTimeRange] = useState<TimeRange>('1m');
   const [showUncovered, setShowUncovered] = useState(false);
 
   const inRange = whatsNew.filter(e => isWithinRange(e.date, timeRange));
