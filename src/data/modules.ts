@@ -5390,6 +5390,13 @@ return results;`,
             content: 'This is the final lesson — we wire everything together. You now have clean, scored signal data for each stock. In this lesson you\'ll:\n\n1. Pass that data to Claude with a precise swing-trading prompt\n2. Parse Claude\'s structured JSON response\n3. Format and deliver the picks as a Telegram message\n4. Add an error branch so you\'re alerted if anything breaks\n5. Deploy and test the bot end-to-end',
           },
 
+          // ── Exercise repo reference ────────────────────────────────────────
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**All project files are in the exercise repo.**\n\nThe complete, ready-to-use project lives at:\n`github.com/shali-mor/claude-mastery-exercises` → `module-12-stock-bot/lesson-04-claude-analyst/`\n\nWhat\'s there:\n- **`workflow/stock-bot-workflow.json`** — import this directly into n8n to get all 13 nodes pre-wired\n- **`nodes/01` through `06`** — every JavaScript snippet as a standalone `.js` file\n- **`.env.example`** — documents exactly which credentials to create in n8n\n- **`README.md`** — step-by-step setup guide (credential creation, chat ID, activation)\n\nYou can build by following this lesson, or skip straight to importing the workflow JSON.',
+          },
+
           // ── Do I need a Git repo? ──────────────────────────────────────────
           {
             type: 'callout',
