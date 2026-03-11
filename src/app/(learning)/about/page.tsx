@@ -2,73 +2,84 @@
 
 import { motion } from 'framer-motion';
 import {
-  Code2, BookOpen, Terminal, DollarSign, Layers, Github,
-  Sparkles, Zap, FlaskConical, MessageSquare, Database, ShieldCheck, FolderGit2,
+  Code2, Github, Zap, Database, ShieldCheck, FolderGit2,
+  GitBranch, Webhook, BotMessageSquare, RefreshCw, ShieldAlert, FileCode2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { modules } from '@/data/modules';
-
-const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
-
-const features = [
-  {
-    icon: BookOpen,
-    label: `${modules.length} Learning Modules`,
-    desc: `${totalLessons} structured lessons — from CLI basics and hooks to MCP servers, n8n automation, and real-world AI pipelines.`,
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10',
-  },
-  {
-    icon: Terminal,
-    label: 'Command Browser',
-    desc: '76+ slash commands, CLI flags, hooks, skills, and keyboard shortcuts — all searchable with a built-in flashcard drill mode.',
-    color: 'text-purple-500',
-    bg: 'bg-purple-500/10',
-  },
-  {
-    icon: DollarSign,
-    label: 'Cost Calculator',
-    desc: 'Real 2026 pricing across all Claude models with Batch API and prompt-caching scenarios so you can optimise before you ship.',
-    color: 'text-green-500',
-    bg: 'bg-green-500/10',
-  },
-  {
-    icon: FlaskConical,
-    label: 'Live Playground',
-    desc: 'Stream Claude responses directly in the browser using your own API key — model selection, token tracking, and system prompts included.',
-    color: 'text-orange-500',
-    bg: 'bg-orange-500/10',
-  },
-  {
-    icon: Sparkles,
-    label: 'Interactive Quizzes',
-    desc: 'Knowledge checks at the end of every module with instant feedback, score tracking, and progress saved locally across sessions.',
-    color: 'text-yellow-500',
-    bg: 'bg-yellow-500/10',
-  },
-  {
-    icon: MessageSquare,
-    label: 'Aria — Your Guide',
-    desc: 'A floating AI guide that surfaces contextual hints as you move through lessons and quizzes, keeping you on track.',
-    color: 'text-pink-500',
-    bg: 'bg-pink-500/10',
-  },
-  {
-    icon: FolderGit2,
-    label: 'Hands-on Exercises',
-    desc: 'A companion GitHub repo with starter blueprints, TODO placeholders, solutions, and check.sh validators for every lesson.',
-    color: 'text-teal-500',
-    bg: 'bg-teal-500/10',
-  },
-];
 
 const stack = [
   'Next.js 16', 'TypeScript', 'Tailwind CSS', 'shadcn/ui',
   'Zustand', 'Framer Motion', 'Shiki', 'Recharts', 'Anthropic SDK',
 ];
 
-// ─── Instructor avatar ────────────────────────────────────────────────────────
+const arch = [
+  {
+    icon: FileCode2,
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/10',
+    title: 'Content as typed TypeScript',
+    desc: 'All lesson content lives in src/data/modules.ts as a typed block DSL — headings, code blocks, callouts, tables, quizzes. LessonContent.tsx is the universal renderer. No CMS, no Markdown files — just type-safe data.',
+    snippet: '{ type: "code", language: "bash", code: "claude /init" }',
+  },
+  {
+    icon: FolderGit2,
+    color: 'text-teal-500',
+    bg: 'bg-teal-500/10',
+    title: 'Exercise repo mapping',
+    desc: 'exercisePaths.ts maintains a 1-to-1 map of every lesson ID → exercise folder path in the companion exercises repo. Lesson detail pages read this map to link directly to the matching starter folder on GitHub.',
+    snippet: "'lesson-7-6': 'module-05-sub-agents/lesson-05-worktree-isolation'",
+  },
+  {
+    icon: ShieldAlert,
+    color: 'text-red-500',
+    bg: 'bg-red-500/10',
+    title: 'Pre-push exercise sync guard',
+    desc: 'A Husky pre-push hook runs three checks before every git push: TypeScript compilation, Vitest unit tests, and an exercise sync check. The sync check parses all lesson IDs from modules.ts and blocks the push if any are missing from exercisePaths.ts.',
+    snippet: 'npx tsc --noEmit && npm test && node -e "...sync check..."',
+  },
+  {
+    icon: Webhook,
+    color: 'text-orange-500',
+    bg: 'bg-orange-500/10',
+    title: 'PostToolUse auto-sync directive',
+    desc: "A Claude Code PostToolUse hook (lesson-change-check.sh) fires every time modules.ts, exercisePaths.ts, or quizzes.ts is written. It injects a directive into Claude's context with the diff and step-by-step instructions to update the exercises repo via the GitHub API — without waiting for the user to ask.",
+    snippet: "matcher: Write → lesson-change-check.sh → 🔄 LESSON CONTENT AUTO-SYNC",
+  },
+  {
+    icon: BotMessageSquare,
+    color: 'text-yellow-500',
+    bg: 'bg-yellow-500/10',
+    title: 'Model cost guard hook',
+    desc: "A UserPromptSubmit hook (model-guard.sh) inspects every incoming prompt. If the current model is Sonnet or Opus and the prompt is short with simple-task keywords (rename, fix typo, format…), it injects a cost tip suggesting Haiku — which handles those tasks at ~20× lower cost.",
+    snippet: '⚠️ Cost tip: this looks like a simple task. Consider Haiku.',
+  },
+  {
+    icon: RefreshCw,
+    color: 'text-purple-500',
+    bg: 'bg-purple-500/10',
+    title: 'Automated What\'s New pipeline',
+    desc: 'A GitHub Actions workflow runs every Monday morning. It fetches the Claude Code CHANGELOG.md from GitHub, sends it to the Claude Haiku API with the current whats-new.ts as context, and asks it to identify new features not yet listed. If any are found, it opens a pull request with the proposed entries for review.',
+    snippet: 'cron: "0 9 * * 1" → fetch CHANGELOG → Haiku API → create-pull-request',
+  },
+  {
+    icon: Database,
+    color: 'text-cyan-500',
+    bg: 'bg-cyan-500/10',
+    title: 'Neon PostgreSQL + Drizzle ORM',
+    desc: 'Progress and user data are persisted in a serverless Neon PostgreSQL database. Drizzle ORM provides fully type-safe, schema-driven queries with zero runtime overhead and migration support.',
+    snippet: 'db.select().from(progress).where(eq(progress.userId, id))',
+  },
+  {
+    icon: ShieldCheck,
+    color: 'text-violet-500',
+    bg: 'bg-violet-500/10',
+    title: 'Clerk Authentication',
+    desc: 'User sign-up, sign-in, and session management are handled by Clerk, with email/password and OAuth providers. Middleware protects all learning routes; the user ID flows through to the Neon database for per-user progress tracking.',
+    snippet: 'authMiddleware({ publicRoutes: ["/", "/about"] })',
+  },
+];
+
 function InstructorAvatar() {
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -93,9 +104,9 @@ export default function AboutPage() {
         </div>
 
         {/* ── Mission ── */}
-        <Card className="mb-8 border-primary/20 bg-primary/4">
+        <Card className="mb-10 border-primary/20 bg-primary/4">
           <CardContent className="pt-6 pb-5">
-            <div className="flex items-start gap-2 mb-3">
+            <div className="flex items-start gap-2">
               <Zap className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-sm leading-7">
                 <strong>Claude Mastery</strong> is a hands-on learning platform that takes you from absolute
@@ -107,25 +118,29 @@ export default function AboutPage() {
           </CardContent>
         </Card>
 
-        {/* ── Features grid ── */}
-        <h2 className="text-base font-semibold mb-4">What&apos;s inside</h2>
+        {/* ── Architecture ── */}
+        <h2 className="text-base font-semibold mb-1">Architecture</h2>
+        <p className="text-xs text-muted-foreground mb-4">How the platform is built and kept in sync.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
-          {features.map((f, i) => (
+          {arch.map((a, i) => (
             <motion.div
-              key={f.label}
+              key={a.title}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * i }}
+              transition={{ delay: 0.04 * i }}
             >
               <Card className="hover:border-primary/30 transition-colors h-full">
-                <CardContent className="pt-4 flex gap-3">
-                  <div className={`w-9 h-9 rounded-lg ${f.bg} flex items-center justify-center flex-shrink-0`}>
-                    <f.icon className={`h-4 w-4 ${f.color}`} />
+                <CardContent className="pt-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-lg ${a.bg} flex items-center justify-center flex-shrink-0`}>
+                      <a.icon className={`h-4 w-4 ${a.color}`} />
+                    </div>
+                    <p className="text-sm font-medium leading-tight">{a.title}</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">{f.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{f.desc}</p>
-                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{a.desc}</p>
+                  <code className="text-[10px] font-mono bg-muted px-2 py-1.5 rounded text-muted-foreground/80 break-all leading-relaxed">
+                    {a.snippet}
+                  </code>
                 </CardContent>
               </Card>
             </motion.div>
@@ -151,39 +166,6 @@ export default function AboutPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* ── Data & Auth ── */}
-        <h2 className="text-base font-semibold mb-4">Data &amp; Authentication</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
-          <Card>
-            <CardContent className="pt-4 flex gap-3">
-              <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-                <Database className="h-4 w-4 text-cyan-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Neon (PostgreSQL)</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                  Progress and user data are persisted in a serverless Neon PostgreSQL database,
-                  accessed via Drizzle ORM for type-safe, schema-driven queries.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 flex gap-3">
-              <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-                <ShieldCheck className="h-4 w-4 text-violet-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Clerk Authentication</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                  User sign-up, sign-in, and session management are handled by Clerk — supporting
-                  email/password and social OAuth providers out of the box.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* ── Stack ── */}
         <h2 className="text-base font-semibold mb-3">Built with</h2>
