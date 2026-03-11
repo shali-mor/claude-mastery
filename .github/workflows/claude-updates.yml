@@ -1,11 +1,14 @@
 name: Weekly Claude Code Update Check
 
-on:
-  # Runs every Monday at 9:00 UTC
+"on":
   schedule:
-    - cron: '0 9 * * 1'
-  # Allow manual trigger from GitHub UI
+    - cron: "0 9 * * 1"
   workflow_dispatch:
+    inputs:
+      reason:
+        description: "Manual trigger reason"
+        required: false
+        default: "manual check"
 
 jobs:
   check-updates:
