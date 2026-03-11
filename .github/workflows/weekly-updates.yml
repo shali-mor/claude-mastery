@@ -45,17 +45,7 @@ jobs:
           done
 
           if [ -z "$CHANGELOG" ]; then
-            CHANGELOG=$(npm view @anthropic-ai/claude-code --json 2>/dev/null \
-              | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print('Version:', d.get('version','?'))
-    versions = list(d.get('time', {}).keys())[-10:]
-    print('Recent versions:', ', '.join(versions))
-except Exception:
-    pass
-" 2>/dev/null || echo "npm info unavailable")
+            CHANGELOG=$(npm view @anthropic-ai/claude-code --json 2>/dev/null | python3 scripts/get-npm-info.py 2>/dev/null || echo "npm info unavailable")
           fi
 
           {
