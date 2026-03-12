@@ -68,7 +68,7 @@ req_data = json.dumps({
 }).encode()
 
 req = urllib.request.Request(
-    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
     data=req_data,
     headers={"content-type": "application/json"},
 )
