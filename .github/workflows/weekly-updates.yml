@@ -56,7 +56,7 @@ jobs:
 
       - name: Analyze with Claude API
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           LATEST_VERSION: ${{ steps.fetch.outputs.latest_version }}
           CHANGELOG: ${{ steps.fetch.outputs.changelog }}
         run: python3 scripts/fetch-claude-updates.py

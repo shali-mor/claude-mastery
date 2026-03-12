@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Fetches Claude Code release info and calls the Claude API to identify new features.
+Fetches Claude Code release info and calls the Gemini API to identify new features.
 Writes NEW_UPDATES.json if new entries are found.
 """
 import os, json, urllib.request, urllib.error, sys
 
-api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+api_key = os.environ.get("GEMINI_API_KEY", "")
 latest_version = os.environ.get("LATEST_VERSION", "unknown")
 changelog = os.environ.get("CHANGELOG", "")
 whats_new_path = os.environ.get("WHATS_NEW_PATH", "src/data/whats-new.ts")
 
 if not api_key:
-    print("No ANTHROPIC_API_KEY — skipping analysis")
+    print("No GEMINI_API_KEY — skipping analysis")
     sys.exit(0)
 
 with open(whats_new_path, "r") as f:
@@ -63,26 +63,21 @@ If there are no new items to add, output exactly: NO_NEW_UPDATES
 Only output the JSON array or NO_NEW_UPDATES — no other text."""
 
 req_data = json.dumps({
-    "model": "claude-haiku-4-5-20251001",
-    "max_tokens": 2048,
-    "messages": [{"role": "user", "content": prompt}]
+    "contents": [{"parts": [{"text": prompt}]}],
+    "generationConfig": {"maxOutputTokens": 2048},
 }).encode()
 
 req = urllib.request.Request(
-    "https://api.anthropic.com/v1/messages",
+    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
     data=req_data,
-    headers={
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-    }
+    headers={"content-type": "application/json"},
 )
 
 try:
     with urllib.request.urlopen(req, timeout=30) as resp:
         result = json.loads(resp.read())
-        text = result["content"][0]["text"].strip()
-        print(f"Claude response (first 200 chars): {text[:200]}")
+        text = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+        print(f"Gemini response (first 200 chars): {text[:200]}")
 
         if "NO_NEW_UPDATES" in text:
             print("No new updates found.")
@@ -105,8 +100,8 @@ try:
 
 except urllib.error.HTTPError as e:
     body = e.read().decode("utf-8", errors="replace")
-    print(f"Claude API HTTP error {e.code}: {body[:500]}")
+    print(f"Gemini API HTTP error {e.code}: {body[:500]}")
     sys.exit(0)
 except Exception as e:
-    print(f"Claude API error: {e}")
+    print(f"Gemini API error: {e}")
     sys.exit(0)
