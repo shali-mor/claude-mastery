@@ -19,6 +19,7 @@ export const EXERCISE_PATHS: Record<string, string> = {
   'lesson-2-4': 'module-02-skills-hooks/lesson-04-team-patterns',
   'lesson-2-5': 'module-02-skills-hooks/lesson-05-skills-library',
   'lesson-2-6': 'module-02-skills-hooks/lesson-06-memory-context',
+  'lesson-2-7': 'module-02-skills-hooks/lesson-07-testing-refining-skills',
 
   // Module 3 (GSD) → module-08-gsd
   'lesson-3-1': 'module-08-gsd/lesson-01-methodology',
