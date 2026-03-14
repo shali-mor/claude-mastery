@@ -450,6 +450,33 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
             calloutVariant: 'tip',
             content: 'Browse the official marketplace with `/plugin` → Discover tab. Submit your own plugin at `claude.ai/settings/plugins/submit`. The plugin system uses the open **AgentSkills standard** (agentskills.io) — skills you write today work across multiple AI tools.',
           },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'The Claude ecosystem — which surface for which job',
+          },
+          {
+            type: 'text',
+            content: 'Claude Code is one of three surfaces Anthropic ships. They share the same underlying model but serve very different audiences and use cases. Knowing where each one fits stops you reaching for the wrong tool.',
+          },
+          {
+            type: 'table',
+            headers: ['', 'Claude.ai', 'Claude Code', 'Cowork'],
+            rows: [
+              ['Interface', 'Web / mobile chat', 'Terminal (CLI)', 'Desktop app (GUI)'],
+              ['Who it\'s for', 'Everyone', 'Developers', 'Non-technical office workers'],
+              ['Agentic', 'No — turn-by-turn chat', 'Yes — executes tasks autonomously', 'Yes — executes tasks autonomously'],
+              ['File access', 'Manual upload/download', 'Full codebase read/write', 'Folder you explicitly grant'],
+              ['Skill system', 'N/A', '`.claude/commands/` + plugins', 'Plugin bundles (skills + connectors + agents)'],
+              ['Typical use', 'Q&A, drafting, analysis', 'Coding, refactoring, automation', 'Spreadsheets, docs, file ops, SaaS workflows'],
+              ['Status', 'Generally available', 'Generally available', 'Research preview'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Cowork** is the desktop app you see when you download Claude for macOS or Windows. It\'s built on the same agentic engine as Claude Code but targets analysts, ops teams, and anyone who needs to automate multi-step office tasks without touching a terminal. As a developer, Claude Code is your tool — but your teammates on non-technical teams may reach for Cowork instead.',
+          },
         ],
       },
 
