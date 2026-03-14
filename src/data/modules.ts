@@ -1657,21 +1657,21 @@ git commit -m "chore: add Claude Code skill library"`,
       // ── Lesson 2-7: Testing & Refining Your Skills (Skills 2.0 Evals) ───
       {
         id: 'lesson-2-7',
-        title: 'Testing & Refining Your Skills — Skills 2.0 Evals',
-        description: 'Use the Skills 2.0 evaluation suite to test, benchmark, and A/B test your skills so they work reliably every time.',
+        title: 'Testing & Refining Your Skills — Skills 2.0 Evals [Coming Soon]',
+        description: 'A preview of the Skills 2.0 evaluation suite — Evals, A/B Testing, Trigger Optimization, and Benchmarking. Currently rolling out; not yet available to all users.',
         estimatedMinutes: 14,
         blocks: [
           {
             type: 'lesson-player',
           },
           {
-            type: 'text',
-            content: 'Writing a skill is the easy part. Knowing whether it actually works — every time, across different inputs, without firing when it shouldn\'t — is harder. **Skills 2.0** introduced a built-in evaluation suite directly in the skill creator on Claude.ai. It brings software testing discipline to skill authoring: no code required.',
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**Coming soon — not yet available to all users.** The Skills 2.0 evaluation suite is announced and rolling out gradually. If you don\'t see an Evals tab in your skill creator yet, this feature hasn\'t reached your account. The lesson below covers what it does so you\'re ready when it arrives.',
           },
           {
-            type: 'callout',
-            calloutVariant: 'info',
-            content: '**Where to find it:** Open Claude.ai → your skill in the skill creator → the **Evals** tab. All four tools are available there.',
+            type: 'text',
+            content: 'Writing a skill is the easy part. Knowing whether it actually works — every time, across different inputs, without firing when it shouldn\'t — is harder. **Skills 2.0** introduces a built-in evaluation suite into the skill creator. It brings software testing discipline to skill authoring: no code required.',
           },
           {
             type: 'heading',
