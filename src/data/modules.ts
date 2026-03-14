@@ -22,6 +22,9 @@ export const modules: Module[] = [
             content: '**Want everything on one page?** The [Cheatsheet](/cheatsheet) covers all key commands, memory layers, skills, hooks, context management, and keyboard shortcuts — great to keep open while you work through the course.',
           },
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Claude Code is an agentic coding tool that operates directly in your terminal, understands your codebase, and helps you ship code faster through natural language commands.',
           },
@@ -64,6 +67,9 @@ claude -p "Summarize this codebase"`,
         description: 'Master all 29 slash commands with practical examples.',
         estimatedMinutes: 15,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Claude Code ships with 29 built-in slash commands. They cover everything from context management and model switching to GitHub integration and MCP servers. Here they are grouped by what they do.',
@@ -212,6 +218,9 @@ claude -p "Summarize this codebase"`,
         estimatedMinutes: 8,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'CLI flags enable powerful scripting and automation scenarios, while keyboard shortcuts speed up your interactive sessions significantly.',
           },
@@ -256,6 +265,9 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         estimatedMinutes: 8,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Claude Code has three permission modes that control how much autonomy it has. Choosing the right mode balances speed with safety.',
           },
@@ -297,6 +309,9 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         description: 'Understand the three extension points and exactly when to reach for each one.',
         estimatedMinutes: 10,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Claude Code gives you three ways to extend and automate your workflow: **built-in slash commands**, **custom skills**, and **hooks**. They look similar but serve different purposes. Picking the wrong one costs you time — picking the right one multiplies your output.',
@@ -445,6 +460,9 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         description: 'Learn the skill file format, $ARGUMENTS, and the writing patterns that make Claude follow your instructions reliably every time.',
         estimatedMinutes: 18,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'heading',
             level: 2,
@@ -705,6 +723,9 @@ Rules:
         estimatedMinutes: 20,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Hooks are shell scripts Claude Code runs automatically at specific points in its workflow. Unlike skills (which you invoke), hooks fire on their own. They\'re ideal for enforcing team standards and automating quality gates that would otherwise be forgotten.',
           },
@@ -949,6 +970,9 @@ Key: these run WHEN INVOKED via /command-name.`,
         estimatedMinutes: 15,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Your `.claude/` directory is as important as your `package.json`. A well-structured `.claude/` makes onboarding instant, enforces team standards automatically, and captures institutional knowledge that would otherwise live only in someone\'s head.',
           },
@@ -1147,6 +1171,9 @@ Write Jest unit tests for $ARGUMENTS.
         description: 'Six production-quality skills you can drop into any project today — security review, PR review, commit messages, debugging, tests, and refactoring.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'The fastest way to learn skill authoring is to read well-crafted skills and adapt them. Every skill below is production-ready — copy the file content to `.claude/commands/<filename>.md` and it becomes a `/command` immediately.',
@@ -1431,6 +1458,9 @@ git commit -m "chore: add Claude Code skill library"`,
         estimatedMinutes: 15,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Claude Code has no persistent memory by default — every session starts blank. But it gives you four distinct layers to inject exactly the right context. Understanding which layer to use (and when) is the difference between Claude that feels like a specialist and Claude that feels like a stranger.',
           },
@@ -1623,6 +1653,208 @@ git commit -m "chore: add Claude Code skill library"`,
           },
         ],
       },
+
+      // ── Lesson 2-7: Testing & Refining Your Skills (Skills 2.0 Evals) ───
+      {
+        id: 'lesson-2-7',
+        title: 'Testing & Refining Your Skills — Skills 2.0 Evals',
+        description: 'Use the Skills 2.0 evaluation suite to test, benchmark, and A/B test your skills so they work reliably every time.',
+        estimatedMinutes: 14,
+        blocks: [
+          {
+            type: 'lesson-player',
+          },
+          {
+            type: 'text',
+            content: 'Writing a skill is the easy part. Knowing whether it actually works — every time, across different inputs, without firing when it shouldn\'t — is harder. **Skills 2.0** introduced a built-in evaluation suite directly in the skill creator on Claude.ai. It brings software testing discipline to skill authoring: no code required.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Where to find it:** Open Claude.ai → your skill in the skill creator → the **Evals** tab. All four tools are available there.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'The four evaluation tools',
+          },
+          {
+            type: 'table',
+            headers: ['Tool', 'What it does', 'Best for'],
+            rows: [
+              ['Evals', 'Run test prompts and describe expected output — pass/fail result', 'Verifying core behavior before shipping'],
+              ['A/B Testing', 'Compare two versions of a skill side-by-side with metrics', 'Deciding which wording, structure, or trigger works better'],
+              ['Trigger Optimization', 'Find false fires and missed fires in your skill\'s activation logic', 'Fixing skills that trigger on wrong inputs or miss the right ones'],
+              ['Benchmarking', 'Set a performance baseline and track it over time', 'Ensuring skills don\'t regress as the model evolves'],
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Evals — unit tests for your skill',
+          },
+          {
+            type: 'text',
+            content: 'An eval is a test case: you supply a **prompt** (what the user types) and a **description of the expected output** (what the skill should do). The system runs the skill and tells you whether the output matches. You can add as many test cases as you want.',
+          },
+          {
+            type: 'steps',
+            content: 'How to write a useful eval',
+            steps: [
+              'Open the Evals tab in the skill creator',
+              'Add a test prompt — use a realistic user message that should trigger your skill',
+              'Write a plain-English description of what a correct response looks like (e.g., "Returns a bullet list of action items extracted from the meeting notes")',
+              'Run the eval — the system scores pass/fail and shows you the actual output',
+              'Add edge case prompts: empty input, ambiguous phrasing, the prompt that almost triggers but shouldn\'t',
+            ],
+          },
+          {
+            type: 'comparison',
+            content: '',
+            do: {
+              label: '✅ Good eval description',
+              language: 'text',
+              code: `Expected: Response contains a numbered list of
+action items. Each item has an owner name and
+a due date. No more than 10 items. Polite but
+direct tone.`,
+            },
+            dont: {
+              label: '❌ Weak eval description',
+              language: 'text',
+              code: `Expected: Summarizes the meeting.
+
+→ Too vague. The evaluator can't tell if
+  the output is actually correct.`,
+            },
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'A/B Testing — pick the better version with data',
+          },
+          {
+            type: 'text',
+            content: 'When you\'re unsure whether to restructure a skill, tighten its trigger, or change its output format — don\'t guess. A/B test it. The system runs both versions against your eval suite and reports:',
+          },
+          {
+            type: 'checklist',
+            content: 'Metrics tracked in A/B tests',
+            items: [
+              {
+                text: 'Eval criterion satisfaction rate',
+                description: 'The percentage of your test cases each version passes.',
+              },
+              {
+                text: 'Token usage',
+                description: 'How many tokens each version consumes on average — relevant if you\'re watching costs.',
+              },
+              {
+                text: 'Run time',
+                description: 'How long each version takes to respond. Faster isn\'t always better, but it\'s good to know.',
+              },
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Practical use:** A/B testing is most valuable when you want to shorten a skill\'s instructions. Write the lean version, run the A/B test against your evals, and only ship the shorter version if the pass rate holds. You get smaller context cost *and* confidence it still works.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Trigger Optimization — stop false fires and missed fires',
+          },
+          {
+            type: 'text',
+            content: 'Trigger optimization is the highest-ROI tool for skills used in agents or plugins. It analyses your skill\'s trigger description against a set of real prompts and tells you where it goes wrong.',
+          },
+          {
+            type: 'table',
+            headers: ['Problem', 'What it looks like', 'Trigger optimization fix'],
+            rows: [
+              ['False fire', 'Your LinkedIn skills fires when the user asks about YouTube', 'Tighten the trigger: add explicit exclusions or narrower keywords'],
+              ['Missed fire', 'A clear match doesn\'t activate your skill', 'Broaden the trigger: use synonyms or rephrase the activation condition'],
+              ['Ambiguous trigger', 'The skill fires ~60% of the time on the same input', 'Make the trigger deterministic: specificity beats brevity'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: 'Anthropic tested trigger optimization on 6 public document-creation skills. 5 out of 6 improved their trigger accuracy after one round of optimization. It\'s fast to run and the suggestions are actionable.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Benchmarking — protect against regression',
+          },
+          {
+            type: 'text',
+            content: 'Models update. Claude Sonnet today is not Claude Sonnet in 6 months. Benchmarking lets you lock in a baseline — "this skill passes 9/10 evals today" — and re-run that baseline after any model update. If the pass rate drops, you know you need to adjust the skill before your users notice.',
+          },
+          {
+            type: 'steps',
+            content: 'Setting up a benchmark',
+            steps: [
+              'Make sure your eval suite covers the skill\'s core use cases (aim for at least 5–10 test cases)',
+              'Run all evals and note the current pass rate — this is your baseline',
+              'Save it as a named benchmark in the Benchmarking tab',
+              'Re-run after model updates or significant skill edits',
+              'Investigate any eval that newly fails — it signals drift between your instructions and the current model',
+            ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'The evaluation workflow',
+          },
+          {
+            type: 'steps',
+            content: 'Recommended order when shipping a new skill',
+            steps: [
+              '**Write the skill** — instructions, trigger, output format',
+              '**Write 5+ evals** — happy path, edge cases, one "near miss" that should NOT trigger',
+              '**Run evals** — fix failures before moving on',
+              '**Run Trigger Optimization** — check for false fires across unrelated prompts',
+              '**Benchmark** — save the current pass rate as your v1 baseline',
+              '**Ship** — you now have evidence it works, not just a feeling',
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: '**Don\'t skip the "near miss" eval.** A skill that fires correctly on good inputs but also fires on irrelevant ones is worse than no skill — it hijacks conversations and confuses users. Always include at least one test case that should NOT activate your skill.',
+          },
+          {
+            type: 'exercise',
+            content: 'Evaluate an existing skill',
+            exercise: {
+              prompt: 'Pick one skill you already have (or the `/write-test` skill from lesson 2-2). Open it in the skill creator on Claude.ai. Write three evals: one happy path, one edge case, one near-miss that should NOT trigger. Run them. Fix any failure.',
+              hints: [
+                'For the near-miss eval, use a prompt that shares vocabulary with your skill but has a different intent',
+                'If your skill has no trigger description yet, add one before running trigger optimization',
+                'A failing eval is information — read the actual output before deciding whether to fix the skill or fix the eval description',
+              ],
+              solution: `# Example: evaluating a /summarize-pr skill
+
+## Eval 1 — happy path
+Prompt: "Summarize this pull request: [adds pagination to user list, 3 files changed]"
+Expected: Returns a 2-4 sentence plain-English summary covering what changed and why.
+
+## Eval 2 — edge case
+Prompt: "Summarize this PR: [no description, only file names listed]"
+Expected: Still returns a summary; acknowledges limited context and bases
+the summary on file names and diff headings.
+
+## Eval 3 — near miss (should NOT trigger)
+Prompt: "Can you summarize what a pull request even is?"
+Expected: Skill does NOT fire. This is a conceptual question,
+not a request to summarize a specific PR.`,
+              solutionLanguage: 'markdown',
+            },
+          },
+        ],
+      },
     ],
   },
   {
@@ -1639,6 +1871,9 @@ git commit -m "chore: add Claude Code skill library"`,
         description: 'Learn how tokens are counted and priced across the Claude model family.',
         estimatedMinutes: 8,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Claude pricing is per-token, with separate rates for input and output. Output tokens cost 5x more than input tokens on most models — so reducing response length is often the highest-leverage optimization.',
@@ -1670,6 +1905,9 @@ git commit -m "chore: add Claude Code skill library"`,
             type: 'callout',
             calloutVariant: 'info',
             content: '**Where does this lesson apply?** Prompt caching is an Anthropic API feature for apps you build yourself — a Next.js backend, a Python script, a Node.js service. It is not a Claude Code CLI setting. If you only use Claude Code interactively, skip to lesson 4-4.',
+          },
+          {
+            type: 'lesson-player',
           },
           {
             type: 'text',
@@ -1753,6 +1991,9 @@ export async function askWithCaching(
             type: 'callout',
             calloutVariant: 'info',
             content: '**Where does this lesson apply?** The Batch API is for scripts and backend services you write — a nightly classification job, a bulk data pipeline, an eval suite. It is not available inside Claude Code CLI sessions.',
+          },
+          {
+            type: 'lesson-player',
           },
           {
             type: 'text',
@@ -1852,6 +2093,9 @@ for await (const item of await client.messages.batches.results(batch.id)) {
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'In Claude Code, context grows with each turn. Unmanaged, a long session can balloon to 100K+ tokens per request. /compact and strategic context management prevent runaway costs.',
           },
@@ -1880,6 +2124,9 @@ for await (const item of await client.messages.batches.results(batch.id)) {
         description: 'A skill that recommends the right model for your task, and a hook that warns you when you\'re burning Opus tokens on a simple job.',
         estimatedMinutes: 10,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Claude Code has no built-in auto-switch — you pick the model with `/model`. But you can add two automation layers: a **skill** that analyses your task and recommends the cheapest model that can handle it, and a **hook** that warns you in real-time if you\'re on the wrong model for what you\'re asking.',
@@ -2047,6 +2294,9 @@ echo '{"action":"continue"}'`,
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'The Anthropic Messages API is the foundation for all Claude integrations. Understanding its structure — messages array, system prompt, model selection, and token limits — is essential for building reliable applications.',
           },
@@ -2087,6 +2337,9 @@ console.log(message.usage);
         description: 'Implement streaming for responsive, real-time user interfaces.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Streaming delivers tokens as they\'re generated, dramatically improving perceived responsiveness. The SDK provides a high-level stream() method that handles the SSE protocol for you.',
@@ -2136,6 +2389,9 @@ console.log('\\nUsage:', message.usage);`,
         estimatedMinutes: 15,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Beyond basic text generation, Claude supports tool use (function calling), vision (image analysis), and fine-grained control over generation behavior through temperature, top_p, and top_k parameters.',
           },
@@ -2180,6 +2436,9 @@ if (response.stop_reason === 'tool_use') {
         description: 'Rate limits, error handling, retry logic, and API key security.',
         estimatedMinutes: 10,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Production Claude integrations need robust error handling, proper retry logic, and strict API key security. Here are the patterns that matter most.',
@@ -2238,6 +2497,9 @@ const client = new Anthropic({
         description: 'Understand the sub-agent mental model and when to reach for it.',
         estimatedMinutes: 10,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'A **sub-agent** is a separate Claude instance you spawn from inside a conversation. It starts with a completely clean slate, runs autonomously, does one specific job, and returns a single final answer. Think of it like hiring a contractor: you hand them a clear brief, they go away and do the work, and you get a deliverable back.',
@@ -2322,6 +2584,9 @@ One growing context window holds all unrelated detail`,
         description: 'See exactly what to type in the Claude Code terminal — from a one-liner to controlling model, background mode, and isolation.',
         estimatedMinutes: 8,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Claude Code is a terminal chat. You type messages; Claude responds. To spawn a sub-agent, you simply **describe what you want delegated** — Claude reads it and calls the Task tool internally. You never write JSON or call any API.',
@@ -2493,6 +2758,9 @@ Review the diff and merge manually when ready, or ask me to merge it.`,
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'A one-liner is enough for a simple search. But the moment a task has specific requirements, edge cases, or a precise output format, you need a **structured delegation prompt**. This lesson covers the four sections every good delegation prompt has — and why each one matters.',
           },
@@ -2608,6 +2876,9 @@ Markdown list. For each file:
         description: 'Run multiple agents concurrently and merge their results for dramatically faster workflows.',
         estimatedMinutes: 15,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'The real power of sub-agents is **parallelism**. Instead of researching four topics one-by-one, you launch four agents simultaneously and get all results in roughly the time of one. This lesson covers four core patterns for parallel agent work — including real prompts you can paste directly into Claude Code.',
@@ -2801,6 +3072,9 @@ After both finish, compare the two approaches and recommend which to use given:
         description: 'Design robust multi-agent systems: context passing, error handling, and avoiding common pitfalls.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Launching agents is easy. Making them work reliably together is the real skill. This lesson covers how context flows between agents, how to handle failures gracefully, and the most common mistakes that break multi-agent pipelines.',
@@ -3020,6 +3294,9 @@ If @upstash/ratelimit is not in package.json, note it as a finding in the table.
         estimatedMinutes: 12,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Any agent that writes or deletes files is modifying your working directory directly. If it goes wrong — refactors the wrong function, deletes the wrong file, half-implements a feature — there is no clean undo. **Worktree isolation** solves this by giving the agent its own isolated git branch and working directory. Your main branch stays completely untouched until you decide to merge.',
           },
@@ -3191,6 +3468,9 @@ I will review each diff before merging.`,
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Plan Mode is a read-only constraint that prevents Claude from editing files or running destructive commands. In Plan Mode, Claude can explore your codebase using Glob, Grep, Read, and Explore agents — but cannot write, delete, or execute shell commands that modify state.',
           },
@@ -3236,6 +3516,9 @@ I will review each diff before merging.`,
         description: 'Learn activation shortcuts, plan file structure, and the critical distinction between ExitPlanMode and auto-execution.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Plan Mode can be activated in two ways: via keyboard shortcut or natural language. Once active, Claude writes its plan to a structured file in `.claude/plans/` — then calls `ExitPlanMode` to signal readiness for your review.',
@@ -3288,6 +3571,9 @@ Shift+Tab   # toggles Plan Mode on/off
         description: 'A 5-phase walkthrough of how Plan Mode fits into a complete development workflow.',
         estimatedMinutes: 15,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'A complete Plan Mode session has five phases. Understanding each phase helps you get more value from planning — and know when to iterate vs approve.',
@@ -3445,6 +3731,9 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Not every task needs a plan. Planning has overhead — it adds a review cycle before work starts. The key is matching the formality of your process to the risk of the change.',
           },
@@ -3507,6 +3796,9 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'MCP (Model Context Protocol) is an open standard created by Anthropic that lets Claude connect to external tools and data sources. Without MCP, Claude\'s tools are fixed — Read, Write, Bash, and a handful of built-ins. With MCP, Claude can query your database, call internal APIs, search GitHub, read Slack messages, or access any system an MCP server exposes.',
           },
@@ -3551,6 +3843,9 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
         description: 'Configure MCP servers globally or per-project, verify connections, and explore popular ready-made servers.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'MCP servers are configured in Claude Code\'s settings files. You can configure them globally (available in all projects) or per-project (only in a specific codebase). The configuration is a simple JSON object that tells Claude how to launch each server.',
@@ -3617,6 +3912,9 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
         description: 'When ready-made servers don\'t fit, build your own — a full walkthrough with the TypeScript SDK.',
         estimatedMinutes: 15,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Build a custom MCP server when you need to expose an internal API, proprietary data source, or custom tool logic. The `@modelcontextprotocol/sdk` package provides everything you need. A minimal server is under 50 lines of TypeScript.',
@@ -3728,6 +4026,9 @@ if (request.params.name === 'list_users') {
         estimatedMinutes: 8,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'The same MCP servers work in both Claude Code (the CLI) and Claude Desktop (the GUI app). The protocol is identical — only the configuration file location and intended use case differ.',
           },
@@ -3788,6 +4089,9 @@ if (request.params.name === 'list_users') {
             type: 'callout',
             calloutVariant: 'info',
             content: '**GSD is a community-built open-source plugin — not a built-in Claude Code feature.** It was created by the community and has grown to 27k+ stars and 2,300+ forks. You install it separately from its repository: [github.com/gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done)',
+          },
+          {
+            type: 'lesson-player',
           },
           {
             type: 'heading',
@@ -3880,6 +4184,9 @@ Phase 4: Dashboard UI
         description: 'Initialize projects, create milestones, and generate detailed phase plans — with real examples.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'GSD\'s planning commands guide you from a rough idea to a detailed, executable PLAN.md. Each command builds on the previous one. Here is the full startup sequence with a real example.',
@@ -3976,6 +4283,9 @@ Set up the Postgres schema for users, API keys, and events.
         description: 'Run phases with parallel agents, validate results against the plan, and ship with confidence.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Once PLAN.md exists, two commands take you from plan to shipped: `/gsd:execute-phase` builds everything, `/gsd:verify-work` checks that everything was built correctly. Here is what each looks like in practice.',
@@ -4091,6 +4401,9 @@ Next action: /gsd:execute-phase  (Phase 3 plan is ready)`,
         description: 'Real scenarios: debugging across resets, mapping new codebases, urgent hotfixes, and context handoffs.',
         estimatedMinutes: 10,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Beyond the core plan → execute → verify loop, GSD has commands for the situations that derail most AI-assisted development. Here are four real scenarios and the command that handles each.',
@@ -4235,6 +4548,9 @@ in a new session to pick up exactly here.`,
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'visual',
             visualId: 'n8n-intro',
           },
@@ -4281,6 +4597,9 @@ in a new session to pick up exactly here.`,
         description: 'Configure an HTTP Request node to call Claude, store credentials safely, and parse responses.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'There are two ways to call Claude from n8n: the native Anthropic node (if installed) or a generic HTTP Request node. The HTTP Request node gives you full control and works in any n8n version.',
@@ -4349,6 +4668,9 @@ in a new session to pick up exactly here.`,
         description: 'Three production workflow patterns: PR summaries, standup reports, and support ticket drafting.',
         estimatedMinutes: 15,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'The power of n8n + Claude becomes clear when you wire together real systems. Here are three production-ready workflow patterns with the design decisions behind them.',
@@ -4424,6 +4746,9 @@ in a new session to pick up exactly here.`,
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'Static prompts in n8n workflows waste Claude\'s capabilities. The real power comes from dynamically constructing prompts from upstream data using n8n expressions.',
           },
@@ -4492,6 +4817,9 @@ in a new session to pick up exactly here.`,
         estimatedMinutes: 10,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'The `claude -p` flag puts Claude in non-interactive mode: pass a prompt, get a response, exit. This makes Claude usable anywhere you can run a shell command — cron jobs, CI pipelines, git hooks, and more.',
           },
@@ -4543,6 +4871,9 @@ curl -X POST "$SLACK_WEBHOOK_URL" \\
         estimatedMinutes: 12,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'If your team already uses Zapier or Make.com, you can add Claude to existing workflows without introducing n8n. Both platforms support calling Claude via HTTP requests, and Zapier has a native Anthropic app.',
           },
@@ -4587,6 +4918,9 @@ curl -X POST "$SLACK_WEBHOOK_URL" \\
         description: 'Build reactive systems: external events trigger Claude instantly, without polling.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Event-driven architectures respond immediately when something happens — a PR opens, a payment fails, a monitoring alert fires. Webhooks are the mechanism: the external system POSTs to your endpoint, you call Claude, you act on the result.',
@@ -4675,6 +5009,9 @@ app.listen(3000);`,
         estimatedMinutes: 8,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'You now have a full toolkit: Claude CLI, n8n, Make.com, Zapier, and custom webhook handlers. The right choice depends on your team\'s technical level, hosting requirements, data sensitivity, cost model, and maintenance budget.',
           },
@@ -4741,6 +5078,9 @@ app.listen(3000);`,
         description: 'Start in Plan Mode to map the full architecture before writing a single line of code.',
         estimatedMinutes: 15,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'We\'re building a production AI code reviewer: when a GitHub PR opens, an n8n workflow fetches the diff via the GitHub MCP server, Claude runs three parallel analysis agents (security, style, logic), and the results are posted back to GitHub as a structured review with a Slack notification. This single project demonstrates every major technique from the course.',
@@ -4828,6 +5168,9 @@ pr-reviewer/
         description: 'Configure the GitHub MCP server, add observability hooks, and scaffold the n8n workflow skeleton.',
         estimatedMinutes: 15,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'With the plan approved, we scaffold the project: configure the GitHub MCP server, add two development hooks for observability, and build the n8n workflow skeleton that will orchestrate everything.',
@@ -4942,6 +5285,9 @@ fi`,
         estimatedMinutes: 20,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'The analysis engine is the heart of the pipeline. An orchestrator agent spawns three specialist sub-agents in parallel — each receives only the relevant diff slice. A shared system prompt is cached so it\'s only tokenized once across all three calls.',
           },
@@ -5047,6 +5393,9 @@ async function runParallelAnalysis(diff: string) {
         estimatedMinutes: 15,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'With the analysis engine working, we wire it into n8n, add error handling, create the `/review-pr` custom skill for manual triggers, run a full end-to-end test, and analyze the cost model.',
           },
@@ -5137,6 +5486,9 @@ Return a summary of findings.
         estimatedMinutes: 12,
         blocks: [
           {
+            type: 'lesson-player',
+          },
+          {
             type: 'text',
             content: 'We\'re building a daily stock screening bot that delivers Claude\'s top swing-trade picks to your Telegram every weekday morning — and responds instantly whenever you send it a command. The strategy targets stocks to hold for 1–2 months, so we look for momentum building rather than day-trade noise.',
           },
@@ -5187,6 +5539,9 @@ Return a summary of findings.
         description: 'Create a Telegram bot with BotFather, get your chat ID, and configure n8n\'s Telegram nodes.',
         estimatedMinutes: 12,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'Telegram\'s Bot API is the easiest messaging integration available — a bot is created in under 5 minutes and the API is completely free with no rate limits for personal use. n8n has a native Telegram node that handles authentication automatically.',
@@ -5263,6 +5618,9 @@ curl -X POST "https://api.telegram.org/bot<YOUR_TOKEN>/sendMessage" \\
         description: 'Pull 3 months of daily price data from Yahoo Finance and compute RSI, MACD, and SMA in an n8n Code node.',
         estimatedMinutes: 15,
         blocks: [
+          {
+            type: 'lesson-player',
+          },
           {
             type: 'text',
             content: 'The data pipeline fetches 3 months of daily candles for each stock and computes three technical indicators in a JavaScript Code node. These computed signals become the structured context Claude receives for its analysis.',
@@ -5393,6 +5751,9 @@ return results;`,
                 label: '① Overview',
                 blocks: [
                   {
+                    type: 'lesson-player',
+                  },
+                  {
                     type: 'callout',
                     calloutVariant: 'tip',
                     content: '**All files are ready — import and go.**\n\n`github.com/shali-mor/claude-mastery-exercises/tree/main/module-12-stock-bot/lesson-04-claude-analyst/`\n\n- **`workflow/stock-bot-workflow.json`** — import into n8n, all 13 nodes pre-wired\n- **`nodes/01–06`** — every JS snippet as a standalone file\n- **`.env.example`** · **`README.md`** — credentials + activation guide\n\nNo separate Git repo needed — all code goes into n8n Code nodes.',
@@ -5433,6 +5794,9 @@ return results;`,
               {
                 label: '② Build it',
                 blocks: [
+                  {
+                    type: 'lesson-player',
+                  },
                   // Phase 1
                   {
                     type: 'heading',
@@ -5627,6 +5991,9 @@ return [{ json: { message: lines.join('\\n') } }];`,
               {
                 label: '③ Deploy',
                 blocks: [
+                  {
+                    type: 'lesson-player',
+                  },
                   {
                     type: 'steps',
                     steps: [

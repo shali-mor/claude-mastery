@@ -12,7 +12,8 @@ export type ContentBlockType =
   | 'checklist'
   | 'comparison'
   | 'visual'
-  | 'section-tabs';
+  | 'section-tabs'
+  | 'lesson-player';
 
 export type CalloutVariant = 'info' | 'warning' | 'success' | 'error' | 'tip';
 
