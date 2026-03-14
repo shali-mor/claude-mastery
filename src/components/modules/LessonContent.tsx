@@ -26,11 +26,6 @@ const N8nIntro = dynamic(
   { ssr: false },
 );
 
-const LessonVideoPlayer = dynamic(
-  () => import('@/components/lessons/LessonVideoPlayer'),
-  { ssr: false },
-);
-
 // ─── Inline text: renders `backtick code` and **bold** inline ───────────────
 function InlineText({ text }: { text: string }) {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
@@ -286,7 +281,7 @@ function ChecklistBlock({ items, content }: { items: ChecklistItem[]; content: s
   const [checked, setChecked] = useState<Set<number>>(new Set());
   const toggle = (i: number) => setChecked(prev => {
     const next = new Set(prev);
-    if (next.has(i)) { next.delete(i); } else { next.add(i); }
+    next.has(i) ? next.delete(i) : next.add(i);
     return next;
   });
   const allDone = checked.size === items.length;
@@ -431,54 +426,15 @@ function SectionTabsBlock({ sectionTabs }: { sectionTabs: NonNullable<import('@/
   );
 }
 
-// ─── Collapsible written version (shown after lesson-player) ─────────────────
-function CollapsibleWritten({ blocks }: { blocks: ContentBlock[] }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="rounded-xl border-2 border-primary/25 overflow-hidden bg-primary/3">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-primary/5 transition-colors group"
-      >
-        <div className="flex items-center gap-2.5">
-          <div className="w-1.5 h-5 rounded-full bg-primary" />
-          <span className="text-sm font-semibold text-foreground">Written version</span>
-          <span className="text-xs text-muted-foreground">— same content, text format</span>
-        </div>
-        <ChevronDown className={cn('h-4 w-4 text-primary transition-transform duration-200', open && 'rotate-180')} />
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 pb-5 pt-2 space-y-6 border-t border-border">
-              <LessonContent blocks={blocks} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 // ─── Main renderer ────────────────────────────────────────────────────────────
 interface LessonContentProps {
   blocks: ContentBlock[];
 }
 
 export function LessonContent({ blocks }: LessonContentProps) {
-  const playerIdx = blocks.findIndex(b => b.type === 'lesson-player');
-  const afterPlayer = playerIdx !== -1 ? blocks.slice(playerIdx + 1) : [];
-  const renderBlocks = playerIdx !== -1 ? blocks.slice(0, playerIdx + 1) : blocks;
-
   return (
     <div className="space-y-6">
-      {renderBlocks.map((block, i) => {
+      {blocks.map((block, i) => {
         switch (block.type) {
           case 'text':
             return <TextBlock key={i} content={block.content ?? ''} />;
@@ -530,9 +486,6 @@ export function LessonContent({ blocks }: LessonContentProps) {
               <SectionTabsBlock key={i} sectionTabs={block.sectionTabs} />
             ) : null;
 
-          case 'lesson-player':
-            return <LessonVideoPlayer key={i} blocks={blocks} />;
-
           case 'visual':
             if (block.visualId === 'context-vs-skills') {
               return <ContextVsSkillsVisual key={i} />;
@@ -549,7 +502,6 @@ export function LessonContent({ blocks }: LessonContentProps) {
             return null;
         }
       })}
-      {afterPlayer.length > 0 && <CollapsibleWritten blocks={afterPlayer} />}
     </div>
   );
 }
