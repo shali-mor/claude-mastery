@@ -3,8 +3,6 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const NOTIFY_EMAIL = 'shali.mor@forcepoint.com';
 const FROM_EMAIL = 'Claude Mastery <notifications@mail.claudemastery.com>';
 
@@ -148,6 +146,7 @@ export async function POST(req: Request) {
 </html>
   `.trim();
 
+  const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from: FROM_EMAIL,
     to: NOTIFY_EMAIL,
