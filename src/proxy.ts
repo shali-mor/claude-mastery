@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   '/about',
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/api/webhooks/(.*)',
 ]);
 
 // In-memory rate limit store.
