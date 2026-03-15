@@ -64,7 +64,7 @@ claude -p "Summarize this codebase"`,
       {
         id: 'lesson-1-2',
         title: 'Slash Commands Deep Dive',
-        description: 'Master all 29 slash commands with practical examples.',
+        description: 'Master all built-in slash commands with practical examples — including the CLI-to-Desktop handoff.',
         estimatedMinutes: 8,
         blocks: [
           {
@@ -90,7 +90,13 @@ claude -p "Summarize this codebase"`,
               ['/status', 'Show the active model, permission mode, loaded CLAUDE.md files, and connected MCP servers'],
               ['/reset', 'Reset session state and conversation history (deeper than /clear)'],
               ['/todo', 'View the in-session task list Claude uses to track multi-step work'],
+              ['/desktop', 'Move the current CLI session into the Claude Desktop app — session context carries over. macOS and Windows only.'],
             ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**CLI → Desktop handoff:** Start work in the terminal, then run `/desktop` to continue in the graphical interface — useful when you want to review visual diffs, attach files, or use Desktop-only features. Your session, CLAUDE.md, MCP servers, and hooks all carry over automatically. Requires Claude Desktop to be installed (macOS/Windows only).',
           },
           {
             type: 'callout',
