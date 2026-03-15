@@ -14,7 +14,9 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["eslint"]
+    "*.{ts,tsx}": [
+      "eslint"
+    ]
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -31,7 +33,9 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.7.0",
+    "resend": "^6.9.3",
     "shiki": "^3.22.0",
+    "svix": "^1.88.0",
     "tailwind-merge": "^3.5.0",
     "zustand": "^5.0.11"
   },
