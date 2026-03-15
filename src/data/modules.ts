@@ -348,26 +348,18 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
             content: '**Use the IDE extension for review-heavy work** — reading diffs inline is faster than reading them in a terminal. **Use the terminal for long-running agentic tasks** — the terminal gives you better visibility into what Claude is doing across many files.',
           },
           {
-            type: 'comparison',
-            content: '',
-            do: {
-              label: '✅ Best for IDE extension',
-              language: 'text',
-              code: `- "Explain this function"
-- "Refactor this class — show me a diff"
-- "Add JSDoc to these methods"
-- "What does this SQL query do?"
-→ Short, file-scoped, review-oriented tasks`,
-            },
-            dont: {
-              label: '✅ Best for terminal',
-              language: 'text',
-              code: `- "Review the whole PR and fix all issues"
-- "Run the test suite and fix failures"
-- "Scaffold the new auth module"
-- Multi-agent / worktree workflows
-→ Long-running, multi-file, agentic tasks`,
-            },
+            type: 'table',
+            headers: ['Task', 'IDE extension', 'Terminal'],
+            rows: [
+              ['"Explain this function"', '✅ Ideal', '—'],
+              ['"Refactor this class — show me a diff"', '✅ Ideal', '—'],
+              ['"Add JSDoc to these methods"', '✅ Ideal', '—'],
+              ['"What does this SQL query do?"', '✅ Ideal', '—'],
+              ['"Review the whole PR and fix all issues"', '—', '✅ Ideal'],
+              ['"Run the test suite and fix failures"', '—', '✅ Ideal'],
+              ['"Scaffold the new auth module"', '—', '✅ Ideal'],
+              ['Multi-agent / worktree workflows', '—', '✅ Ideal'],
+            ],
           },
           {
             type: 'callout',

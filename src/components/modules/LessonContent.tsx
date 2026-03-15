@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Info, AlertTriangle, CheckCircle, XCircle, Lightbulb,
-  ChevronDown, Eye, EyeOff, Square, CheckSquare, Minus, Plus,
+  Eye, EyeOff, Square, CheckSquare, Minus, Plus,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { CodeBlock } from '@/components/ui/CodeBlock';
@@ -281,7 +281,7 @@ function ChecklistBlock({ items, content }: { items: ChecklistItem[]; content: s
   const [checked, setChecked] = useState<Set<number>>(new Set());
   const toggle = (i: number) => setChecked(prev => {
     const next = new Set(prev);
-    next.has(i) ? next.delete(i) : next.add(i);
+    if (next.has(i)) { next.delete(i); } else { next.add(i); }
     return next;
   });
   const allDone = checked.size === items.length;
