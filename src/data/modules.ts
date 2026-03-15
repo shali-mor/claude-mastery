@@ -4780,8 +4780,8 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
       {
         id: 'lesson-9-3',
         title: 'Building a Custom MCP Server',
-        description: 'When ready-made servers don\'t fit, build your own — a full walkthrough with the TypeScript SDK.',
-        estimatedMinutes: 10,
+        description: 'Build your own MCP server with TypeScript or Python — covers all three primitives: Tools, Resources, and Prompts.',
+        estimatedMinutes: 12,
         blocks: [
           {
             type: 'lesson-player',
@@ -4852,9 +4852,169 @@ await server.connect(transport);`,
             ],
           },
           {
+            type: 'heading',
+            level: 2,
+            content: 'Three MCP primitives: Tools, Resources, Prompts',
+          },
+          {
+            type: 'table',
+            content: '',
+            headers: ['Primitive', 'What it exposes', 'Claude uses it to'],
+            rows: [
+              ['**Tools**', 'Callable functions (already covered above)', 'Take actions — fetch data, write files, call APIs'],
+              ['**Resources**', 'Read-only data: files, DB records, live feeds', 'Read context — "load README.md", "show user 42"'],
+              ['**Prompts**', 'Reusable prompt templates with typed arguments', 'Apply a standard workflow — "run code_review on this file"'],
+            ],
+          },
+          {
+            type: 'text',
+            content: 'Most servers only implement tools. Adding resources lets Claude pull context on demand rather than having you paste it. Adding prompts packages your best prompt patterns as first-class slash commands inside Claude Code.',
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Exposing a Resource',
+          },
+          {
+            type: 'code',
+            language: 'typescript',
+            content: `import {
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+// Declare what resources are available
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: [
+    {
+      uri: 'internal://users/schema',
+      name: 'User database schema',
+      mimeType: 'application/json',
+    },
+  ],
+}));
+
+// Return the resource content when Claude asks for it
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  if (request.params.uri === 'internal://users/schema') {
+    const schema = await fetchSchemaFromDB();
+    return {
+      contents: [{ uri: request.params.uri, mimeType: 'application/json', text: JSON.stringify(schema) }],
+    };
+  }
+  throw new Error('Resource not found');
+});`,
+          },
+          {
+            type: 'heading',
+            level: 3,
+            content: 'Exposing a Prompt template',
+          },
+          {
+            type: 'code',
+            language: 'typescript',
+            content: `import {
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  prompts: [
+    {
+      name: 'code_review',
+      description: 'Standard code review for this codebase',
+      arguments: [
+        { name: 'language', description: 'Programming language', required: true },
+      ],
+    },
+  ],
+}));
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  if (request.params.name === 'code_review') {
+    const lang = request.params.arguments?.language ?? 'TypeScript';
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: \`Review this \${lang} code for: (1) security vulnerabilities, (2) performance issues, (3) error handling gaps, (4) naming clarity. Be concise and actionable.\`,
+          },
+        },
+      ],
+    };
+  }
+  throw new Error('Prompt not found');
+});`,
+          },
+          {
             type: 'callout',
-            calloutVariant: 'info',
-            content: 'A Python SDK is also available: `pip install mcp`. The protocol is identical — choose the language that matches your team\'s stack.',
+            calloutVariant: 'tip',
+            content: 'Enable all three primitives in the server capabilities object: `{ capabilities: { tools: {}, resources: {}, prompts: {} } }`. Omit any you don\'t implement.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Python SDK alternative',
+          },
+          {
+            type: 'text',
+            content: 'Use the Python SDK when your team works in Python or you need to integrate with data science / ML tooling. `pip install mcp` — the primitives are identical.',
+          },
+          {
+            type: 'code',
+            language: 'python',
+            content: `from mcp.server import Server
+from mcp.server.stdio import stdio_server
+from mcp.types import Tool, TextContent, CallToolResult
+import json, httpx
+
+server = Server("my-internal-api")
+
+@server.list_tools()
+async def list_tools() -> list[Tool]:
+    return [
+        Tool(
+            name="get_user",
+            description="Fetch a user by ID from the internal API",
+            inputSchema={
+                "type": "object",
+                "properties": {"userId": {"type": "string"}},
+                "required": ["userId"],
+            },
+        )
+    ]
+
+@server.call_tool()
+async def call_tool(name: str, arguments: dict) -> CallToolResult:
+    if name == "get_user":
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"https://api.internal.company.com/users/{arguments['userId']}",
+                headers={"Authorization": f"Bearer {os.environ['INTERNAL_API_KEY']}"},
+            )
+        return CallToolResult(content=[TextContent(type="text", text=r.text)])
+    raise ValueError(f"Unknown tool: {name}")
+
+async def main():
+    async with stdio_server() as streams:
+        await server.run(*streams, server.create_initialization_options())
+
+import asyncio, os
+asyncio.run(main())`,
+          },
+          {
+            type: 'steps',
+            content: 'Set up the Python server',
+            steps: [
+              'mkdir my-mcp-server && cd my-mcp-server',
+              'python -m venv .venv && source .venv/bin/activate',
+              'pip install mcp httpx',
+              'Save the code above as server.py',
+              'Add to .claude/settings.json: `"mcpServers": { "my-api": { "command": "python", "args": ["path/to/server.py"] } }`',
+              'Run /mcp in Claude Code to verify your tools appear',
+            ],
           },
           {
             type: 'exercise',
