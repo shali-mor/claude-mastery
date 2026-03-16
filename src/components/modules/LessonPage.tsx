@@ -12,7 +12,7 @@ import { QuizRunner } from '@/components/quiz/QuizRunner';
 import { GuideAvatar, type AvatarMood } from '@/components/avatar/GuideAvatar';
 import { getQuizByModuleId } from '@/data/quizzes';
 import { useProgress } from '@/store';
-import type { Module, Lesson } from '@/types/module';
+import type { Module, Lesson, LessonTier } from '@/types/module';
 import { getExerciseUrl } from '@/data/exercisePaths';
 import {
   isLastBasicLesson,
@@ -29,12 +29,13 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
   const { completedLessons, completeLesson, setLastVisited } = useProgress();
   const [showCelebration, setShowCelebration] = useState<'basic' | 'module' | null>(null);
   const [justCompleted, setJustCompleted] = useState(false);
+  const [tocTier, setTocTier] = useState<LessonTier>(lesson.tier);
   const prevAllCompleteRef = useRef(false);
   const prevBasicCompleteRef = useRef(false);
 
   // Reset justCompleted when navigating to a different lesson
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setJustCompleted(false); }, [lesson.id]);
+  useEffect(() => { setJustCompleted(false); setTocTier(lesson.tier); }, [lesson.id, lesson.tier]);
 
   const lessonIndex = module.lessons.findIndex(l => l.id === lesson.id);
   const prevLesson = lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null;
@@ -182,72 +183,75 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
         <p className="text-muted-foreground">{lesson.description}</p>
       </motion.div>
 
-      {/* Lesson TOC — two clearly separated tier sections */}
-      <nav className="mb-8 space-y-3" aria-label="Lessons in this module">
-        {/* Basic section */}
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Basic</span>
-            <span className="flex-1 h-px bg-blue-200 dark:bg-blue-800/50" />
-          </div>
-          <div className="flex gap-1 overflow-x-auto pb-1">
-            {module.lessons.map((l, i) => {
-              if (l.tier !== 'basic') return null;
-              const done = completedLessons.includes(l.id);
-              const isCurrent = l.id === lesson.id;
-              return (
-                <Link
-                  key={l.id}
-                  href={`/modules/${module.id}/${l.id}`}
-                  aria-current={isCurrent ? 'page' : undefined}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
-                    isCurrent
-                      ? 'bg-blue-600 text-white'
-                      : done
-                      ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
-                      : 'bg-blue-50 dark:bg-blue-900/20 text-muted-foreground hover:bg-blue-100 dark:hover:bg-blue-900/30'
-                  }`}
-                >
-                  {done && !isCurrent && <CheckCircle className="h-3 w-3" />}
-                  <span>{i + 1}. {l.title}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+      {/* Lesson TOC — tabbed tier switcher */}
+      {(() => {
+        const basicDone = module.lessons.filter(l => l.tier === 'basic' && completedLessons.includes(l.id)).length;
+        const basicTotal = module.lessons.filter(l => l.tier === 'basic').length;
+        const advDone = module.lessons.filter(l => l.tier === 'advanced' && completedLessons.includes(l.id)).length;
+        const advTotal = module.lessons.filter(l => l.tier === 'advanced').length;
+        const activeTier = tocTier;
+        const visibleLessons = module.lessons.filter(l => l.tier === activeTier);
 
-        {/* Advanced section */}
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">Advanced</span>
-            <span className="flex-1 h-px bg-violet-200 dark:bg-violet-800/50" />
-          </div>
-          <div className="flex gap-1 overflow-x-auto pb-1">
-            {module.lessons.map((l, i) => {
-              if (l.tier !== 'advanced') return null;
-              const done = completedLessons.includes(l.id);
-              const isCurrent = l.id === lesson.id;
-              return (
-                <Link
-                  key={l.id}
-                  href={`/modules/${module.id}/${l.id}`}
-                  aria-current={isCurrent ? 'page' : undefined}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
-                    isCurrent
-                      ? 'bg-violet-600 text-white'
-                      : done
-                      ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
-                      : 'bg-violet-50 dark:bg-violet-900/20 text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30'
-                  }`}
-                >
-                  {done && !isCurrent && <CheckCircle className="h-3 w-3" />}
-                  <span>{i + 1}. {l.title}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </nav>
+        return (
+          <nav className="mb-8" aria-label="Lessons in this module">
+            {/* Tier tabs */}
+            <div className="flex items-center gap-1 p-1 bg-muted rounded-lg w-fit mb-3">
+              <button
+                onClick={() => setTocTier('basic')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  activeTier === 'basic'
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Basic
+                <span className={`text-[10px] ${activeTier === 'basic' ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
+                  {basicDone}/{basicTotal}
+                </span>
+              </button>
+              <button
+                onClick={() => setTocTier('advanced')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  activeTier === 'advanced'
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Advanced
+                <span className={`text-[10px] ${activeTier === 'advanced' ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
+                  {advDone}/{advTotal}
+                </span>
+              </button>
+            </div>
+
+            {/* Lesson pills for selected tier */}
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {visibleLessons.map((l) => {
+                const globalIdx = module.lessons.indexOf(l);
+                const done = completedLessons.includes(l.id);
+                const isCurrent = l.id === lesson.id;
+                return (
+                  <Link
+                    key={l.id}
+                    href={`/modules/${module.id}/${l.id}`}
+                    aria-current={isCurrent ? 'page' : undefined}
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
+                      isCurrent
+                        ? 'bg-primary text-primary-foreground'
+                        : done
+                        ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                    }`}
+                  >
+                    {done && !isCurrent && <CheckCircle className="h-3 w-3" />}
+                    <span>{globalIdx + 1}. {l.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        );
+      })()}
 
       {/* Content */}
       <motion.div
