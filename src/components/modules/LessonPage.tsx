@@ -26,7 +26,7 @@ interface LessonPageProps {
 }
 
 export function LessonPage({ module, lesson }: LessonPageProps) {
-  const { completedLessons, completeLesson, setLastVisited } = useProgress();
+  const { completedLessons, completeLesson, setLastVisited, quizResults } = useProgress();
   const [showCelebration, setShowCelebration] = useState<'basic' | 'module' | null>(null);
   const [justCompleted, setJustCompleted] = useState(false);
   const [tocTier, setTocTier] = useState<LessonTier>(lesson.tier);
@@ -57,16 +57,19 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
     setLastVisited(lesson.id);
   }, [lesson.id, setLastVisited]);
 
-  // Fire celebration when basic tier or full module flips to complete
+  const hasBasicQuizResult = !!quizResults[module.quizId];
+  const hasAdvancedQuizResult = module.advancedQuizId ? !!quizResults[module.advancedQuizId] : false;
+
+  // Fire celebration when basic tier or full module flips to complete — skip if quiz already taken
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (allLessonsComplete && !prevAllCompleteRef.current) {
+    if (allLessonsComplete && !prevAllCompleteRef.current && !hasAdvancedQuizResult) {
       setShowCelebration('module');
       const t = setTimeout(() => setShowCelebration(null), 3500);
       prevAllCompleteRef.current = allLessonsComplete;
       return () => clearTimeout(t);
     }
-    if (basicComplete && !prevBasicCompleteRef.current && !allLessonsComplete) {
+    if (basicComplete && !prevBasicCompleteRef.current && !allLessonsComplete && !hasBasicQuizResult) {
       setShowCelebration('basic');
       const t = setTimeout(() => setShowCelebration(null), 3500);
       prevBasicCompleteRef.current = basicComplete;
@@ -74,7 +77,7 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
     }
     prevAllCompleteRef.current = allLessonsComplete;
     prevBasicCompleteRef.current = basicComplete;
-  }, [allLessonsComplete, basicComplete]);
+  }, [allLessonsComplete, basicComplete, hasBasicQuizResult, hasAdvancedQuizResult]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const markComplete = () => {
