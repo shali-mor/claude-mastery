@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const NOTIFY_EMAIL = 'shali.mor@forcepoint.com';
+const NOTIFY_EMAIL = 'shali.mor@gmail.com';
 const FROM_EMAIL = 'Claude Mastery <onboarding@resend.dev>';
 
 interface ClerkEmailAddress {
