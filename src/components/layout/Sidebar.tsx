@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BookOpen, Terminal, DollarSign,
-  Code2, X, Home, Award, Info, BookMarked, Sparkles
+  Code2, X, Award, Info, BookMarked, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProgress } from '@/store';
@@ -18,7 +18,6 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/', label: 'Home', icon: <Home className="h-4 w-4" /> },
   { href: '/modules', label: 'Learn', icon: <BookOpen className="h-4 w-4" /> },
   { href: '/commands', label: 'Commands', icon: <Terminal className="h-4 w-4" /> },
   { href: '/calculator', label: 'Cost Calculator', icon: <DollarSign className="h-4 w-4" /> },
