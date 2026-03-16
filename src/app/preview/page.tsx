@@ -103,26 +103,82 @@ export default function PreviewPage() {
         </div>
 
         {/* Journey map teaser */}
-        <div className="mt-6 rounded-xl border border-border bg-card/50 p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-4">
-            Your progress is visualised on an interactive journey map — a walking figure advances as you complete lessons.
-          </p>
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            {modules.map(mod => (
-              <div
-                key={mod.id}
-                className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-bold text-white"
-                style={{ borderColor: COLOR_HEX[mod.color] ?? '#6366f1', backgroundColor: (COLOR_HEX[mod.color] ?? '#6366f1') + '33' }}
-                title={mod.title}
-              >
-                {mod.lessons.length}
-              </div>
-            ))}
+        <div className="mt-6 rounded-xl border border-border bg-card/50 overflow-hidden">
+          <div className="px-6 pt-5 pb-2">
+            <div className="text-sm font-medium mb-1">Interactive progress map</div>
+            <p className="text-xs text-muted-foreground">
+              A walking figure moves along the path as you complete lessons. Sign in to see your live progress.
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground mt-3">Each circle = one module · number = lesson count</p>
-          <Link href="/journey" className="inline-block mt-3 text-xs text-orange-500 hover:underline">
-            Sign in to see your full journey map →
-          </Link>
+          {/* Mini snake-path map */}
+          <div className="px-4 pb-2 overflow-x-auto">
+            <div className="min-w-[480px]">
+              {/* 3-col snake grid — rows of 3, alternating direction */}
+              {Array.from({ length: Math.ceil(modules.length / 3) }).map((_, row) => {
+                const rowMods = modules.slice(row * 3, row * 3 + 3);
+                const reversed = row % 2 === 1;
+                const displayed = reversed ? [...rowMods].reverse() : rowMods;
+                const phaseColors = ['#3b82f6', '#a855f7', '#f97316', '#22c55e'];
+                const phaseLabels = ['Foundations', 'Efficiency', 'Orchestration', 'Projects'];
+                const phaseRow = row < 2 ? 0 : row < 4 ? 1 : row < 6 ? 2 : 3; // approximate phase per row
+                const phaseIdx = Math.floor(row / 1.5);
+                const pc = phaseColors[Math.min(phaseIdx, 3)];
+                return (
+                  <div key={row} className="relative mb-1">
+                    {/* Phase label on first row of each phase */}
+                    {(row === 0 || row === 2 || row === 4) && (
+                      <div className="text-[9px] font-semibold uppercase tracking-widest mb-1 opacity-50"
+                        style={{ color: phaseColors[Math.floor(row / 2)] }}>
+                        {phaseLabels[Math.floor(row / 2)]}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      {displayed.map((mod, ci) => {
+                        const hex = COLOR_HEX[mod.color] ?? '#6366f1';
+                        const shortTitle = mod.title.replace(/^Module \d+[:\s—]*/i, '').split(':')[0].split('—')[0].trim();
+                        return (
+                          <div key={mod.id} className="flex items-center gap-1 flex-1">
+                            {/* Connector line before node (except first in row) */}
+                            {ci > 0 && (
+                              <div className="flex-1 h-px opacity-30" style={{ backgroundColor: hex }} />
+                            )}
+                            <div
+                              className="flex flex-col items-center shrink-0"
+                              style={{ minWidth: 72 }}
+                            >
+                              <div
+                                className="w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                                style={{ borderColor: hex, backgroundColor: hex + '30', color: hex }}
+                              >
+                                {mod.lessons.length}
+                              </div>
+                              <div className="text-[9px] text-center mt-1 text-muted-foreground leading-tight max-w-[72px] line-clamp-1">
+                                {shortTitle}
+                              </div>
+                            </div>
+                            {/* Connector line after node (except last in row) */}
+                            {ci < displayed.length - 1 && (
+                              <div className="flex-1 h-px opacity-30" style={{ backgroundColor: hex }} />
+                            )}
+                          </div>
+                        );
+                      })}
+                      {/* Down arrow at end of row */}
+                      {row < Math.ceil(modules.length / 3) - 1 && (
+                        <div className="text-muted-foreground/30 text-sm ml-1">↓</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="px-6 py-3 border-t border-border/50 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Number = lessons in module</span>
+            <Link href="/journey" className="text-xs text-orange-500 hover:underline">
+              Sign in to track your progress →
+            </Link>
+          </div>
         </div>
       </section>
 
