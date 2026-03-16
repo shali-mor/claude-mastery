@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { SignUpButton } from '@clerk/nextjs';
+import { SignUpButton, SignInButton } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { modules } from '@/data/modules';
 import { LessonContent } from '@/components/modules/LessonContent';
 
@@ -28,7 +29,10 @@ const previewLesson = (() => {
   return mod?.lessons.find(l => l.id === 'lesson-7-1') ?? null;
 })();
 
-export default function PreviewPage() {
+export default async function PreviewPage() {
+  const { userId } = await auth();
+  const isSignedIn = !!userId;
+
   const totalLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
   const totalMinutes = modules.reduce((s, m) => s + m.lessons.reduce((ls, l) => ls + l.estimatedMinutes, 0), 0);
 
@@ -40,11 +44,26 @@ export default function PreviewPage() {
         <Link href="/" className="font-semibold text-lg tracking-tight">
           Claude <span className="text-orange-500">Mastery</span>
         </Link>
-        <SignUpButton mode="modal">
-          <button className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">
-            Get started free
-          </button>
-        </SignUpButton>
+        <div className="flex items-center gap-2">
+          {isSignedIn ? (
+            <Link href="/modules" className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">
+              Go to learning →
+            </Link>
+          ) : (
+            <>
+              <SignInButton mode="modal">
+                <button className="px-4 py-2 rounded-lg border border-border hover:bg-muted text-sm font-medium transition-colors">
+                  Sign in
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">
+                  Get started free
+                </button>
+              </SignUpButton>
+            </>
+          )}
+        </div>
       </nav>
 
       {/* Hero */}
@@ -60,11 +79,17 @@ export default function PreviewPage() {
           {modules.length} modules · {totalLessons} lessons · ~{Math.round(totalMinutes / 60)}h of content.
           Interactive exercises, a progress map, and real code you can run today.
         </p>
-        <SignUpButton mode="modal">
-          <button className="px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
-            Start learning free →
-          </button>
-        </SignUpButton>
+        {isSignedIn ? (
+          <Link href="/modules" className="inline-block px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
+            Continue learning →
+          </Link>
+        ) : (
+          <SignUpButton mode="modal">
+            <button className="px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
+              Start learning free →
+            </button>
+          </SignUpButton>
+        )}
       </section>
 
       {/* Learning path phases */}
@@ -211,12 +236,20 @@ export default function PreviewPage() {
             Sign up free to unlock all {totalLessons} lessons, track your progress,<br />
             access exercises, and get your completion certificates.
           </p>
-          <SignUpButton mode="modal">
-            <button className="px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
-              Start learning free →
-            </button>
-          </SignUpButton>
-          <p className="text-xs text-muted-foreground mt-4">No credit card required</p>
+          {isSignedIn ? (
+            <Link href="/modules" className="inline-block px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
+              Continue learning →
+            </Link>
+          ) : (
+            <>
+              <SignUpButton mode="modal">
+                <button className="px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
+                  Start learning free →
+                </button>
+              </SignUpButton>
+              <p className="text-xs text-muted-foreground mt-4">No credit card required</p>
+            </>
+          )}
         </div>
       </section>
     </div>
