@@ -74,20 +74,18 @@ export function Cheatsheet() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-6">
         <div className="h-px flex-1 bg-border" />
         <h2 className="text-lg font-bold tracking-tight shrink-0">
           Claude Code <span className="text-primary">Cheatsheet</span>
         </h2>
-        <div className="h-px flex-1 bg-border" />
-      </div>
-      <div className="flex justify-center mb-4">
         <button
           onClick={toggleAll}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="px-3 py-1 rounded-md border border-border bg-muted/50 hover:bg-muted text-xs font-medium text-foreground transition-colors shrink-0"
         >
           {allOpen ? 'Collapse all' : 'Expand all'}
         </button>
+        <div className="h-px flex-1 bg-border" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
