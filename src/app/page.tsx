@@ -104,73 +104,43 @@ export default function PreviewPage() {
 
         {/* Journey map teaser */}
         <div className="mt-6 rounded-xl border border-border bg-card/50 overflow-hidden">
-          <div className="px-6 pt-5 pb-2">
+          <div className="px-6 pt-5 pb-4">
             <div className="text-sm font-medium mb-1">Interactive progress map</div>
             <p className="text-xs text-muted-foreground">
               A walking figure moves along the path as you complete lessons. Sign in to see your live progress.
             </p>
           </div>
-          {/* Mini snake-path map */}
-          <div className="px-4 pb-2 overflow-x-auto">
-            <div className="min-w-[480px]">
-              {/* 3-col snake grid — rows of 3, alternating direction */}
-              {Array.from({ length: Math.ceil(modules.length / 3) }).map((_, row) => {
-                const rowMods = modules.slice(row * 3, row * 3 + 3);
-                const reversed = row % 2 === 1;
-                const displayed = reversed ? [...rowMods].reverse() : rowMods;
-                const phaseColors = ['#3b82f6', '#a855f7', '#f97316', '#22c55e'];
-                const phaseLabels = ['Foundations', 'Efficiency', 'Orchestration', 'Projects'];
-                const phaseIdx = Math.floor(row / 1.5);
-                const pc = phaseColors[Math.min(phaseIdx, 3)];
-                return (
-                  <div key={row} className="relative mb-1">
-                    {/* Phase label on first row of each phase */}
-                    {(row === 0 || row === 2 || row === 4) && (
-                      <div className="text-[9px] font-semibold uppercase tracking-widest mb-1 opacity-50"
-                        style={{ color: phaseColors[Math.floor(row / 2)] }}>
-                        {phaseLabels[Math.floor(row / 2)]}
+          <div className="px-6 pb-5 space-y-3">
+            {PHASES.map((phase) => (
+              <div key={phase.label} className="flex items-start gap-3">
+                {/* Phase pill */}
+                <div
+                  className="shrink-0 px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide text-white w-24 text-center"
+                  style={{ backgroundColor: phase.color + '22', color: phase.color, border: `1px solid ${phase.color}44` }}
+                >
+                  {phase.label}
+                </div>
+                {/* Module nodes */}
+                <div className="flex items-center flex-wrap gap-y-2 flex-1 min-w-0">
+                  {phase.modules.map((mi, i) => {
+                    const mod = modules[mi];
+                    if (!mod) return null;
+                    const hex = COLOR_HEX[mod.color] ?? '#6366f1';
+                    const shortTitle = mod.title.replace(/^Module \d+[:\s—]*/i, '').split(':')[0].split('—')[0].trim();
+                    return (
+                      <div key={mod.id} className="flex items-center">
+                        {i > 0 && <div className="w-4 h-px mx-1 opacity-25" style={{ backgroundColor: phase.color }} />}
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
+                          style={{ backgroundColor: hex + '15', color: hex, border: `1px solid ${hex}35` }}>
+                          <span>{shortTitle}</span>
+                          <span className="opacity-50 text-[10px]">{mod.lessons.length}</span>
+                        </div>
                       </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      {displayed.map((mod, ci) => {
-                        const hex = COLOR_HEX[mod.color] ?? '#6366f1';
-                        const shortTitle = mod.title.replace(/^Module \d+[:\s—]*/i, '').split(':')[0].split('—')[0].trim();
-                        return (
-                          <div key={mod.id} className="flex items-center gap-1 flex-1">
-                            {/* Connector line before node (except first in row) */}
-                            {ci > 0 && (
-                              <div className="flex-1 h-px opacity-30" style={{ backgroundColor: hex }} />
-                            )}
-                            <div
-                              className="flex flex-col items-center shrink-0"
-                              style={{ minWidth: 72 }}
-                            >
-                              <div
-                                className="w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                                style={{ borderColor: hex, backgroundColor: hex + '30', color: hex }}
-                              >
-                                {mod.lessons.length}
-                              </div>
-                              <div className="text-[9px] text-center mt-1 text-muted-foreground leading-tight max-w-[72px] line-clamp-1">
-                                {shortTitle}
-                              </div>
-                            </div>
-                            {/* Connector line after node (except last in row) */}
-                            {ci < displayed.length - 1 && (
-                              <div className="flex-1 h-px opacity-30" style={{ backgroundColor: hex }} />
-                            )}
-                          </div>
-                        );
-                      })}
-                      {/* Down arrow at end of row */}
-                      {row < Math.ceil(modules.length / 3) - 1 && (
-                        <div className="text-muted-foreground/30 text-sm ml-1">↓</div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
           <div className="px-6 py-3 border-t border-border/50 flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Number = lessons in module</span>
