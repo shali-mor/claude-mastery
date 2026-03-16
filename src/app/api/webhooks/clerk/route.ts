@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 const NOTIFY_EMAIL = 'shali.mor@forcepoint.com';
-const FROM_EMAIL = 'Claude Mastery <notifications@mail.claudemastery.com>';
+const FROM_EMAIL = 'Claude Mastery <onboarding@resend.dev>';
 
 interface ClerkEmailAddress {
   email_address: string;
@@ -147,12 +147,18 @@ export async function POST(req: Request) {
   `.trim();
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: NOTIFY_EMAIL,
     subject: `New sign-up: ${fullName} (${primaryEmail})`,
     html,
   });
 
-  return NextResponse.json({ status: 'ok' });
+  if (error) {
+    console.error('Resend error:', JSON.stringify(error));
+    return NextResponse.json({ error: 'Failed to send email', detail: error }, { status: 500 });
+  }
+
+  console.log('Email sent:', data?.id);
+  return NextResponse.json({ status: 'ok', emailId: data?.id });
 }
