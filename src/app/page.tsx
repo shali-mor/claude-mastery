@@ -14,11 +14,13 @@ const COLOR_HEX: Record<string, string> = {
   rose: '#f43f5e', indigo: '#6366f1', teal: '#14b8a6', pink: '#ec4899',
 };
 
+// Array indices (modules.ts order): 0=module-1, 1=module-2, 8=module-3, 2=module-4, 3=module-5,
+// 4=module-6, 5=module-7, 6=module-8, 7=module-9, 9=module-10..13=module-14
 const PHASES = [
-  { label: 'Foundations', modules: [0, 1, 2], color: '#3b82f6', desc: 'CLI basics, skills, hooks, and the GSD workflow' },
-  { label: 'Efficiency', modules: [3, 4, 5], color: '#a855f7', desc: 'Cost optimization, live API, and prompt engineering' },
-  { label: 'Orchestration', modules: [6, 7, 8], color: '#f97316', desc: 'Sub-agents, plan mode, and MCP servers' },
-  { label: 'Projects', modules: [9, 10, 11, 12, 13, 14], color: '#22c55e', desc: 'n8n, automation, capstone, testing, and real-world bots' },
+  { label: 'Foundations', modules: [0, 1, 8], color: '#3b82f6', desc: 'CLI basics, skills, hooks, and the GSD workflow' },
+  { label: 'Efficiency', modules: [2, 3, 4], color: '#a855f7', desc: 'Cost optimization, live API, and prompt engineering' },
+  { label: 'Orchestration', modules: [5, 6, 7], color: '#f97316', desc: 'Sub-agents, plan mode, and MCP servers' },
+  { label: 'Projects', modules: [9, 10, 11, 12, 13], color: '#22c55e', desc: 'n8n, automation, capstone, testing, and real-world bots' },
 ];
 
 const previewLesson = (() => {
@@ -104,46 +106,45 @@ export default function PreviewPage() {
 
         {/* Journey map teaser */}
         <div className="mt-6 rounded-xl border border-border bg-card/50 overflow-hidden">
-          <div className="px-6 pt-5 pb-4">
+          <div className="px-6 pt-5 pb-5">
             <div className="text-sm font-medium mb-1">Interactive progress map</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mb-5">
               A walking figure moves along the path as you complete lessons. Sign in to see your live progress.
             </p>
-          </div>
-          <div className="px-6 pb-5 space-y-3">
-            {PHASES.map((phase) => (
-              <div key={phase.label} className="flex items-start gap-3">
-                {/* Phase pill */}
-                <div
-                  className="shrink-0 px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide text-white w-24 text-center"
-                  style={{ backgroundColor: phase.color + '22', color: phase.color, border: `1px solid ${phase.color}44` }}
-                >
-                  {phase.label}
-                </div>
-                {/* Module nodes */}
-                <div className="flex items-center flex-wrap gap-y-2 flex-1 min-w-0">
-                  {phase.modules.map((mi, i) => {
-                    const mod = modules[mi];
-                    if (!mod) return null;
-                    const hex = COLOR_HEX[mod.color] ?? '#6366f1';
-                    const shortTitle = mod.title.replace(/^Module \d+[:\s—]*/i, '').split(':')[0].split('—')[0].trim();
-                    return (
-                      <div key={mod.id} className="flex items-center">
-                        {i > 0 && <div className="w-4 h-px mx-1 opacity-25" style={{ backgroundColor: phase.color }} />}
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
-                          style={{ backgroundColor: hex + '15', color: hex, border: `1px solid ${hex}35` }}>
-                          <span>{shortTitle}</span>
-                          <span className="opacity-50 text-[10px]">{mod.lessons.length}</span>
+            <div className="grid grid-cols-4 gap-3">
+              {PHASES.map((phase, pi) => (
+                <div key={phase.label} className="relative">
+                  {/* Connector arrow between phases */}
+                  {pi < PHASES.length - 1 && (
+                    <div className="absolute -right-2 top-5 text-border text-xs z-10">›</div>
+                  )}
+                  <div
+                    className="rounded-lg p-3 h-full"
+                    style={{ backgroundColor: phase.color + '10', border: `1px solid ${phase.color}30` }}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: phase.color }}>
+                      {phase.label}
+                    </div>
+                    {/* Module dots */}
+                    <div className="flex items-center gap-1 mb-2">
+                      {phase.modules.map((mi, i) => (
+                        <div key={i} className="flex items-center gap-1">
+                          {i > 0 && <div className="w-2 h-px" style={{ backgroundColor: phase.color + '60' }} />}
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: phase.color }}
+                          />
                         </div>
-                      </div>
-                    );
-                  })}
+                      ))}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">{phase.modules.length} modules</div>
+                    <div className="text-[10px] text-muted-foreground/60 mt-1 leading-tight">{phase.desc}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <div className="px-6 py-3 border-t border-border/50 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Number = lessons in module</span>
+          <div className="px-6 py-3 border-t border-border/50 flex items-center justify-end">
             <Link href="/journey" className="text-xs text-orange-500 hover:underline">
               Sign in to track your progress →
             </Link>
