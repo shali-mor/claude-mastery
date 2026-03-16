@@ -106,108 +106,122 @@ claude -p "Summarize this codebase"`,
           {
             type: 'heading',
             level: 2,
-            content: 'Project setup',
+            content: 'Full command reference',
           },
           {
-            type: 'table',
-            content: '',
-            headers: ['Command', 'What it does'],
-            rows: [
-              ['/init', 'Analyse the project and generate a CLAUDE.md with your stack, conventions, and key files. Claude reads this on every session start.'],
-              ['/memory', 'Open the CLAUDE.md file for editing. Changes take effect on the next turn.'],
-            ],
+            type: 'text',
+            content: 'The remaining commands are grouped by category below. Explore them as you need them — you don\'t have to memorise these now.',
           },
           {
-            type: 'heading',
-            level: 2,
-            content: 'Model & configuration',
-          },
-          {
-            type: 'table',
-            content: '',
-            headers: ['Command', 'What it does'],
-            rows: [
-              ['/model [id]', 'Switch Claude model mid-session. Run without an argument to see a picker. Switch to Haiku for cheap tasks, Opus for hard problems.'],
-              ['/config', 'Open the settings UI for model, permissions, hooks, and other preferences. Saves to `~/.claude/settings.json` or `.claude/settings.json`.'],
-              ['/permissions', 'View and adjust what actions Claude can take without asking. Restrict or expand file writes, bash commands, and network access.'],
-              ['/theme [light|dark|system]', 'Switch the terminal colour theme. Preference is saved.'],
-              ['/vim', 'Toggle Vim keybindings in the input prompt (normal/insert mode).'],
-              ['/terminal-setup', 'Configure shell integration (keyboard shortcuts, shell hooks) for your terminal and shell (bash/zsh/fish).'],
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Code review & GitHub',
-          },
-          {
-            type: 'table',
-            content: '',
-            headers: ['Command', 'What it does'],
-            rows: [
-              ['/review', 'Ask Claude to review uncommitted changes (`git diff`). Flags issues, suggests improvements, and catches security problems before you commit.'],
-              ['/pr-comments', 'Fetch open PR review comments from GitHub for the current branch. Claude can then help you address each one. Requires `gh` CLI.'],
-              ['/install-github-app', 'Install the Claude Code GitHub App on your repo to enable automated PR reviews and CI workflows.'],
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'MCP & integrations',
-          },
-          {
-            type: 'table',
-            content: '',
-            headers: ['Command', 'What it does'],
-            rows: [
-              ['/mcp [list|add|remove]', 'Manage Model Context Protocol server connections — databases, APIs, file systems, and custom tools.'],
-              ['/run-mcp-tool <server> <tool>', 'Directly invoke a tool from a connected MCP server. Useful for testing integrations.'],
-              ['/web-search', 'Toggle or configure Claude\'s ability to search the web for current information and documentation.'],
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Auth & account',
-          },
-          {
-            type: 'table',
-            content: '',
-            headers: ['Command', 'What it does'],
-            rows: [
-              ['/login', 'Authenticate with Anthropic. Sets up the API key for first-time setup or after a key rotation.'],
-              ['/logout', 'Remove stored API credentials. Use on shared machines or before rotating keys.'],
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Help & diagnostics',
-          },
-          {
-            type: 'table',
-            content: '',
-            headers: ['Command', 'What it does'],
-            rows: [
-              ['/help', 'List all available commands with brief descriptions.'],
-              ['/doctor', 'Run diagnostics: API key validity, network, Node version, config integrity. First stop for troubleshooting.'],
-              ['/release-notes', 'Show the changelog for the current Claude Code version. Check this after an update.'],
-              ['/feedback', 'Submit feature requests or general feedback to Anthropic.'],
-              ['/bug', 'Report a bug with captured session context sent directly to Anthropic.'],
-            ],
-          },
-          {
-            type: 'heading',
-            level: 2,
-            content: 'Exit',
-          },
-          {
-            type: 'table',
-            content: '',
-            headers: ['Command', 'What it does'],
-            rows: [
-              ['/exit', 'Exit the Claude Code session cleanly. Same as Ctrl+D.'],
-              ['/quit', 'Alias for /exit.'],
+            type: 'section-tabs',
+            sectionTabs: [
+              {
+                label: 'Project Setup',
+                blocks: [
+                  {
+                    type: 'table',
+                    content: '',
+                    headers: ['Command', 'What it does'],
+                    rows: [
+                      ['/init', 'Analyse the project and generate a CLAUDE.md with your stack, conventions, and key files. Claude reads this on every session start.'],
+                      ['/memory', 'Open the CLAUDE.md file for editing. Changes take effect on the next turn.'],
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'Model & Config',
+                blocks: [
+                  {
+                    type: 'table',
+                    content: '',
+                    headers: ['Command', 'What it does'],
+                    rows: [
+                      ['/model [id]', 'Switch Claude model mid-session. Run without an argument to see a picker. Switch to Haiku for cheap tasks, Opus for hard problems.'],
+                      ['/config', 'Open the settings UI for model, permissions, hooks, and other preferences. Saves to `~/.claude/settings.json` or `.claude/settings.json`.'],
+                      ['/permissions', 'View and adjust what actions Claude can take without asking. Restrict or expand file writes, bash commands, and network access.'],
+                      ['/theme [light|dark|system]', 'Switch the terminal colour theme. Preference is saved.'],
+                      ['/vim', 'Toggle Vim keybindings in the input prompt (normal/insert mode).'],
+                      ['/terminal-setup', 'Configure shell integration (keyboard shortcuts, shell hooks) for your terminal and shell (bash/zsh/fish).'],
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'Code Review & GitHub',
+                blocks: [
+                  {
+                    type: 'table',
+                    content: '',
+                    headers: ['Command', 'What it does'],
+                    rows: [
+                      ['/review', 'Ask Claude to review uncommitted changes (`git diff`). Flags issues, suggests improvements, and catches security problems before you commit.'],
+                      ['/pr-comments', 'Fetch open PR review comments from GitHub for the current branch. Claude can then help you address each one. Requires `gh` CLI.'],
+                      ['/install-github-app', 'Install the Claude Code GitHub App on your repo to enable automated PR reviews and CI workflows.'],
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'MCP & Integrations',
+                blocks: [
+                  {
+                    type: 'table',
+                    content: '',
+                    headers: ['Command', 'What it does'],
+                    rows: [
+                      ['/mcp [list|add|remove]', 'Manage Model Context Protocol server connections — databases, APIs, file systems, and custom tools.'],
+                      ['/run-mcp-tool <server> <tool>', 'Directly invoke a tool from a connected MCP server. Useful for testing integrations.'],
+                      ['/web-search', 'Toggle or configure Claude\'s ability to search the web for current information and documentation.'],
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'Auth & Account',
+                blocks: [
+                  {
+                    type: 'table',
+                    content: '',
+                    headers: ['Command', 'What it does'],
+                    rows: [
+                      ['/login', 'Authenticate with Anthropic. Sets up the API key for first-time setup or after a key rotation.'],
+                      ['/logout', 'Remove stored API credentials. Use on shared machines or before rotating keys.'],
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'Help & Diagnostics',
+                blocks: [
+                  {
+                    type: 'table',
+                    content: '',
+                    headers: ['Command', 'What it does'],
+                    rows: [
+                      ['/help', 'List all available commands with brief descriptions.'],
+                      ['/doctor', 'Run diagnostics: API key validity, network, Node version, config integrity. First stop for troubleshooting.'],
+                      ['/release-notes', 'Show the changelog for the current Claude Code version. Check this after an update.'],
+                      ['/feedback', 'Submit feature requests or general feedback to Anthropic.'],
+                      ['/bug', 'Report a bug with captured session context sent directly to Anthropic.'],
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'Exit',
+                blocks: [
+                  {
+                    type: 'table',
+                    content: '',
+                    headers: ['Command', 'What it does'],
+                    rows: [
+                      ['/exit', 'Exit the Claude Code session cleanly. Same as Ctrl+D.'],
+                      ['/quit', 'Alias for /exit.'],
+                    ],
+                  },
+                ],
+              },
             ],
           },
           {
@@ -335,42 +349,62 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
             ],
           },
           {
-            type: 'heading', level: 2,
-            content: 'JetBrains plugin',
-          },
-          {
-            type: 'steps',
-            content: 'Install in any JetBrains IDE (IntelliJ, WebStorm, PyCharm, etc.)',
-            steps: [
-              'Settings → Plugins → Marketplace → search **Claude Code**',
-              'Install and restart the IDE',
-              'The Claude panel opens on the right side. Same `~/.claude/` config — skills, hooks, CLAUDE.md all active',
-              'Keyboard shortcut: **⌘⇧A** (Mac) / **Ctrl+Shift+A** (Win) → type "Claude" to open the action',
-            ],
-          },
-          {
             type: 'callout',
             calloutVariant: 'tip',
             content: '**Use the IDE extension for review-heavy work** — reading diffs inline is faster than reading them in a terminal. **Use the terminal for long-running agentic tasks** — the terminal gives you better visibility into what Claude is doing across many files.',
           },
           {
-            type: 'table',
-            headers: ['Task', 'IDE extension', 'Terminal'],
-            rows: [
-              ['"Explain this function"', '✅ Ideal', '—'],
-              ['"Refactor this class — show me a diff"', '✅ Ideal', '—'],
-              ['"Add JSDoc to these methods"', '✅ Ideal', '—'],
-              ['"What does this SQL query do?"', '✅ Ideal', '—'],
-              ['"Review the whole PR and fix all issues"', '—', '✅ Ideal'],
-              ['"Run the test suite and fix failures"', '—', '✅ Ideal'],
-              ['"Scaffold the new auth module"', '—', '✅ Ideal'],
-              ['Multi-agent / worktree workflows', '—', '✅ Ideal'],
-            ],
+            type: 'heading', level: 2,
+            content: 'More details',
           },
           {
-            type: 'callout',
-            calloutVariant: 'info',
-            content: '**Settings sync:** The IDE extension uses the same `~/.claude/settings.json` and project `.claude/` directory as the terminal. Skills you write in `.claude/commands/` are available in both. You don\'t manage two separate configs.',
+            type: 'section-tabs',
+            sectionTabs: [
+              {
+                label: 'JetBrains Plugin',
+                blocks: [
+                  {
+                    type: 'steps',
+                    content: 'Install in any JetBrains IDE (IntelliJ, WebStorm, PyCharm, etc.)',
+                    steps: [
+                      'Settings → Plugins → Marketplace → search **Claude Code**',
+                      'Install and restart the IDE',
+                      'The Claude panel opens on the right side. Same `~/.claude/` config — skills, hooks, CLAUDE.md all active',
+                      'Keyboard shortcut: **⌘⇧A** (Mac) / **Ctrl+Shift+A** (Win) → type "Claude" to open the action',
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'IDE vs Terminal — When to Use What',
+                blocks: [
+                  {
+                    type: 'table',
+                    headers: ['Task', 'IDE extension', 'Terminal'],
+                    rows: [
+                      ['"Explain this function"', '✅ Ideal', '—'],
+                      ['"Refactor this class — show me a diff"', '✅ Ideal', '—'],
+                      ['"Add JSDoc to these methods"', '✅ Ideal', '—'],
+                      ['"What does this SQL query do?"', '✅ Ideal', '—'],
+                      ['"Review the whole PR and fix all issues"', '—', '✅ Ideal'],
+                      ['"Run the test suite and fix failures"', '—', '✅ Ideal'],
+                      ['"Scaffold the new auth module"', '—', '✅ Ideal'],
+                      ['Multi-agent / worktree workflows', '—', '✅ Ideal'],
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'Settings Sync',
+                blocks: [
+                  {
+                    type: 'callout',
+                    calloutVariant: 'info',
+                    content: '**Settings sync:** The IDE extension uses the same `~/.claude/settings.json` and project `.claude/` directory as the terminal. Skills you write in `.claude/commands/` are available in both. You don\'t manage two separate configs.',
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -397,13 +431,33 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
             ],
           },
           {
-            type: 'heading', level: 2,
-            content: 'Key settings reference',
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Team pattern:** Commit `.claude/settings.json` with the shared model and team-agreed permission allow/deny list. Each developer adds personal overrides in `.claude/settings.local.json` (gitignored). No one overwrites each other\'s preferences.',
           },
           {
-            type: 'code',
-            language: 'json',
-            content: `// ~/.claude/settings.json — full annotated example
+            type: 'callout',
+            calloutVariant: 'warning',
+            content: 'Never put your `ANTHROPIC_API_KEY` in a committed settings file. Use the environment variable or a secrets manager. The `settings.local.json` file is gitignored but it\'s still a file on disk — prefer env vars for credentials.',
+          },
+          {
+            type: 'heading', level: 2,
+            content: 'Deep dive',
+          },
+          {
+            type: 'text',
+            content: 'Explore the full annotated settings file and environment variable overrides when you need them.',
+          },
+          {
+            type: 'section-tabs',
+            sectionTabs: [
+              {
+                label: 'Full settings.json Example',
+                blocks: [
+                  {
+                    type: 'code',
+                    language: 'json',
+                    content: `// ~/.claude/settings.json — full annotated example
 {
   // Model to use by default (overridden per-session with /model)
   "model": "claude-sonnet-4-6",
@@ -440,31 +494,26 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
     "NODE_ENV": "development"
   }
 }`,
-          },
-          {
-            type: 'heading', level: 2,
-            content: 'Environment variable overrides',
-          },
-          {
-            type: 'table',
-            headers: ['Env var', 'What it overrides', 'Example'],
-            rows: [
-              ['`ANTHROPIC_API_KEY`', 'API key for all requests', '`export ANTHROPIC_API_KEY=sk-ant-...`'],
-              ['`ANTHROPIC_MODEL`', 'Default model', '`ANTHROPIC_MODEL=claude-haiku-4-5-20251001`'],
-              ['`ANTHROPIC_BASE_URL`', 'API endpoint (Bedrock, Vertex, proxies)', '`ANTHROPIC_BASE_URL=https://my-proxy/v1`'],
-              ['`CLAUDE_CODE_DISABLE_CRON`', 'Kill all scheduled loop/cron jobs', '`CLAUDE_CODE_DISABLE_CRON=1`'],
-              ['`CLAUDE_CODE_MAX_OUTPUT_TOKENS`', 'Cap output tokens per response', '`CLAUDE_CODE_MAX_OUTPUT_TOKENS=4096`'],
+                  },
+                ],
+              },
+              {
+                label: 'Environment Variable Overrides',
+                blocks: [
+                  {
+                    type: 'table',
+                    headers: ['Env var', 'What it overrides', 'Example'],
+                    rows: [
+                      ['`ANTHROPIC_API_KEY`', 'API key for all requests', '`export ANTHROPIC_API_KEY=sk-ant-...`'],
+                      ['`ANTHROPIC_MODEL`', 'Default model', '`ANTHROPIC_MODEL=claude-haiku-4-5-20251001`'],
+                      ['`ANTHROPIC_BASE_URL`', 'API endpoint (Bedrock, Vertex, proxies)', '`ANTHROPIC_BASE_URL=https://my-proxy/v1`'],
+                      ['`CLAUDE_CODE_DISABLE_CRON`', 'Kill all scheduled loop/cron jobs', '`CLAUDE_CODE_DISABLE_CRON=1`'],
+                      ['`CLAUDE_CODE_MAX_OUTPUT_TOKENS`', 'Cap output tokens per response', '`CLAUDE_CODE_MAX_OUTPUT_TOKENS=4096`'],
+                    ],
+                  },
+                ],
+              },
             ],
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'tip',
-            content: '**Team pattern:** Commit `.claude/settings.json` with the shared model and team-agreed permission allow/deny list. Each developer adds personal overrides in `.claude/settings.local.json` (gitignored). No one overwrites each other\'s preferences.',
-          },
-          {
-            type: 'callout',
-            calloutVariant: 'warning',
-            content: 'Never put your `ANTHROPIC_API_KEY` in a committed settings file. Use the environment variable or a secrets manager. The `settings.local.json` file is gitignored but it\'s still a file on disk — prefer env vars for credentials.',
           },
           {
             type: 'exercise',
