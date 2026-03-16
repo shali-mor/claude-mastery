@@ -1457,7 +1457,6 @@ const advancedQuizzes = [
     },
   ],
 },
-,
 {
   id: 'quiz-module-8-advanced',
   moduleId: 'module-8',
