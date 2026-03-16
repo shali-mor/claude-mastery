@@ -13,6 +13,7 @@ export type ContentBlockType =
   | 'comparison'
   | 'visual'
   | 'section-tabs'
+  | 'collapsible'
   | 'lesson-player';
 
 export type CalloutVariant = 'info' | 'warning' | 'success' | 'error' | 'tip';
@@ -66,6 +67,10 @@ export interface ContentBlock {
   visualId?: string;
   // section-tabs — full-content tabs (each tab holds an array of blocks)
   sectionTabs?: { label: string; blocks: ContentBlock[] }[];
+  // collapsible — expandable section with nested blocks
+  collapsibleLabel?: string;
+  collapsibleBlocks?: ContentBlock[];
+  collapsibleDefaultOpen?: boolean;
 }
 
 export interface Lesson {

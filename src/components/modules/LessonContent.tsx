@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Info, AlertTriangle, CheckCircle, XCircle, Lightbulb,
-  Eye, EyeOff, Square, CheckSquare, Minus, Plus,
+  Eye, EyeOff, Square, CheckSquare, Minus, Plus, ChevronRight,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { CodeBlock } from '@/components/ui/CodeBlock';
@@ -426,6 +426,46 @@ function SectionTabsBlock({ sectionTabs }: { sectionTabs: NonNullable<import('@/
   );
 }
 
+// ─── Collapsible block (expand/collapse nested content) ──────────────────────
+function CollapsibleBlock({ label, blocks, defaultOpen = false }: {
+  label: string;
+  blocks: ContentBlock[];
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-lg border border-border overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/40 transition-colors"
+      >
+        <motion.div
+          animate={{ rotate: open ? 90 : 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </motion.div>
+        {label}
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-1 space-y-6 border-t border-border">
+              <LessonContent blocks={blocks} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ─── Main renderer ────────────────────────────────────────────────────────────
 interface LessonContentProps {
   blocks: ContentBlock[];
@@ -484,6 +524,16 @@ export function LessonContent({ blocks }: LessonContentProps) {
           case 'section-tabs':
             return block.sectionTabs ? (
               <SectionTabsBlock key={i} sectionTabs={block.sectionTabs} />
+            ) : null;
+
+          case 'collapsible':
+            return block.collapsibleBlocks ? (
+              <CollapsibleBlock
+                key={i}
+                label={block.collapsibleLabel ?? 'Show more'}
+                blocks={block.collapsibleBlocks}
+                defaultOpen={block.collapsibleDefaultOpen}
+              />
             ) : null;
 
           case 'visual':

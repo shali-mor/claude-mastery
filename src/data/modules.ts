@@ -1467,9 +1467,13 @@ Write Jest unit tests for $ARGUMENTS.
             content: 'Security review — the must-have skill',
           },
           {
-            type: 'code',
-            language: 'markdown',
-            content: `---
+            type: 'collapsible',
+            collapsibleLabel: 'Full /security-review skill template',
+            collapsibleBlocks: [
+              {
+                type: 'code',
+                language: 'markdown',
+                content: `---
 description: Audit the current diff or file for security vulnerabilities
 ---
 
@@ -1521,6 +1525,8 @@ Severity: CRITICAL | HIGH | MEDIUM | LOW | INFO
 
 If no issues found: ✅ No security issues found.
 Do NOT modify any files.`,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -2217,9 +2223,13 @@ not a request to summarize a specific PR.`,
             ],
           },
           {
-            type: 'code',
-            language: 'typescript',
-            content: `// src/ai.ts — paste into any Node.js / TypeScript project
+            type: 'collapsible',
+            collapsibleLabel: 'Full TypeScript SDK example',
+            collapsibleBlocks: [
+              {
+                type: 'code',
+                language: 'typescript',
+                content: `// src/ai.ts — paste into any Node.js / TypeScript project
 import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
@@ -2246,6 +2256,8 @@ export async function askWithCaching(
 
   return response.content[0].type === 'text' ? response.content[0].text : '';
 }`,
+              },
+            ],
           },
           {
             type: 'callout',
@@ -2437,9 +2449,13 @@ for await (const item of await client.messages.batches.results(batch.id)) {
             ],
           },
           {
-            type: 'code',
-            language: 'markdown',
-            content: `---
+            type: 'collapsible',
+            collapsibleLabel: 'Full /pick-model skill template',
+            collapsibleBlocks: [
+              {
+                type: 'code',
+                language: 'markdown',
+                content: `---
 description: Analyse a task and recommend the most cost-effective Claude model
 ---
 
@@ -2477,6 +2493,8 @@ Estimated saving vs Opus: ~Nx cheaper
 \`\`\`
 
 If $ARGUMENTS is empty, ask: "Describe the task you're about to start."`,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -2498,9 +2516,13 @@ If $ARGUMENTS is empty, ask: "Describe the task you're about to start."`,
             content: 'This hook fires on every prompt. It reads the prompt text, detects simple tasks, and injects a cost warning into Claude\'s context if you\'re on Opus or Sonnet for something Haiku could handle.',
           },
           {
-            type: 'code',
-            language: 'bash',
-            content: `#!/bin/bash
+            type: 'collapsible',
+            collapsibleLabel: 'Model guard hook script + config',
+            collapsibleBlocks: [
+              {
+                type: 'code',
+                language: 'bash',
+                content: `#!/bin/bash
 # .claude/hooks/model-guard.sh
 # UserPromptSubmit hook — warns when Opus is used for simple tasks.
 # Claude sees the warning and can suggest switching before proceeding.
@@ -2527,11 +2549,11 @@ if [ "$WORD_COUNT" -lt 20 ]; then
 fi
 
 echo '{"action":"continue"}'`,
-          },
-          {
-            type: 'code',
-            language: 'json',
-            content: `// .claude/settings.json — wire the hook
+              },
+              {
+                type: 'code',
+                language: 'json',
+                content: `// .claude/settings.json — wire the hook
 {
   "hooks": {
     "UserPromptSubmit": [
@@ -2542,6 +2564,8 @@ echo '{"action":"continue"}'`,
     ]
   }
 }`,
+              },
+            ],
           },
           {
             type: 'callout',
@@ -4275,12 +4299,16 @@ I will review each diff before merging.`,
           },
           {
             type: 'heading', level: 2,
-            content: 'Pattern 1: Fan-out scout → single synthesizer',
+            content: 'Implementation patterns',
           },
           {
-            type: 'code',
-            language: 'typescript',
-            content: `// 10 Haiku scouts read files in parallel → 1 Opus synthesizer
+            type: 'collapsible',
+            collapsibleLabel: 'Pattern 1: Fan-out scout → single synthesizer',
+            collapsibleBlocks: [
+              {
+                type: 'code',
+                language: 'typescript',
+                content: `// 10 Haiku scouts read files in parallel → 1 Opus synthesizer
 const fileList = await getFilePaths('./src');
 
 // Haiku scouts — cheap parallel reads
@@ -4307,15 +4335,17 @@ const architecture = await client.messages.create({
 and identify the top 3 areas needing refactoring:\\n\${summaries.join('\\n')}\`,
   }],
 });`,
+              },
+            ],
           },
           {
-            type: 'heading', level: 2,
-            content: 'Pattern 2: Model routing by task type',
-          },
-          {
-            type: 'code',
-            language: 'typescript',
-            content: `function selectModel(task: string): string {
+            type: 'collapsible',
+            collapsibleLabel: 'Pattern 2: Model routing by task type',
+            collapsibleBlocks: [
+              {
+                type: 'code',
+                language: 'typescript',
+                content: `function selectModel(task: string): string {
   // Simple classification → Haiku
   if (/classify|extract|list|summarise/i.test(task)) {
     return 'claude-haiku-4-5-20251001';
@@ -4331,19 +4361,21 @@ and identify the top 3 areas needing refactoring:\\n\${summaries.join('\\n')}\`,
 // Use it
 const model = selectModel(userRequest);
 const result = await client.messages.create({ model, ... });`,
+              },
+            ],
           },
           {
-            type: 'heading', level: 2,
-            content: 'Pattern 3: Progressive escalation',
-          },
-          {
-            type: 'text',
-            content: 'Try Sonnet first. If it produces low-confidence output (you can detect this by checking if Claude hedges or asks clarifying questions), escalate to Opus. Most tasks never need escalation.',
-          },
-          {
-            type: 'code',
-            language: 'typescript',
-            content: `async function withEscalation(prompt: string) {
+            type: 'collapsible',
+            collapsibleLabel: 'Pattern 3: Progressive escalation',
+            collapsibleBlocks: [
+              {
+                type: 'text',
+                content: 'Try Sonnet first. If it produces low-confidence output (you can detect this by checking if Claude hedges or asks clarifying questions), escalate to Opus. Most tasks never need escalation.',
+              },
+              {
+                type: 'code',
+                language: 'typescript',
+                content: `async function withEscalation(prompt: string) {
   const sonnetResult = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 2000,
@@ -4363,6 +4395,8 @@ const result = await client.messages.create({ model, ... });`,
 
   return sonnetResult;
 }`,
+              },
+            ],
           },
           {
             type: 'callout',
