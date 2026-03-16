@@ -73,11 +73,14 @@ export interface ContentBlock {
   collapsibleDefaultOpen?: boolean;
 }
 
+export type LessonTier = 'basic' | 'advanced';
+
 export interface Lesson {
   id: string;
   title: string;
   description: string;
   estimatedMinutes: number;
+  tier: LessonTier;
   blocks: ContentBlock[];
 }
 
@@ -89,4 +92,5 @@ export interface Module {
   color: string;
   lessons: Lesson[];
   quizId: string;
+  advancedQuizId?: string;
 }

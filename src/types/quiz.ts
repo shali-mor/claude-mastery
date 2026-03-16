@@ -16,10 +16,13 @@ export interface Question {
   globalExplanation: string;
 }
 
+import type { LessonTier } from './module';
+
 export interface Quiz {
   id: string;
   moduleId: string;
   title: string;
+  tier: LessonTier;
   questions: Question[];
 }
 

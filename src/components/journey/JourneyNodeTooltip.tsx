@@ -20,15 +20,19 @@ interface JourneyNodeTooltipProps {
   color: string;
   status: ModuleStatus;
   progressPct: number;
+  basicProgressPct: number;
+  advancedProgressPct: number;
   completedCount: number;
   totalLessons: number;
   hasQuizBadge: boolean;
+  hasAdvancedQuizBadge: boolean;
   index: number;
 }
 
 const STATUS_LABEL: Record<ModuleStatus, string> = {
   'not-started': 'Not started',
   'in-progress': 'In progress',
+  'basic-complete': 'Basic complete',
   'complete': 'Complete',
   'current': 'In progress',
 };
@@ -36,6 +40,7 @@ const STATUS_LABEL: Record<ModuleStatus, string> = {
 const STATUS_VARIANT: Record<ModuleStatus, 'default' | 'secondary' | 'outline'> = {
   'not-started': 'outline',
   'in-progress': 'default',
+  'basic-complete': 'default',
   'complete': 'default',
   'current': 'default',
 };
@@ -49,9 +54,12 @@ export function JourneyNodeTooltip({
   color,
   status,
   progressPct,
+  basicProgressPct,
+  advancedProgressPct,
   completedCount,
   totalLessons,
   hasQuizBadge,
+  hasAdvancedQuizBadge,
   index,
 }: JourneyNodeTooltipProps) {
   return (
@@ -67,7 +75,10 @@ export function JourneyNodeTooltip({
               color={color}
               status={status}
               progressPct={progressPct}
+              basicProgressPct={basicProgressPct}
+              advancedProgressPct={advancedProgressPct}
               hasQuizBadge={hasQuizBadge}
+              hasAdvancedQuizBadge={hasAdvancedQuizBadge}
               index={index}
             />
           </div>
@@ -85,9 +96,11 @@ export function JourneyNodeTooltip({
                 className={
                   status === 'complete'
                     ? 'bg-green-500/20 text-green-700 dark:text-green-400 border-0 shrink-0'
-                    : status === 'in-progress' || status === 'current'
-                      ? 'bg-orange-500/20 text-orange-700 dark:text-orange-400 border-0 shrink-0'
-                      : 'shrink-0'
+                    : status === 'basic-complete'
+                      ? 'bg-blue-500/20 text-blue-700 dark:text-blue-400 border-0 shrink-0'
+                      : status === 'in-progress' || status === 'current'
+                        ? 'bg-orange-500/20 text-orange-700 dark:text-orange-400 border-0 shrink-0'
+                        : 'shrink-0'
                 }
               >
                 {STATUS_LABEL[status]}

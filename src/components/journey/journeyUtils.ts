@@ -1,4 +1,4 @@
-export type ModuleStatus = 'not-started' | 'in-progress' | 'complete' | 'current';
+export type ModuleStatus = 'not-started' | 'in-progress' | 'basic-complete' | 'complete' | 'current';
 
 export interface NodePosition {
   x: number;
@@ -84,6 +84,9 @@ export function buildConnectorPath(positions: NodePosition[]): string {
   return parts.join(' ');
 }
 
+import type { Module } from '@/types/module';
+import { allBasicComplete } from '@/utils/tierHelpers';
+
 /**
  * Determine the display status of a module given progress data.
  */
@@ -93,6 +96,7 @@ export function getModuleStatus(
   quizId: string,
   quizResults: Record<string, { score: number; total: number }>,
   lastVisitedLessonId: string | null,
+  module?: Module,
 ): ModuleStatus {
   if (lessonIds.length === 0) return 'not-started';
 
@@ -100,8 +104,15 @@ export function getModuleStatus(
 
   const qr = quizResults[quizId];
   const quizPassed = qr !== undefined && qr.total > 0 && qr.score / qr.total >= 0.7;
+
+  // Full complete: all lessons done + basic quiz passed
   if (completedCount === lessonIds.length && quizPassed) {
     return 'complete';
+  }
+
+  // Basic-complete: all basic lessons done + basic quiz passed
+  if (module && quizPassed && allBasicComplete(module, completedLessons)) {
+    return 'basic-complete';
   }
 
   const isLastVisitedInModule =
@@ -143,6 +154,7 @@ export interface LessonDot {
   id: string;
   title: string;
   completed: boolean;
+  tier: 'basic' | 'advanced';
   cx: number;   // circle center x
   cy: number;   // circle center y
   busX: number; // vertical bus x (shared rail)
@@ -157,7 +169,7 @@ export interface LessonDot {
 export function getLessonDots(
   pos: NodePosition,
   moduleIndex: number,
-  lessons: { id: string; title: string; completed: boolean }[],
+  lessons: { id: string; title: string; completed: boolean; tier: 'basic' | 'advanced' }[],
   containerWidth: number,
 ): LessonDot[] {
   if (containerWidth < 640 || lessons.length === 0) return [];

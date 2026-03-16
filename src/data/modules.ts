@@ -9,12 +9,14 @@ export const modules: Module[] = [
     icon: 'Terminal',
     color: 'blue',
     quizId: 'quiz-module-1',
+    advancedQuizId: 'quiz-module-1-advanced',
     lessons: [
       {
         id: 'lesson-1-1',
         title: 'Getting Started with Claude Code',
         description: 'Install Claude Code and learn the basics of interactive AI-assisted development.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'callout',
@@ -66,6 +68,7 @@ claude -p "Summarize this codebase"`,
         title: 'Slash Commands Deep Dive',
         description: 'Master all built-in slash commands with practical examples — including the CLI-to-Desktop handoff.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -236,6 +239,7 @@ claude -p "Summarize this codebase"`,
         title: 'CLI Flags & Keyboard Shortcuts',
         description: 'Run Claude non-interactively and navigate faster with keyboard shortcuts.',
         estimatedMinutes: 5,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -283,6 +287,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         title: 'Permission Modes & Safety',
         description: 'Understand the three permission modes and when to use each.',
         estimatedMinutes: 5,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -318,6 +323,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         title: 'IDE Integration — VS Code & JetBrains',
         description: 'Run Claude Code directly inside your editor — sidebar chat, inline diff review, and context pinning without leaving VS Code or JetBrains.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -415,6 +421,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         title: 'settings.json Deep Dive',
         description: 'Master every Claude Code configuration option — global vs project vs local, model selection, permissions, and the env vars that override everything.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -552,6 +559,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
     icon: 'Zap',
     color: 'purple',
     quizId: 'quiz-module-2',
+    advancedQuizId: 'quiz-module-2-advanced',
     lessons: [
       // ── Lesson 2-1: The Right Tool ───────────────────────────────────────
       {
@@ -559,6 +567,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         title: 'Skills vs Hooks vs Commands — The Right Tool',
         description: 'Understand the three extension points and exactly when to reach for each one.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -737,6 +746,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
         title: 'Writing Skills That Work',
         description: 'Learn the skill file format, $ARGUMENTS, and the writing patterns that make Claude follow your instructions reliably every time.',
         estimatedMinutes: 10,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -999,6 +1009,7 @@ Rules:
         title: 'Hooks in Practice',
         description: 'Write hooks that enforce rules, automate quality checks, and guard your project — all without being asked.',
         estimatedMinutes: 10,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -1246,6 +1257,7 @@ Key: these run WHEN INVOKED via /command-name.`,
         title: 'Team Patterns & CLAUDE.md',
         description: 'Structure your .claude/ directory for team use, write a CLAUDE.md that makes Claude act like a specialist, and avoid the pitfalls that make AI workflows brittle.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -1448,6 +1460,7 @@ Write Jest unit tests for $ARGUMENTS.
         title: 'Ready-to-Copy Skills Library',
         description: 'Six production-quality skills you can drop into any project today — security review, PR review, commit messages, debugging, tests, and refactoring.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -1740,6 +1753,7 @@ git commit -m "chore: add Claude Code skill library"`,
         title: 'Memory & Context — How Claude Remembers',
         description: 'Master the four memory layers and the context window so Claude always has exactly the right information — without burning tokens on noise.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -1944,6 +1958,7 @@ git commit -m "chore: add Claude Code skill library"`,
         title: 'Testing & Refining Your Skills — Skills 2.0 Evals [Coming Soon]',
         description: 'A preview of the Skills 2.0 evaluation suite — Evals, A/B Testing, Trigger Optimization, and Benchmarking. Currently rolling out; not yet available to all users.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -2148,12 +2163,14 @@ not a request to summarize a specific PR.`,
     icon: 'DollarSign',
     color: 'orange',
     quizId: 'quiz-module-4',
+    advancedQuizId: 'quiz-module-4-advanced',
     lessons: [
       {
         id: 'lesson-4-1',
         title: 'Understanding Claude Pricing',
         description: 'Learn how tokens are counted and priced across the Claude model family.',
         estimatedMinutes: 5,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -2184,6 +2201,7 @@ not a request to summarize a specific PR.`,
         title: 'Prompt Caching',
         description: 'Cache large, repeated contexts to achieve up to 90% savings on input tokens.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'callout',
@@ -2276,6 +2294,7 @@ export async function askWithCaching(
         title: 'Batch API',
         description: 'Cut costs 50% on non-time-sensitive workloads with the Message Batches API.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'callout',
@@ -2381,6 +2400,7 @@ for await (const item of await client.messages.batches.results(batch.id)) {
         title: 'Context Management Strategies',
         description: 'Control token costs through smart context windowing and model selection.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -2413,6 +2433,7 @@ for await (const item of await client.messages.batches.results(batch.id)) {
         title: 'Auto Model Selection — Skill & Hook',
         description: 'A skill that recommends the right model for your task, and a hook that warns you when you\'re burning Opus tokens on a simple job.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -2588,12 +2609,14 @@ echo '{"action":"continue"}'`,
     icon: 'Code2',
     color: 'red',
     quizId: 'quiz-module-5',
+    advancedQuizId: 'quiz-module-5-advanced',
     lessons: [
       {
         id: 'lesson-5-1',
         title: 'Messages API Fundamentals',
         description: 'Understand the core structure of Anthropic API requests and responses.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -2638,6 +2661,7 @@ console.log(message.usage);
         title: 'Streaming Responses',
         description: 'Implement streaming for responsive, real-time user interfaces.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -2689,6 +2713,7 @@ console.log('\\nUsage:', message.usage);`,
         title: 'Advanced Techniques',
         description: 'Tool use, vision, multi-turn conversations, and generation parameters.',
         estimatedMinutes: 10,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -2737,6 +2762,7 @@ if (response.stop_reason === 'tool_use') {
         title: 'Production Best Practices',
         description: 'Rate limits, error handling, retry logic, and API key security.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -2790,6 +2816,7 @@ const client = new Anthropic({
         title: 'Extended Thinking & Budget Tokens',
         description: 'Unlock Claude\'s step-by-step reasoning for hard problems — and control exactly how much thinking compute you pay for.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -2904,6 +2931,7 @@ for await (const event of stream) {
     icon: 'Lightbulb',
     color: 'yellow',
     quizId: 'quiz-module-6',
+    advancedQuizId: 'quiz-module-6-advanced',
     lessons: [
       // ── Lesson 6-1: Anatomy of a Great Prompt ───────────────────────────
       {
@@ -2911,6 +2939,7 @@ for await (const event of stream) {
         title: 'The Anatomy of a Great Prompt',
         description: 'The five components every high-quality Claude prompt needs — and the common omissions that cause vague, inconsistent output.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -3030,6 +3059,7 @@ if valid, an array of field errors if invalid.`,
         title: 'Chain-of-Thought & Reasoning Patterns',
         description: 'Make Claude think before it answers — the techniques that dramatically improve output quality on complex tasks.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -3127,6 +3157,7 @@ The final, clean output goes here.
         title: 'Few-Shot Examples & Output Shaping',
         description: 'Show Claude exactly what good output looks like — examples are worth a thousand words of instruction.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -3230,6 +3261,7 @@ commits format and keep it concise.
         title: 'Prompt Debugging & Iteration',
         description: 'A systematic process for diagnosing why a prompt fails and improving it — without random trial and error.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -3310,12 +3342,14 @@ Only flag security vulnerabilities.`,
     icon: 'GitBranch',
     color: 'cyan',
     quizId: 'quiz-module-7',
+    advancedQuizId: 'quiz-module-7-advanced',
     lessons: [
       {
         id: 'lesson-7-1',
         title: 'What Are Sub-Agents?',
         description: 'Understand the sub-agent mental model and when to reach for it.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -3403,6 +3437,7 @@ One growing context window holds all unrelated detail`,
         title: 'Invoking Sub-Agents: What You Actually Type',
         description: 'See exactly what to type in the Claude Code terminal — from a one-liner to controlling model, background mode, and isolation.',
         estimatedMinutes: 5,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -3576,6 +3611,7 @@ Review the diff and merge manually when ready, or ask me to merge it.`,
         title: 'Writing Effective Delegation Prompts',
         description: 'Learn the four-section prompt structure that gets reliable results from any sub-agent.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -3695,6 +3731,7 @@ Markdown list. For each file:
         title: 'Parallelization Patterns',
         description: 'Run multiple agents concurrently and merge their results for dramatically faster workflows.',
         estimatedMinutes: 10,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -3891,6 +3928,7 @@ After both finish, compare the two approaches and recommend which to use given:
         title: 'Agent Communication & Best Practices',
         description: 'Design robust multi-agent systems: context passing, error handling, and avoiding common pitfalls.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -4112,6 +4150,7 @@ If @upstash/ratelimit is not in package.json, note it as a finding in the table.
         title: 'Worktree Isolation: Safe File-Writing Agents',
         description: 'Learn how git worktree isolation protects your working directory — and the full workflow for reviewing, merging, or discarding agent changes.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -4278,6 +4317,7 @@ I will review each diff before merging.`,
         title: 'Multi-Model Pipelines — Scout, Synthesize, Verify',
         description: 'Route each task to the right model — Haiku for cheap parallel scouts, Sonnet for workers, Opus for synthesis — and cut pipeline costs by 10×.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -4414,12 +4454,14 @@ const result = await client.messages.create({ model, ... });`,
     icon: 'ClipboardList',
     color: 'orange',
     quizId: 'quiz-module-8',
+    advancedQuizId: 'quiz-module-8-advanced',
     lessons: [
       {
         id: 'lesson-8-1',
         title: 'What Is Plan Mode?',
         description: 'Understand the read-only constraint that separates planning from execution.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -4469,6 +4511,7 @@ const result = await client.messages.create({ model, ... });`,
         title: 'Entering & Exiting Plan Mode',
         description: 'Learn activation shortcuts, plan file structure, and the critical distinction between ExitPlanMode and auto-execution.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -4524,6 +4567,7 @@ Shift+Tab   # toggles Plan Mode on/off
         title: 'The Plan → Review → Execute Workflow',
         description: 'A 5-phase walkthrough of how Plan Mode fits into a complete development workflow.',
         estimatedMinutes: 10,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -4683,6 +4727,7 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
         title: 'When to Plan vs Execute Directly',
         description: 'A practical decision framework: complexity × reversibility × blast radius.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -4742,12 +4787,14 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
     icon: 'Plug',
     color: 'violet',
     quizId: 'quiz-module-9',
+    advancedQuizId: 'quiz-module-9-advanced',
     lessons: [
       {
         id: 'lesson-9-1',
         title: 'What Is MCP and Why It Matters',
         description: 'Understand how MCP transforms Claude from a fixed-tool assistant into an extensible platform.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -4796,6 +4843,7 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
         title: 'Connecting MCP Servers to Claude Code',
         description: 'Configure MCP servers globally or per-project, verify connections, and explore popular ready-made servers.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -4865,6 +4913,7 @@ Target: add a toggle button in the header; respect prefers-color-scheme on first
         title: 'Building a Custom MCP Server',
         description: 'Build your own MCP server with TypeScript or Python — covers all three primitives: Tools, Resources, and Prompts.',
         estimatedMinutes: 12,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -5138,6 +5187,7 @@ if (request.params.name === 'list_users') {
         title: 'MCP in Claude Code vs Claude Desktop',
         description: 'Same protocol, different config paths and use-case sweet spots.',
         estimatedMinutes: 5,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -5192,12 +5242,14 @@ if (request.params.name === 'list_users') {
     icon: 'Layers',
     color: 'green',
     quizId: 'quiz-module-3',
+    advancedQuizId: 'quiz-module-3-advanced',
     lessons: [
       {
         id: 'lesson-3-1',
         title: 'GSD Methodology & Philosophy',
         description: 'Understand what GSD is, why it exists, and the milestone → phase → task hierarchy behind it.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'callout',
@@ -5297,6 +5349,7 @@ Phase 4: Dashboard UI
         title: 'Starting & Planning with GSD',
         description: 'Initialize projects, create milestones, and generate detailed phase plans — with real examples.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -5396,6 +5449,7 @@ Set up the Postgres schema for users, API keys, and events.
         title: 'Executing & Verifying Work',
         description: 'Run phases with parallel agents, validate results against the plan, and ship with confidence.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -5514,6 +5568,7 @@ Next action: /gsd:execute-phase  (Phase 3 plan is ready)`,
         title: 'Advanced GSD Workflows',
         description: 'Real scenarios: debugging across resets, mapping new codebases, urgent hotfixes, and context handoffs.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -5654,12 +5709,14 @@ in a new session to pick up exactly here.`,
     icon: 'Workflow',
     color: 'green',
     quizId: 'quiz-module-10',
+    advancedQuizId: 'quiz-module-10-advanced',
     lessons: [
       {
         id: 'lesson-10-1',
         title: 'n8n Fundamentals for Claude Users',
         description: 'Understand n8n\'s core model and why it pairs naturally with Claude.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -5710,6 +5767,7 @@ in a new session to pick up exactly here.`,
         title: 'Calling Claude API from n8n',
         description: 'Configure an HTTP Request node to call Claude, store credentials safely, and parse responses.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -5781,6 +5839,7 @@ in a new session to pick up exactly here.`,
         title: 'Real-World n8n + Claude Workflows',
         description: 'Three production workflow patterns: PR summaries, standup reports, and support ticket drafting.',
         estimatedMinutes: 10,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -5858,6 +5917,7 @@ in a new session to pick up exactly here.`,
         title: 'Prompt Engineering Inside n8n',
         description: 'Dynamic prompts with expressions, system/user split, long-input handling, and error branches.',
         estimatedMinutes: 7,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -5923,12 +5983,14 @@ in a new session to pick up exactly here.`,
     icon: 'Zap',
     color: 'yellow',
     quizId: 'quiz-module-11',
+    advancedQuizId: 'quiz-module-11-advanced',
     lessons: [
       {
         id: 'lesson-11-1',
         title: 'Claude CLI in Shell Scripts & Cron Jobs',
         description: 'Use claude -p to embed Claude intelligence in any shell script or scheduled job.',
         estimatedMinutes: 7,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -5983,6 +6045,7 @@ curl -X POST "$SLACK_WEBHOOK_URL" \\
         title: 'Zapier & Make.com + Claude',
         description: 'Integrate Claude into no-code automation stacks using webhooks or native Anthropic connectors.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -6031,6 +6094,7 @@ curl -X POST "$SLACK_WEBHOOK_URL" \\
         title: 'Webhooks & Event-Driven Claude Workflows',
         description: 'Build reactive systems: external events trigger Claude instantly, without polling.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -6121,6 +6185,7 @@ app.listen(3000);`,
         title: 'Choosing the Right Tool for the Job',
         description: 'A decision framework across Claude CLI, n8n, Make.com, Zapier, and custom services.',
         estimatedMinutes: 5,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -6183,6 +6248,7 @@ app.listen(3000);`,
         title: 'GitHub Actions + Claude',
         description: 'Run Claude non-interactively in CI — auto-summarise PRs, generate release notes, flag issues on push, and gate merges on Claude\'s review.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -6326,12 +6392,14 @@ jobs:
     icon: 'GraduationCap',
     color: 'rose',
     quizId: 'quiz-module-12',
+    advancedQuizId: 'quiz-module-12-advanced',
     lessons: [
       {
         id: 'lesson-12-1',
         title: 'Designing the Pipeline with Plan Mode',
         description: 'Start in Plan Mode to map the full architecture before writing a single line of code.',
         estimatedMinutes: 10,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -6422,6 +6490,7 @@ pr-reviewer/
         title: 'Setting Up MCP, Hooks & Project Scaffolding',
         description: 'Configure the GitHub MCP server, add observability hooks, and scaffold the n8n workflow skeleton.',
         estimatedMinutes: 10,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -6538,6 +6607,7 @@ fi`,
         title: 'The Parallel Analysis Engine',
         description: 'Orchestrate three specialist sub-agents in parallel with a shared cached system prompt.',
         estimatedMinutes: 12,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -6646,6 +6716,7 @@ async function runParallelAnalysis(diff: string) {
         title: 'Wiring the Pipeline & Shipping',
         description: 'Complete the n8n workflow, add the /review-pr skill, run end-to-end tests, and analyze costs.',
         estimatedMinutes: 10,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -6733,12 +6804,14 @@ Return a summary of findings.
     icon: 'TrendingUp',
     color: 'cyan',
     quizId: 'quiz-module-13',
+    advancedQuizId: 'quiz-module-13-advanced',
     lessons: [
       {
         id: 'lesson-13-1',
         title: 'Architecture & Strategy Design',
         description: 'Map the full pipeline and define the swing trading signals Claude will evaluate.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -6793,6 +6866,7 @@ Return a summary of findings.
         title: 'Setting Up Your Telegram Bot',
         description: 'Create a Telegram bot with BotFather, get your chat ID, and configure n8n\'s Telegram nodes.',
         estimatedMinutes: 8,
+        tier: 'basic',
         blocks: [
           {
             type: 'lesson-player',
@@ -6872,6 +6946,7 @@ curl -X POST "https://api.telegram.org/bot<YOUR_TOKEN>/sendMessage" \\
         title: 'Fetching & Calculating Stock Signals',
         description: 'Pull 3 months of daily price data from Yahoo Finance and compute RSI, MACD, and SMA in an n8n Code node.',
         estimatedMinutes: 10,
+        tier: 'advanced',
         blocks: [
           {
             type: 'lesson-player',
@@ -6996,6 +7071,7 @@ return results;`,
         title: 'Claude as the Swing Trading Analyst',
         description: 'Structure the stock data as context, craft the swing trading prompt, format the Telegram message, and deploy the complete bot.',
         estimatedMinutes: 12,
+        tier: 'advanced',
         blocks: [
           {
             type: 'section-tabs',
@@ -7318,6 +7394,7 @@ Not financial advice. Do your own research.`,
     icon: 'ShieldCheck',
     color: 'green',
     quizId: 'quiz-module-14',
+    advancedQuizId: 'quiz-module-14-advanced',
     lessons: [
       // ── Lesson 14-1: Why AI Code Needs Testing ───────────────────────────
       {
@@ -7325,6 +7402,7 @@ Not financial advice. Do your own research.`,
         title: 'Why You Can\'t Skip Testing AI Output',
         description: 'AI-generated code fails in specific, predictable ways — understand the failure modes so you can design the right safeguards.',
         estimatedMinutes: 5,
+        tier: 'basic',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -7381,6 +7459,7 @@ Not financial advice. Do your own research.`,
         title: 'Test-Driven Development with Claude',
         description: 'Write tests first, let Claude implement to pass them — the workflow that produces the most reliable AI-generated code.',
         estimatedMinutes: 10,
+        tier: 'basic',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -7507,6 +7586,7 @@ the passing tests or their behaviour."`,
         title: 'Code Review Patterns for AI Output',
         description: 'A structured review checklist for AI-generated code — what to look for, what to skip, and how to use Claude to review its own output.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {
@@ -7586,6 +7666,7 @@ Don't praise what's correct — only flag issues.
         title: 'Automated Validation — Hooks & CI Gates',
         description: 'Build a safety net around AI-generated code using pre-commit hooks, CI gates, and PostToolUse hooks that validate every file Claude writes.',
         estimatedMinutes: 8,
+        tier: 'advanced',
         blocks: [
           { type: 'lesson-player' },
           {

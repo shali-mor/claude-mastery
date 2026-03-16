@@ -302,8 +302,12 @@ export function JourneyCanvas({ moduleNodes }: JourneyCanvasProps) {
               moduleId={node.moduleId} firstLessonId={node.firstLessonId}
               title={node.title} description={node.description}
               icon={node.icon} color={node.color} status={node.status}
-              progressPct={node.progressPct} completedCount={node.completedCount}
+              progressPct={node.progressPct}
+              basicProgressPct={node.basicProgressPct}
+              advancedProgressPct={node.advancedProgressPct}
+              completedCount={node.completedCount}
               totalLessons={node.totalLessons} hasQuizBadge={node.hasQuizBadge}
+              hasAdvancedQuizBadge={node.hasAdvancedQuizBadge}
               index={i}
             />
           </div>

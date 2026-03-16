@@ -7,6 +7,7 @@ import { useProgress } from '@/store';
 import { modules } from '@/data/modules';
 import { getModuleStatus, type ModuleStatus } from './journeyUtils';
 import { JourneyCanvas } from './JourneyCanvas';
+import { getBasicProgress, getAdvancedProgress } from '@/utils/tierHelpers';
 
 export interface ModuleNode {
   moduleId: string;
@@ -17,10 +18,13 @@ export interface ModuleNode {
   color: string;
   status: ModuleStatus;
   progressPct: number;
+  basicProgressPct: number;
+  advancedProgressPct: number;
   completedCount: number;
   totalLessons: number;
   hasQuizBadge: boolean;
-  lessons: { id: string; title: string; completed: boolean }[];
+  hasAdvancedQuizBadge: boolean;
+  lessons: { id: string; title: string; completed: boolean; tier: 'basic' | 'advanced' }[];
 }
 
 export function JourneyMap() {
@@ -39,17 +43,21 @@ export function JourneyMap() {
           lessonIds.length > 0 ? Math.round((completedCount / lessonIds.length) * 100) : 0;
         const qr = quizResults[mod.quizId];
         const quizPassed = qr !== undefined && qr.total > 0 && qr.score / qr.total >= 0.7;
+        const advQr = mod.advancedQuizId ? quizResults[mod.advancedQuizId] : undefined;
+        const advQuizPassed = advQr !== undefined && advQr.total > 0 && advQr.score / advQr.total >= 0.7;
         const status = getModuleStatus(
           lessonIds,
           completedLessons,
           mod.quizId,
           quizResults,
           lastVisitedLessonId,
+          mod,
         );
 
         totalLessons += lessonIds.length;
         totalCompleted += completedCount;
         if (quizPassed) totalQuizzesPassed++;
+        if (advQuizPassed) totalQuizzesPassed++;
 
         return {
           moduleId: mod.id,
@@ -60,13 +68,17 @@ export function JourneyMap() {
           color: mod.color,
           status,
           progressPct,
+          basicProgressPct: getBasicProgress(mod, completedLessons),
+          advancedProgressPct: getAdvancedProgress(mod, completedLessons),
           completedCount,
           totalLessons: lessonIds.length,
           hasQuizBadge: quizPassed,
+          hasAdvancedQuizBadge: advQuizPassed,
           lessons: mod.lessons.map((l) => ({
             id: l.id,
             title: l.title,
             completed: completedLessons.includes(l.id),
+            tier: l.tier,
           })),
         };
       });
@@ -109,7 +121,7 @@ export function JourneyMap() {
               <strong className="text-foreground">{totalCompleted}</strong> / {totalLessons} lessons
             </span>
             <span>
-              <strong className="text-foreground">{totalQuizzesPassed}</strong> / {modules.length} quizzes passed
+              <strong className="text-foreground">{totalQuizzesPassed}</strong> / {modules.length * 2} quizzes passed
             </span>
           </div>
         </div>

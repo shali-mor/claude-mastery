@@ -14,6 +14,7 @@ import { modules } from '@/data/modules';
 import { JourneyCanvas } from '@/components/journey/JourneyCanvas';
 import { getModuleStatus } from '@/components/journey/journeyUtils';
 import type { ModuleNode } from '@/components/journey/JourneyMap';
+import { getBasicLessons, getAdvancedLessons, getBasicProgress, getAdvancedProgress, allBasicComplete } from '@/utils/tierHelpers';
 
 type View = 'list' | 'map';
 
@@ -28,7 +29,9 @@ export function ModuleIndex() {
       const progressPct = lessonIds.length > 0 ? Math.round((completedCount / lessonIds.length) * 100) : 0;
       const qr = quizResults[mod.quizId];
       const quizPassed = qr !== undefined && qr.total > 0 && qr.score / qr.total >= 0.7;
-      const status = getModuleStatus(lessonIds, completedLessons, mod.quizId, quizResults, lastVisitedLessonId);
+      const advQr = mod.advancedQuizId ? quizResults[mod.advancedQuizId] : undefined;
+      const advQuizPassed = advQr !== undefined && advQr.total > 0 && advQr.score / advQr.total >= 0.7;
+      const status = getModuleStatus(lessonIds, completedLessons, mod.quizId, quizResults, lastVisitedLessonId, mod);
 
       return {
         moduleId: mod.id,
@@ -39,13 +42,17 @@ export function ModuleIndex() {
         color: mod.color,
         status,
         progressPct,
+        basicProgressPct: getBasicProgress(mod, completedLessons),
+        advancedProgressPct: getAdvancedProgress(mod, completedLessons),
         completedCount,
         totalLessons: lessonIds.length,
         hasQuizBadge: quizPassed,
+        hasAdvancedQuizBadge: advQuizPassed,
         lessons: mod.lessons.map((l) => ({
           id: l.id,
           title: l.title,
           completed: completedLessons.includes(l.id),
+          tier: l.tier,
         })),
       };
     });
@@ -105,7 +112,11 @@ export function ModuleIndex() {
             const node = moduleNodes[i];
             const firstLesson = module.lessons[0];
             const totalMinutes = module.lessons.reduce((acc, l) => acc + l.estimatedMinutes, 0);
-            const hasQuizResult = !!quizResults[module.quizId];
+            const hasBasicQuizResult = !!quizResults[module.quizId];
+            const hasAdvancedQuizResult = module.advancedQuizId ? !!quizResults[module.advancedQuizId] : false;
+            const basicCount = getBasicLessons(module).length;
+            const advancedCount = getAdvancedLessons(module).length;
+            const isBasicDone = allBasicComplete(module, completedLessons);
 
             return (
               <motion.div
@@ -128,9 +139,14 @@ export function ModuleIndex() {
                               Complete
                             </Badge>
                           )}
-                          {hasQuizResult && (
+                          {hasBasicQuizResult && (
                             <Badge variant="secondary" className="text-xs text-yellow-600 bg-yellow-500/10">
-                              <Award className="h-3 w-3 mr-1" />Quiz passed
+                              <Award className="h-3 w-3 mr-1" />Basic quiz passed
+                            </Badge>
+                          )}
+                          {hasAdvancedQuizResult && (
+                            <Badge variant="secondary" className="text-xs text-violet-600 bg-violet-500/10">
+                              <Award className="h-3 w-3 mr-1" />Advanced quiz passed
                             </Badge>
                           )}
                         </div>
@@ -140,7 +156,7 @@ export function ModuleIndex() {
                         <div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <BookOpen className="h-3.5 w-3.5" />
-                            {module.lessons.length} lessons
+                            {basicCount} basic + {advancedCount} advanced
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5" />
@@ -148,10 +164,21 @@ export function ModuleIndex() {
                           </span>
                           <span>{node.completedCount}/{node.totalLessons} done</span>
                         </div>
-                        <div className="flex items-center gap-3 mb-4">
-                          <Progress value={node.progressPct} className="h-1.5 flex-1 max-w-48" />
-                          <span className="text-xs font-medium">{node.progressPct}%</span>
+
+                        {/* Dual progress bars */}
+                        <div className="space-y-1.5 mb-4">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-medium text-blue-600 w-10">Basic</span>
+                            <Progress value={node.basicProgressPct} className="h-1.5 flex-1 max-w-48" />
+                            <span className="text-xs font-medium w-8 text-right">{node.basicProgressPct}%</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-medium text-violet-600 w-10">Adv</span>
+                            <Progress value={node.advancedProgressPct} className="h-1.5 flex-1 max-w-48" />
+                            <span className="text-xs font-medium w-8 text-right">{node.advancedProgressPct}%</span>
+                          </div>
                         </div>
+
                         <div className="flex flex-wrap gap-2">
                           <Button asChild size="sm">
                             <Link href={`/modules/${module.id}/${firstLesson?.id}`}>
@@ -159,14 +186,26 @@ export function ModuleIndex() {
                               <ChevronRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
                           </Button>
-                          {node.progressPct === 100 && !hasQuizResult && (
+                          {/* Basic quiz button */}
+                          {isBasicDone && !hasBasicQuizResult && (
                             <Button asChild size="sm" variant="outline">
-                              <Link href={`/quizzes/${module.id}`}>Take Quiz</Link>
+                              <Link href={`/quizzes/${module.id}`}>Take Basic Quiz</Link>
                             </Button>
                           )}
-                          {hasQuizResult && (
+                          {hasBasicQuizResult && (
                             <Button asChild size="sm" variant="outline">
-                              <Link href={`/quizzes/${module.id}`}>Retake Quiz</Link>
+                              <Link href={`/quizzes/${module.id}`}>Retake Basic Quiz</Link>
+                            </Button>
+                          )}
+                          {/* Advanced quiz button */}
+                          {node.advancedProgressPct === 100 && !hasAdvancedQuizResult && (
+                            <Button asChild size="sm" variant="outline" className="border-violet-300 text-violet-600 hover:bg-violet-50">
+                              <Link href={`/quizzes/${module.id}?tier=advanced`}>Take Advanced Quiz</Link>
+                            </Button>
+                          )}
+                          {hasAdvancedQuizResult && (
+                            <Button asChild size="sm" variant="outline" className="border-violet-300 text-violet-600 hover:bg-violet-50">
+                              <Link href={`/quizzes/${module.id}?tier=advanced`}>Retake Advanced Quiz</Link>
                             </Button>
                           )}
                         </div>

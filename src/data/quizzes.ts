@@ -1,3 +1,4 @@
+import type { LessonTier } from '@/types/module';
 import type { Quiz } from '@/types/quiz';
 
 export const quizzes: Quiz[] = [
@@ -5,6 +6,7 @@ export const quizzes: Quiz[] = [
     id: 'quiz-module-1',
     moduleId: 'module-1',
     title: 'Claude Code Basics Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q1-1',
@@ -82,6 +84,7 @@ export const quizzes: Quiz[] = [
     id: 'quiz-module-2',
     moduleId: 'module-2',
     title: 'Skills & Hooks Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q2-1',
@@ -217,6 +220,7 @@ export const quizzes: Quiz[] = [
     id: 'quiz-module-3',
     moduleId: 'module-3',
     title: 'GSD Plugin Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q3-1',
@@ -282,6 +286,7 @@ export const quizzes: Quiz[] = [
     id: 'quiz-module-4',
     moduleId: 'module-4',
     title: 'Cost Optimization Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q4-1',
@@ -347,6 +352,7 @@ export const quizzes: Quiz[] = [
     id: 'quiz-module-5',
     moduleId: 'module-5',
     title: 'Live API Mastery Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q5-1',
@@ -422,6 +428,7 @@ const message = await client.messages.______({
     id: 'quiz-module-6',
     moduleId: 'module-6',
     title: 'Writing Skills & Commands Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q6-1',
@@ -501,6 +508,7 @@ const message = await client.messages.______({
     id: 'quiz-module-7',
     moduleId: 'module-7',
     title: 'Sub-Agents & Parallelism Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q7-1',
@@ -578,6 +586,7 @@ const message = await client.messages.______({
     id: 'quiz-module-8',
     moduleId: 'module-8',
     title: 'Plan Mode & Controlled Execution Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q8-1',
@@ -643,6 +652,7 @@ const message = await client.messages.______({
     id: 'quiz-module-9',
     moduleId: 'module-9',
     title: 'MCP — Model Context Protocol Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q9-1',
@@ -708,6 +718,7 @@ const message = await client.messages.______({
     id: 'quiz-module-10',
     moduleId: 'module-10',
     title: 'n8n + Claude Automation Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q10-1',
@@ -773,6 +784,7 @@ const message = await client.messages.______({
     id: 'quiz-module-11',
     moduleId: 'module-11',
     title: 'The Broader Automation Ecosystem Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q11-1',
@@ -838,6 +850,7 @@ const message = await client.messages.______({
     id: 'quiz-module-12',
     moduleId: 'module-12',
     title: 'Capstone: AI Code Review Pipeline Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q12-1',
@@ -903,6 +916,7 @@ const message = await client.messages.______({
     id: 'quiz-module-13',
     moduleId: 'module-13',
     title: 'Daily Stock Picks Bot Quiz',
+    tier: 'basic',
     questions: [
       {
         id: 'q13-1',
@@ -966,10 +980,32 @@ const message = await client.messages.______({
   },
 ];
 
+// Placeholder advanced quizzes — real questions to be added in a future step
+const advancedQuizzes: Quiz[] = Array.from({ length: 13 }, (_, i) => ({
+  id: `quiz-module-${i + 1}-advanced`,
+  moduleId: `module-${i + 1}`,
+  title: `${['Claude Code Basics', 'Skills, Hooks & Commands', 'GSD Plugin', 'Cost Optimization', 'Live API Mastery', 'Prompt Engineering', 'Sub-Agents & Parallelism', 'Plan Mode', 'MCP', 'n8n + Claude', 'Automation Ecosystem', 'Capstone: Code Review', 'Stock Picks Bot'][i]} — Advanced Quiz`,
+  tier: 'advanced' as const,
+  questions: [
+    {
+      id: `qa${i + 1}-1`,
+      type: 'multiple-choice' as const,
+      questionText: 'Advanced quiz coming soon. This is a placeholder question.',
+      options: [
+        { id: 'a', text: 'Placeholder A', isCorrect: true, explanation: 'This quiz will be populated with advanced questions.' },
+        { id: 'b', text: 'Placeholder B', isCorrect: false, explanation: 'Placeholder.' },
+      ],
+      globalExplanation: 'Advanced quiz questions are being developed.',
+    },
+  ],
+}));
+
+const allQuizzes = [...quizzes, ...advancedQuizzes];
+
 export function getQuizById(id: string): Quiz | undefined {
-  return quizzes.find(q => q.id === id);
+  return allQuizzes.find(q => q.id === id);
 }
 
-export function getQuizByModuleId(moduleId: string): Quiz | undefined {
-  return quizzes.find(q => q.moduleId === moduleId);
+export function getQuizByModuleId(moduleId: string, tier: LessonTier = 'basic'): Quiz | undefined {
+  return allQuizzes.find(q => q.moduleId === moduleId && q.tier === tier);
 }

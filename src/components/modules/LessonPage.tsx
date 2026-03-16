@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Clock, CheckCircle, Award, Sparkles, FolderGit2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, CheckCircle, Sparkles, FolderGit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +14,11 @@ import { getQuizByModuleId } from '@/data/quizzes';
 import { useProgress } from '@/store';
 import type { Module, Lesson } from '@/types/module';
 import { getExerciseUrl } from '@/data/exercisePaths';
+import {
+  isLastBasicLesson,
+  isLastAdvancedLesson,
+  allBasicComplete,
+} from '@/utils/tierHelpers';
 
 interface LessonPageProps {
   module: Module;
@@ -21,10 +26,11 @@ interface LessonPageProps {
 }
 
 export function LessonPage({ module, lesson }: LessonPageProps) {
-  const { completedLessons, completeLesson, setLastVisited, quizResults } = useProgress();
-  const [showCelebration, setShowCelebration] = useState(false);
+  const { completedLessons, completeLesson, setLastVisited } = useProgress();
+  const [showCelebration, setShowCelebration] = useState<'basic' | 'module' | null>(null);
   const [justCompleted, setJustCompleted] = useState(false);
-  const prevCompleteRef = useRef(false);
+  const prevAllCompleteRef = useRef(false);
+  const prevBasicCompleteRef = useRef(false);
 
   // Reset justCompleted when navigating to a different lesson
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -33,11 +39,15 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
   const lessonIndex = module.lessons.findIndex(l => l.id === lesson.id);
   const prevLesson = lessonIndex > 0 ? module.lessons[lessonIndex - 1] : null;
   const nextLesson = lessonIndex < module.lessons.length - 1 ? module.lessons[lessonIndex + 1] : null;
-  const isLastLesson = !nextLesson;
   const isCompleted = completedLessons.includes(lesson.id);
   const allLessonsComplete = module.lessons.every(l => completedLessons.includes(l.id));
-  const hasQuizResult = !!quizResults[module.quizId];
-  const moduleQuiz = getQuizByModuleId(module.id);
+  const basicComplete = allBasicComplete(module, completedLessons);
+
+  // Tier-aware quizzes
+  const showBasicQuiz = isLastBasicLesson(module, lesson.id);
+  const showAdvancedQuiz = isLastAdvancedLesson(module, lesson.id);
+  const basicQuiz = getQuizByModuleId(module.id, 'basic');
+  const advancedQuiz = getQuizByModuleId(module.id, 'advanced');
 
   const completedCount = module.lessons.filter(l => completedLessons.includes(l.id)).length;
   const moduleProgress = Math.round((completedCount / module.lessons.length) * 100);
@@ -46,16 +56,24 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
     setLastVisited(lesson.id);
   }, [lesson.id, setLastVisited]);
 
-  // Fire celebration when module flips to complete for the first time
+  // Fire celebration when basic tier or full module flips to complete
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (allLessonsComplete && !prevCompleteRef.current) {
-      setShowCelebration(true);
-      const t = setTimeout(() => setShowCelebration(false), 3500);
+    if (allLessonsComplete && !prevAllCompleteRef.current) {
+      setShowCelebration('module');
+      const t = setTimeout(() => setShowCelebration(null), 3500);
+      prevAllCompleteRef.current = allLessonsComplete;
       return () => clearTimeout(t);
     }
-    prevCompleteRef.current = allLessonsComplete;
-  }, [allLessonsComplete]);
+    if (basicComplete && !prevBasicCompleteRef.current && !allLessonsComplete) {
+      setShowCelebration('basic');
+      const t = setTimeout(() => setShowCelebration(null), 3500);
+      prevBasicCompleteRef.current = basicComplete;
+      return () => clearTimeout(t);
+    }
+    prevAllCompleteRef.current = allLessonsComplete;
+    prevBasicCompleteRef.current = basicComplete;
+  }, [allLessonsComplete, basicComplete]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const markComplete = () => {
@@ -65,18 +83,21 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
 
   // Avatar contextual message
   const avatarMessage = (() => {
-    if (showCelebration || (justCompleted && allLessonsComplete)) {
-      return `All ${module.lessons.length} lessons done! 🏆 Ready to take the quiz?`;
+    if (showCelebration === 'module' || (justCompleted && allLessonsComplete)) {
+      return `All ${module.lessons.length} lessons done! Ready to take the advanced quiz?`;
+    }
+    if (showCelebration === 'basic' || (justCompleted && basicComplete && !allLessonsComplete)) {
+      return `Basic tier complete! Take the basic quiz, then dive into advanced lessons.`;
     }
     if (justCompleted) {
       return nextLesson
-        ? `Lesson complete! 🎉 Next up: "${nextLesson.title}"`
-        : `Lesson complete! 🎉 Great work!`;
+        ? `Lesson complete! Next up: "${nextLesson.title}"`
+        : `Lesson complete! Great work!`;
     }
     if (isCompleted) {
-      return `You've already completed "${lesson.title}". Review at your own pace. 📚`;
+      return `You've already completed "${lesson.title}". Review at your own pace.`;
     }
-    return `"${lesson.title}" — ~${lesson.estimatedMinutes} min. Let's go! 🚀`;
+    return `"${lesson.title}" — ~${lesson.estimatedMinutes} min. Let's go!`;
   })();
 
   const avatarMood: AvatarMood =
@@ -96,11 +117,17 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
           >
             <Sparkles className="h-5 w-5 text-primary" />
             <div>
-              <p className="font-semibold text-sm">Module complete!</p>
-              <p className="text-xs text-muted-foreground">Ready to take the quiz?</p>
+              <p className="font-semibold text-sm">
+                {showCelebration === 'basic' ? 'Basic tier complete!' : 'Module complete!'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {showCelebration === 'basic' ? 'Ready for the basic quiz?' : 'Ready for the advanced quiz?'}
+              </p>
             </div>
             <Button asChild size="sm" className="ml-2">
-              <Link href={`/quizzes/${module.id}`}>Take Quiz</Link>
+              <Link href={showCelebration === 'basic' ? `/quizzes/${module.id}` : `/quizzes/${module.id}?tier=advanced`}>
+                Take Quiz
+              </Link>
             </Button>
           </motion.div>
         )}
@@ -140,6 +167,9 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
             <Clock className="h-3 w-3 mr-1" />
             ~{lesson.estimatedMinutes} min
           </Badge>
+          <Badge variant="secondary" className={`text-xs ${lesson.tier === 'advanced' ? 'bg-violet-500/10 text-violet-600' : 'bg-blue-500/10 text-blue-600'}`}>
+            {lesson.tier === 'advanced' ? 'Advanced' : 'Basic'}
+          </Badge>
           {isCompleted && (
             <Badge variant="secondary" className="text-xs text-green-600 bg-green-500/10">
               <CheckCircle className="h-3 w-3 mr-1" />
@@ -152,34 +182,72 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
         <p className="text-muted-foreground">{lesson.description}</p>
       </motion.div>
 
-      {/* Lesson TOC (side lessons) */}
-      <div
-        className="flex gap-1 mb-8 overflow-x-auto pb-1"
-        role="navigation"
-        aria-label="Lessons in this module"
-      >
-        {module.lessons.map((l, i) => {
-          const done = completedLessons.includes(l.id);
-          const isCurrent = l.id === lesson.id;
-          return (
-            <Link
-              key={l.id}
-              href={`/modules/${module.id}/${l.id}`}
-              aria-current={isCurrent ? 'page' : undefined}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
-                isCurrent
-                  ? 'bg-primary text-primary-foreground'
-                  : done
-                  ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/70'
-              }`}
-            >
-              {done && !isCurrent && <CheckCircle className="h-3 w-3" />}
-              <span>{i + 1}. {l.title}</span>
-            </Link>
-          );
-        })}
-      </div>
+      {/* Lesson TOC — two clearly separated tier sections */}
+      <nav className="mb-8 space-y-3" aria-label="Lessons in this module">
+        {/* Basic section */}
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Basic</span>
+            <span className="flex-1 h-px bg-blue-200 dark:bg-blue-800/50" />
+          </div>
+          <div className="flex gap-1 overflow-x-auto pb-1">
+            {module.lessons.map((l, i) => {
+              if (l.tier !== 'basic') return null;
+              const done = completedLessons.includes(l.id);
+              const isCurrent = l.id === lesson.id;
+              return (
+                <Link
+                  key={l.id}
+                  href={`/modules/${module.id}/${l.id}`}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
+                    isCurrent
+                      ? 'bg-blue-600 text-white'
+                      : done
+                      ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
+                      : 'bg-blue-50 dark:bg-blue-900/20 text-muted-foreground hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                  }`}
+                >
+                  {done && !isCurrent && <CheckCircle className="h-3 w-3" />}
+                  <span>{i + 1}. {l.title}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Advanced section */}
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">Advanced</span>
+            <span className="flex-1 h-px bg-violet-200 dark:bg-violet-800/50" />
+          </div>
+          <div className="flex gap-1 overflow-x-auto pb-1">
+            {module.lessons.map((l, i) => {
+              if (l.tier !== 'advanced') return null;
+              const done = completedLessons.includes(l.id);
+              const isCurrent = l.id === lesson.id;
+              return (
+                <Link
+                  key={l.id}
+                  href={`/modules/${module.id}/${l.id}`}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
+                    isCurrent
+                      ? 'bg-violet-600 text-white'
+                      : done
+                      ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
+                      : 'bg-violet-50 dark:bg-violet-900/20 text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30'
+                  }`}
+                >
+                  {done && !isCurrent && <CheckCircle className="h-3 w-3" />}
+                  <span>{i + 1}. {l.title}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
 
       {/* Content */}
       <motion.div
@@ -193,14 +261,25 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
 
       {/* Footer actions */}
       <div className="mt-10 pt-6 border-t border-border">
-        {/* Inline quiz on the last lesson */}
-        {isLastLesson && moduleQuiz && (
+        {/* Inline basic quiz after last basic lesson */}
+        {showBasicQuiz && basicQuiz && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
-            <QuizRunner quiz={moduleQuiz} module={module} inline />
+            <QuizRunner quiz={basicQuiz} module={module} inline />
+          </motion.div>
+        )}
+
+        {/* Inline advanced quiz after last advanced lesson */}
+        {showAdvancedQuiz && advancedQuiz && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <QuizRunner quiz={advancedQuiz} module={module} inline />
           </motion.div>
         )}
 
@@ -246,7 +325,7 @@ export function LessonPage({ module, lesson }: LessonPageProps) {
           <FolderGit2 className="h-5 w-5 text-primary shrink-0" />
           <div>
             <div className="text-sm font-semibold text-primary">Practice this lesson</div>
-            <div className="text-xs text-muted-foreground">Hands-on exercises repo →</div>
+            <div className="text-xs text-muted-foreground">Hands-on exercises repo</div>
           </div>
         </a>
       </div>

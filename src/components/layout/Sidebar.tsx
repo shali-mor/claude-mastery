@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useProgress } from '@/store';
 import { modules } from '@/data/modules';
+import { allBasicComplete, allAdvancedComplete } from '@/utils/tierHelpers';
 
 interface NavItem {
   href: string;
@@ -110,7 +111,10 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
             const completed = completedLessons.filter(id => lessonIds.includes(id)).length;
             const progress = lessonIds.length > 0 ? Math.round((completed / lessonIds.length) * 100) : 0;
             const isActive = pathname.includes(module.id);
-            const hasQuizResult = !!quizResults[module.quizId];
+            const hasBasicQuiz = !!quizResults[module.quizId];
+            const hasAdvancedQuiz = module.advancedQuizId ? !!quizResults[module.advancedQuizId] : false;
+            const basicDone = allBasicComplete(module, completedLessons);
+            const advancedDone = allAdvancedComplete(module, completedLessons);
 
             return (
               <Link
@@ -142,7 +146,15 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
                   ) : null}
                 </div>
                 <span className="truncate flex-1">{module.title}</span>
-                {hasQuizResult && <Award className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
+                <span className="flex items-center gap-0.5 flex-shrink-0">
+                  {basicDone && (
+                    <span className={cn('w-2 h-2 rounded-full', hasBasicQuiz ? 'bg-blue-500' : 'bg-blue-300')} title="Basic complete" />
+                  )}
+                  {advancedDone && (
+                    <span className={cn('w-2 h-2 rounded-full', hasAdvancedQuiz ? 'bg-violet-500' : 'bg-violet-300')} title="Advanced complete" />
+                  )}
+                </span>
+                {hasBasicQuiz && <Award className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
               </Link>
             );
           })}
