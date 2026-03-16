@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SignUpButton, SignInButton } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
@@ -16,8 +17,6 @@ const COLOR_HEX: Record<string, string> = {
   rose: '#f43f5e', indigo: '#6366f1', teal: '#14b8a6', pink: '#ec4899',
 };
 
-// Array indices (modules.ts order): 0=module-1, 1=module-2, 8=module-3, 2=module-4, 3=module-5,
-// 4=module-6, 5=module-7, 6=module-8, 7=module-9, 9=module-10..13=module-14
 const PHASES = [
   { label: 'Foundations', modules: [0, 1, 8], color: '#3b82f6', desc: 'CLI basics, skills, hooks, and the GSD workflow' },
   { label: 'Efficiency', modules: [2, 3, 4], color: '#a855f7', desc: 'Cost optimization, live API, and prompt engineering' },
@@ -30,9 +29,9 @@ const previewLesson = (() => {
   return mod?.lessons.find(l => l.id === 'lesson-7-1') ?? null;
 })();
 
-export default async function PreviewPage() {
+export default async function HomePage() {
   const { userId } = await auth();
-  const isSignedIn = !!userId;
+  if (userId) redirect('/modules');
 
   const totalLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
   const totalMinutes = modules.reduce((s, m) => s + m.lessons.reduce((ls, l) => ls + l.estimatedMinutes, 0), 0);
@@ -46,24 +45,16 @@ export default async function PreviewPage() {
           Claude <span className="text-orange-500">Mastery</span>
         </Link>
         <div className="flex items-center gap-2">
-          {isSignedIn ? (
-            <Link href="/modules" className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">
-              Go to learning →
-            </Link>
-          ) : (
-            <>
-              <SignInButton mode="modal">
-                <button className="px-4 py-2 rounded-lg border border-border hover:bg-muted text-sm font-medium transition-colors">
-                  Sign in
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">
-                  Sign up free
-                </button>
-              </SignUpButton>
-            </>
-          )}
+          <SignInButton mode="modal">
+            <button className="px-4 py-2 rounded-lg border border-border hover:bg-muted text-sm font-medium transition-colors">
+              Sign in
+            </button>
+          </SignInButton>
+          <SignUpButton mode="modal">
+            <button className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">
+              Sign up free
+            </button>
+          </SignUpButton>
         </div>
       </nav>
 
@@ -76,65 +67,54 @@ export default async function PreviewPage() {
           {modules.length} modules · {totalLessons} lessons · ~{Math.round(totalMinutes / 60)}h of content.
           Free cheatsheet below — sign up to unlock the full course.
         </p>
-        {isSignedIn ? (
-          <Link href="/modules" className="inline-block px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
-            Continue learning →
-          </Link>
-        ) : (
-          <SignUpButton mode="modal">
-            <button className="px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
-              Sign up free →
-            </button>
-          </SignUpButton>
-        )}
+        <SignUpButton mode="modal">
+          <button className="px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
+            Sign up free →
+          </button>
+        </SignUpButton>
       </section>
 
-      {/* Full cheatsheet for non-signed-in users */}
-      {!isSignedIn && (
-        <section id="cheatsheet" className="border-y border-border bg-card/30 py-12">
-          <div className="max-w-5xl mx-auto px-4">
-            <Cheatsheet />
-          </div>
-        </section>
-      )}
+      {/* Cheatsheet */}
+      <section id="cheatsheet" className="border-y border-border bg-card/30 py-12">
+        <div className="max-w-5xl mx-auto px-4">
+          <Cheatsheet />
+        </div>
+      </section>
 
-      {/* Learning path phases */}
+      {/* Learning path */}
       <section className="max-w-5xl mx-auto px-6 py-16">
         <h2 className="text-xl font-semibold mb-2">Learning path</h2>
         <p className="text-muted-foreground text-sm mb-6">
           Four phases, from basics to production workflows.
         </p>
-        <div className="relative">
-          <div className="absolute left-6 top-8 bottom-8 w-px bg-border hidden sm:block" />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {PHASES.map((phase, pi) => (
-              <div key={phase.label} className="relative rounded-xl border border-border bg-card p-5">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold mb-3"
-                  style={{ backgroundColor: phase.color }}
-                >
-                  {pi + 1}
-                </div>
-                <div className="font-semibold text-sm mb-1">{phase.label}</div>
-                <div className="text-xs text-muted-foreground mb-3">{phase.desc}</div>
-                <div className="flex flex-wrap gap-1">
-                  {phase.modules.map(mi => modules[mi] && (
-                    <span
-                      key={mi}
-                      className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white/90"
-                      style={{ backgroundColor: COLOR_HEX[modules[mi].color] ?? '#6366f1' }}
-                    >
-                      {modules[mi].title.split('—')[0].split(':')[0].trim()}
-                    </span>
-                  ))}
-                </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {PHASES.map((phase, pi) => (
+            <div key={phase.label} className="rounded-xl border border-border bg-card p-5">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold mb-3"
+                style={{ backgroundColor: phase.color }}
+              >
+                {pi + 1}
               </div>
-            ))}
-          </div>
+              <div className="font-semibold text-sm mb-1">{phase.label}</div>
+              <div className="text-xs text-muted-foreground mb-3">{phase.desc}</div>
+              <div className="flex flex-wrap gap-1">
+                {phase.modules.map(mi => modules[mi] && (
+                  <span
+                    key={mi}
+                    className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white/90"
+                    style={{ backgroundColor: COLOR_HEX[modules[mi].color] ?? '#6366f1' }}
+                  >
+                    {modules[mi].title.split('—')[0].split(':')[0].trim()}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Modules grid */}
+      {/* Modules */}
       <section className="max-w-5xl mx-auto px-6 pb-16">
         <h2 className="text-xl font-semibold mb-2">Modules</h2>
         <p className="text-muted-foreground text-sm mb-6">{modules.length} modules with lessons, exercises, and quizzes.</p>
@@ -187,20 +167,12 @@ export default async function PreviewPage() {
           <p className="text-muted-foreground mb-8">
             {totalLessons} lessons, progress tracking, exercises, and quizzes.
           </p>
-          {isSignedIn ? (
-            <Link href="/modules" className="inline-block px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
-              Continue learning →
-            </Link>
-          ) : (
-            <>
-              <SignUpButton mode="modal">
-                <button className="px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
-                  Sign up free →
-                </button>
-              </SignUpButton>
-              <p className="text-xs text-muted-foreground mt-4">No credit card required</p>
-            </>
-          )}
+          <SignUpButton mode="modal">
+            <button className="px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base transition-colors shadow-lg shadow-orange-500/20">
+              Sign up free →
+            </button>
+          </SignUpButton>
+          <p className="text-xs text-muted-foreground mt-4">No credit card required</p>
         </div>
       </section>
     </div>
