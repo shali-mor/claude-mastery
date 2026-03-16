@@ -197,8 +197,8 @@ export function ModuleIndex() {
                               <Link href={`/quizzes/${module.id}`}>Retake Basic Quiz</Link>
                             </Button>
                           )}
-                          {/* Advanced quiz button */}
-                          {node.advancedProgressPct === 100 && !hasAdvancedQuizResult && (
+                          {/* Advanced quiz button — visible once basic quiz is passed */}
+                          {hasBasicQuizResult && !hasAdvancedQuizResult && (
                             <Button asChild size="sm" variant="outline" className="border-violet-300 text-violet-600 hover:bg-violet-50">
                               <Link href={`/quizzes/${module.id}?tier=advanced`}>Take Advanced Quiz</Link>
                             </Button>
