@@ -168,17 +168,17 @@ export function GuideAvatar({ message, mood = 'happy' }: GuideAvatarProps) {
   useEffect(() => { setOpen(true); }, [message]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">
-      {/* ── Speech bubble ── */}
+    <>
+      {/* ── Speech bubble — centered at bottom ── */}
       <AnimatePresence mode="wait">
         {open && (
           <motion.div
             key={message}
-            initial={{ opacity: 0, y: 12, scale: 0.92 }}
+            initial={{ opacity: 0, y: 20, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-            className="pointer-events-auto relative max-w-[230px] bg-card border border-border rounded-2xl shadow-xl shadow-black/10 px-4 py-3"
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 max-w-xs w-[90vw] sm:w-auto bg-card border border-border rounded-2xl shadow-xl shadow-black/10 px-4 py-3"
           >
             <button
               onClick={() => setOpen(false)}
@@ -187,15 +187,12 @@ export function GuideAvatar({ message, mood = 'happy' }: GuideAvatarProps) {
             >
               <X className="h-3 w-3" />
             </button>
-            <p className="text-[11px] font-semibold text-primary mb-1 tracking-wide uppercase pr-5">
-              Your Guide
-            </p>
-            <p className="text-sm leading-relaxed text-foreground pr-3">{message}</p>
+            <p className="text-sm leading-relaxed text-foreground pr-5">{message}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Avatar button ── */}
+      {/* ── Avatar button — bottom right ── */}
       <motion.button
         onClick={() => setOpen(o => !o)}
         whileHover={{ scale: 1.08 }}
@@ -207,11 +204,11 @@ export function GuideAvatar({ message, mood = 'happy' }: GuideAvatarProps) {
             : { duration: 0.15 }
         }
         aria-label={open ? 'Hide guide' : 'Show guide hint'}
-        className="pointer-events-auto w-[56px] h-[56px] rounded-full overflow-hidden border-2 border-border hover:border-primary/50 shadow-lg transition-colors bg-card"
+        className="fixed bottom-6 right-6 z-40 w-[52px] h-[52px] rounded-full overflow-hidden border-2 border-border hover:border-primary/50 shadow-lg transition-colors bg-card"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/shali.png" alt="Shali Mor" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </motion.button>
-    </div>
+    </>
   );
 }
