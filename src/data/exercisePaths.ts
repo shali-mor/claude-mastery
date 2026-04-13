@@ -46,6 +46,7 @@ export const EXERCISE_PATHS: Record<string, string> = {
   'lesson-4-3': 'module-03-cost-optimization/lesson-04-batch-api',
   'lesson-4-4': 'module-03-cost-optimization/lesson-03-context-management',
   'lesson-4-5': 'module-03-cost-optimization/lesson-05-auto-model-selection',
+  'lesson-4-6': 'module-03-cost-optimization/lesson-06-hybrid-model-routing',
 
   // Module 5 (Live API) → module-04-live-api
   'lesson-5-1': 'module-04-live-api/lesson-01-messages-api',
