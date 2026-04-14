@@ -63,12 +63,12 @@ export function Cheatsheet() {
     });
   };
 
-  const allOpen = openSections.size === 15;
+  const allOpen = openSections.size === 17;
   const toggleAll = () => {
     if (allOpen) {
       setOpenSections(new Set());
     } else {
-      setOpenSections(new Set(Array.from({ length: 15 }, (_, i) => i + 1)));
+      setOpenSections(new Set(Array.from({ length: 17 }, (_, i) => i + 1)));
     }
   };
 
@@ -269,7 +269,7 @@ Use $ARGUMENTS for scope hint.`}</Code>
             </div>
           </div>
           <Bullet>Exit <Cmd>0</Cmd> = allow · Exit <Cmd>2</Cmd> = block</Bullet>
-          <Bullet><Cmd>PreToolUse</Cmd> supports <Cmd>defer</Cmd> for external UI approval</Bullet>
+          <Bullet><Cmd>PreToolUse</Cmd> can return <Cmd>{`{"toolInput": {...}}`}</Cmd> to mutate the call, or <Cmd>defer</Cmd> for external UI approval</Bullet>
         </SectionCard>
 
         {/* 8 — Context Management */}
@@ -329,13 +329,16 @@ Use $ARGUMENTS for scope hint.`}</Code>
         <SectionCard n={10} title="Cost Optimization" open={openSections.has(10)} onToggle={() => toggle(10)}>
           <div className="space-y-1 mb-1.5">
             {[
-              { model: 'Haiku', color: 'bg-green-500/15 text-green-700 dark:text-green-400', use: 'Renames, formatting, simple edits (~20x cheaper)' },
-              { model: 'Sonnet', color: 'bg-blue-500/15 text-blue-700 dark:text-blue-400', use: 'Feature work, refactoring (best price/perf)' },
-              { model: 'Opus', color: 'bg-purple-500/15 text-purple-700 dark:text-purple-400', use: 'Architecture, debugging, planning' },
-              { model: 'OpusPlan', color: 'bg-pink-500/15 text-pink-700 dark:text-pink-400', use: 'Opus plans, Sonnet executes (save on execution)' },
-            ].map(({ model, color, use }) => (
+              { model: 'Haiku 4.5', id: 'claude-haiku-4-5-20251001', color: 'bg-green-500/15 text-green-700 dark:text-green-400', use: 'Renames, formatting, simple edits (~20x cheaper)' },
+              { model: 'Sonnet 4.6', id: 'claude-sonnet-4-6', color: 'bg-blue-500/15 text-blue-700 dark:text-blue-400', use: 'Feature work, refactoring (best price/perf)' },
+              { model: 'Opus 4.6', id: 'claude-opus-4-6', color: 'bg-purple-500/15 text-purple-700 dark:text-purple-400', use: 'Architecture, debugging, planning' },
+              { model: 'OpusPlan', id: null, color: 'bg-pink-500/15 text-pink-700 dark:text-pink-400', use: 'Opus plans, Sonnet executes (~5x cheaper than Opus-only)' },
+            ].map(({ model, id, color, use }) => (
               <div key={model} className="flex gap-2 items-start border-b border-border/40 pb-1 last:border-0">
-                <Tag color={color}>{model}</Tag>
+                <div className="shrink-0">
+                  <Tag color={color}>{model}</Tag>
+                  {id && <div className="font-mono text-[9px] text-muted-foreground mt-0.5 pl-0.5">{id}</div>}
+                </div>
                 <span>{use}</span>
               </div>
             ))}
@@ -402,6 +405,7 @@ Use $ARGUMENTS for scope hint.`}</Code>
             <Row label="--resume" desc="Resume specific session" />
             <Row label="--remote" desc="Start a web session" />
             <Row label="--add-dir" desc="Add extra directory access" />
+            <Row label="--worktree" desc="Work in isolated git worktree" />
           </div>
           <Bullet>Customize bindings: <Cmd>~/.claude/keybindings.json</Cmd></Bullet>
         </SectionCard>
@@ -477,6 +481,54 @@ claude --remote`}</Code>
               </div>
             ))}
           </div>
+        </SectionCard>
+
+        {/* 16 — Sub-Agents & Worktrees */}
+        <SectionCard n={16} title="Sub-Agents & Worktrees" open={openSections.has(16)} onToggle={() => toggle(16)}>
+          <Code>{`// Spawn a parallel agent in isolated worktree
+Agent({
+  subagent_type: "Explore",
+  isolation: "worktree",
+  run_in_background: true,
+  prompt: "Refactor auth module"
+})`}</Code>
+          <div className="space-y-0.5">
+            {[
+              { tag: 'isolation: worktree', color: 'bg-blue-500/15 text-blue-600 dark:text-blue-400', desc: 'Each agent gets its own git copy — no conflicts' },
+              { tag: 'run_in_background', color: 'bg-green-500/15 text-green-700 dark:text-green-400', desc: 'Fire-and-forget; notified on completion' },
+              { tag: 'subagent_type', color: 'bg-purple-500/15 text-purple-700 dark:text-purple-400', desc: 'Explore · Plan · general-purpose · gsd-executor' },
+            ].map(({ tag, color, desc }) => (
+              <div key={tag} className="flex gap-2 items-start border-b border-border/40 pb-1 last:border-0">
+                <Tag color={color}>{tag}</Tag>
+                <span>{desc}</span>
+              </div>
+            ))}
+          </div>
+          <Bullet>Worktree is auto-cleaned if agent makes no changes</Bullet>
+          <Bullet>Use <Cmd>SendMessage</Cmd> to resume a running agent by ID</Bullet>
+        </SectionCard>
+
+        {/* 17 — Remote Triggers & Cron */}
+        <SectionCard n={17} title="Remote Triggers & Cron" open={openSections.has(17)} onToggle={() => toggle(17)}>
+          <Code>{`# Schedule a daily task (cron syntax)
+/schedule "0 9 * * 1-5" "run /gsd:progress"
+
+# Self-paced loop — model picks its own interval
+/loop /check-pr-status
+
+# Fixed-interval loop
+/loop 30m /sync-docs`}</Code>
+          <div className="space-y-0.5">
+            {[
+              ['/schedule', 'Create/list/manage cron triggers'],
+              ['/loop [interval] [cmd]', 'Repeat a task; omit interval to self-pace'],
+              ['RemoteTrigger', 'API tool: create triggers programmatically'],
+            ].map(([cmd, desc]) => (
+              <Row key={cmd} label={cmd} desc={desc} />
+            ))}
+          </div>
+          <Bullet>Each trigger runs in a <strong>fresh session</strong> with full MCP + shell access</Bullet>
+          <Bullet>Cache-aware: sleep &lt; 270 s keeps context warm; &gt; 300 s pays cache-miss cost</Bullet>
         </SectionCard>
 
       </div>
