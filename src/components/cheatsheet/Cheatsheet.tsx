@@ -97,6 +97,14 @@ export function Cheatsheet() {
           <Bullet><Cmd>/init</Cmd> — scans codebase, creates CLAUDE.md</Bullet>
           <Bullet><Cmd>/doctor</Cmd> — verify installation health</Bullet>
           <Bullet><Cmd>/login</Cmd> — authenticate with Anthropic</Bullet>
+          <div className="mt-1.5 bg-muted/60 rounded p-2 text-[10px] space-y-0.5">
+            <p className="font-medium text-foreground">Available on</p>
+            <div className="flex flex-wrap gap-1">
+              {['CLI', 'Desktop App', 'Web (claude.ai/code)', 'VS Code', 'JetBrains'].map(p => (
+                <Tag key={p} color="bg-muted text-muted-foreground">{p}</Tag>
+              ))}
+            </div>
+          </div>
         </SectionCard>
 
         {/* 2 — Memory Layers */}
@@ -104,7 +112,9 @@ export function Cheatsheet() {
           <div className="space-y-1.5">
             {[
               { path: '~/.claude/CLAUDE.md', label: 'Global', desc: 'all projects, personal prefs' },
-              { path: '.claude/CLAUDE.md', label: 'Project', desc: 'team shared, commit to Git' },
+              { path: 'CLAUDE.md', label: 'Project', desc: 'team shared, commit to Git' },
+              { path: 'CLAUDE.local.md', label: 'Local', desc: 'personal project prefs, gitignored' },
+              { path: '.claude/rules/', label: 'Rules', desc: 'path-scoped rules with frontmatter' },
               { path: '~/.claude/projects/<hash>/memory/', label: 'Auto', desc: 'per-project, persists across sessions' },
               { path: 'live conversation', label: 'Session', desc: 'gone on /clear' },
             ].map(({ path, label, desc }) => (
@@ -115,17 +125,19 @@ export function Cheatsheet() {
             ))}
           </div>
           <Bullet>Keep each file <strong>under 200 lines</strong></Bullet>
+          <Bullet>Use <Cmd>@path/to/file</Cmd> to import content into CLAUDE.md</Bullet>
           <Bullet>Run <Cmd>/memory</Cmd> to edit all memory files</Bullet>
         </SectionCard>
 
         {/* 3 — Commands vs Skills */}
-        <SectionCard n={3} title="Commands vs Skills" open={openSections.has(3)} onToggle={() => toggle(3)}>
+        <SectionCard n={3} title="Commands, Skills & Agents" open={openSections.has(3)} onToggle={() => toggle(3)}>
           <div className="space-y-2">
             {[
-              { tag: 'Command', color: 'bg-blue-500/15 text-blue-600 dark:text-blue-400', desc: 'Hardcoded in Claude Code binary', ex: '/btw, /clear, /plan' },
-              { tag: 'Bundled', color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400', desc: 'Anthropic .md shipped with Claude Code', ex: '/simplify, /batch, /loop' },
+              { tag: 'Command', color: 'bg-blue-500/15 text-blue-600 dark:text-blue-400', desc: 'Hardcoded in Claude Code binary', ex: '/btw, /clear, /fast' },
+              { tag: 'Bundled', color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400', desc: 'Anthropic skills shipped with Claude Code', ex: '/simplify, /batch, /loop' },
               { tag: 'Custom', color: 'bg-green-500/15 text-green-600 dark:text-green-400', desc: 'Your .md in .claude/commands/', ex: '/my-skill' },
-              { tag: 'Hook', color: 'bg-orange-500/15 text-orange-600 dark:text-orange-400', desc: 'Shell script on events', ex: 'PostToolUse, Stop' },
+              { tag: 'Hook', color: 'bg-orange-500/15 text-orange-600 dark:text-orange-400', desc: 'Shell/HTTP/prompt on events', ex: 'PreToolUse, Stop' },
+              { tag: 'Agent', color: 'bg-pink-500/15 text-pink-600 dark:text-pink-400', desc: 'Subagents in .claude/agents/', ex: 'Explore, Plan' },
             ].map(({ tag, color, desc, ex }) => (
               <div key={tag} className="border-b border-border/40 pb-1.5 last:border-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
@@ -152,6 +164,12 @@ export function Cheatsheet() {
               ['/rewind', 'Roll back to previous checkpoint'],
               ['/cost', 'Token usage + USD cost so far'],
               ['/model', 'Switch Claude model mid-session'],
+              ['/fast', 'Toggle fast mode (2.5x faster Opus)'],
+              ['/effort', 'Set reasoning: low/medium/high'],
+              ['/loop', 'Run prompt on recurring interval'],
+              ['/schedule', 'Cloud scheduled tasks (durable)'],
+              ['/tasks', 'Manage background tasks'],
+              ['/config', 'Consolidated settings UI'],
               ['/skills', 'List all available skills'],
               ['/hooks', 'Manage hooks interactively'],
             ].map(([cmd, desc]) => (
@@ -166,6 +184,7 @@ export function Cheatsheet() {
             <span className="text-primary font-semibold">your-project/</span>
             <div className="ml-1 mt-0.5 pl-2 border-l border-border space-y-0.5">
               <div>CLAUDE.md</div>
+              <div>CLAUDE.local.md</div>
               <div>
                 <span className="text-primary">.claude/</span>
                 <div className="ml-1 mt-0.5 pl-2 border-l border-border space-y-0.5">
@@ -175,14 +194,24 @@ export function Cheatsheet() {
                     <span className="text-primary">commands/</span>
                     <div className="ml-1 mt-0.5 pl-2 border-l border-border">skill.md</div>
                   </div>
+                  <div>
+                    <span className="text-primary">rules/</span>
+                    <div className="ml-1 mt-0.5 pl-2 border-l border-border">api-design.md</div>
+                  </div>
+                  <div>
+                    <span className="text-primary">agents/</span>
+                    <div className="ml-1 mt-0.5 pl-2 border-l border-border">reviewer.md</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           <div className="space-y-0.5">
             <p><Cmd>CLAUDE.md</Cmd> — auto-loaded every session</p>
+            <p><Cmd>CLAUDE.local.md</Cmd> — personal, gitignored</p>
             <p><Cmd>commands/skill.md</Cmd> — becomes <Cmd>/skill</Cmd></p>
-            <p><Cmd>settings.json</Cmd> — hooks &amp; permissions</p>
+            <p><Cmd>rules/</Cmd> — path-scoped instructions</p>
+            <p><Cmd>agents/</Cmd> — custom subagent definitions</p>
           </div>
         </SectionCard>
 
@@ -192,6 +221,8 @@ export function Cheatsheet() {
 description: Generate commit message
 argument-hint: [optional: scope]
 allowed-tools: [Bash, Read]
+model: sonnet
+effort: high
 context: fork
 ---
 
@@ -203,6 +234,8 @@ Use $ARGUMENTS for scope hint.`}</Code>
           <div className="space-y-0.5">
             <Bullet>Filename = command: <Cmd>review.md</Cmd> → <Cmd>/review</Cmd></Bullet>
             <Bullet><Cmd>$ARGUMENTS</Cmd> · <Cmd>$1</Cmd> <Cmd>$2</Cmd> for positional args</Bullet>
+            <Bullet><Cmd>{'${CLAUDE_SKILL_DIR}'}</Cmd> for bundled scripts/templates</Bullet>
+            <Bullet><Cmd>disable-model-invocation: true</Cmd> for manual-only skills</Bullet>
           </div>
         </SectionCard>
 
@@ -219,12 +252,24 @@ Use $ARGUMENTS for scope hint.`}</Code>
     }]
   }
 }`}</Code>
-          <div className="flex flex-wrap gap-1">
-            {['PreToolUse', 'PostToolUse', 'PreWrite', 'PostWrite', 'UserPromptSubmit', 'Stop', 'Notification'].map(e => (
-              <Tag key={e} color="bg-muted text-muted-foreground">{e}</Tag>
-            ))}
+          <div className="space-y-1 mb-1">
+            <p className="font-medium text-foreground text-[10px]">Hook types</p>
+            <div className="flex flex-wrap gap-1">
+              {['command', 'http', 'prompt', 'agent'].map(t => (
+                <Tag key={t} color="bg-blue-500/15 text-blue-600 dark:text-blue-400">{t}</Tag>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="font-medium text-foreground text-[10px]">Events</p>
+            <div className="flex flex-wrap gap-1">
+              {['PreToolUse', 'PostToolUse', 'PreWrite', 'PostWrite', 'UserPromptSubmit', 'Stop', 'SubagentStart', 'SubagentStop', 'PreCompact', 'PostCompact', 'Notification', 'InstructionsLoaded'].map(e => (
+                <Tag key={e} color="bg-muted text-muted-foreground">{e}</Tag>
+              ))}
+            </div>
           </div>
           <Bullet>Exit <Cmd>0</Cmd> = allow · Exit <Cmd>2</Cmd> = block</Bullet>
+          <Bullet><Cmd>PreToolUse</Cmd> supports <Cmd>defer</Cmd> for external UI approval</Bullet>
         </SectionCard>
 
         {/* 8 — Context Management */}
@@ -251,6 +296,8 @@ Use $ARGUMENTS for scope hint.`}</Code>
               New task → /clear
             </div>
           </div>
+          <Bullet>Auto-compaction kicks in when context fills</Bullet>
+          <Bullet>Claude models support <strong>200K token</strong> context window</Bullet>
         </SectionCard>
 
         {/* 9 — Permissions & Safety */}
@@ -270,7 +317,10 @@ Use $ARGUMENTS for scope hint.`}</Code>
 }`}</Code>
           <div className="space-y-0.5">
             <Bullet><strong>default</strong> — asks for risky actions</Bullet>
+            <Bullet><strong>plan</strong> — Claude analyzes, no modifications</Bullet>
             <Bullet><strong>acceptEdits</strong> — auto-approve file edits</Bullet>
+            <Bullet><strong>auto</strong> — auto-approve with safety classifier</Bullet>
+            <Bullet><strong>dontAsk</strong> — deny unless pre-approved</Bullet>
             <Bullet><strong>bypassPermissions</strong> — CI only, never local</Bullet>
           </div>
         </SectionCard>
@@ -282,6 +332,7 @@ Use $ARGUMENTS for scope hint.`}</Code>
               { model: 'Haiku', color: 'bg-green-500/15 text-green-700 dark:text-green-400', use: 'Renames, formatting, simple edits (~20x cheaper)' },
               { model: 'Sonnet', color: 'bg-blue-500/15 text-blue-700 dark:text-blue-400', use: 'Feature work, refactoring (best price/perf)' },
               { model: 'Opus', color: 'bg-purple-500/15 text-purple-700 dark:text-purple-400', use: 'Architecture, debugging, planning' },
+              { model: 'OpusPlan', color: 'bg-pink-500/15 text-pink-700 dark:text-pink-400', use: 'Opus plans, Sonnet executes (save on execution)' },
             ].map(({ model, color, use }) => (
               <div key={model} className="flex gap-2 items-start border-b border-border/40 pb-1 last:border-0">
                 <Tag color={color}>{model}</Tag>
@@ -289,8 +340,10 @@ Use $ARGUMENTS for scope hint.`}</Code>
               </div>
             ))}
           </div>
+          <Bullet><Cmd>/fast</Cmd> — toggle 2.5x faster Opus output</Bullet>
+          <Bullet><Cmd>/effort low|med|high</Cmd> — reduce reasoning cost</Bullet>
           <Bullet><Cmd>/compact</Cmd> often — cuts input tokens ~90%</Bullet>
-          <Bullet>Use <Cmd>/pick-model</Cmd> skill to auto-recommend</Bullet>
+          <Bullet>Prompt caching is automatic (optimizes repeat context)</Bullet>
         </SectionCard>
 
         {/* 11 — Daily Workflow */}
@@ -312,6 +365,13 @@ Use $ARGUMENTS for scope hint.`}</Code>
               </div>
             ))}
           </div>
+          <div className="mt-2 bg-muted/60 rounded p-2 text-[10px] space-y-0.5">
+            <p className="font-medium text-foreground">Power features</p>
+            <Bullet><Cmd>/loop 5m check deploy</Cmd> — recurring checks</Bullet>
+            <Bullet><Cmd>/schedule</Cmd> — durable cloud tasks (runs unattended)</Bullet>
+            <Bullet><Cmd>/tasks</Cmd> — manage background tasks</Bullet>
+            <Bullet><Cmd>/remote-control</Cmd> — continue in claude.ai</Bullet>
+          </div>
         </SectionCard>
 
         {/* 12 — Keyboard Shortcuts */}
@@ -322,10 +382,10 @@ Use $ARGUMENTS for scope hint.`}</Code>
               ['Shift+Enter', 'New line'],
               ['Ctrl+C', 'Interrupt Claude'],
               ['Ctrl+D', 'Exit session'],
+              ['Ctrl+O', 'Toggle focus view'],
               ['Tab', 'Autocomplete'],
               ['Esc', 'Cancel input'],
               ['↑ / ↓', 'Message history'],
-              ['/vim', 'Toggle vim mode'],
             ].map(([key, desc]) => (
               <div key={key} className="flex items-center gap-1.5 border-b border-border/40 py-1 last:border-0 col-span-1">
                 <kbd className="bg-muted border border-border rounded px-1 py-0.5 font-mono text-[10px] shrink-0">{key}</kbd>
@@ -337,8 +397,13 @@ Use $ARGUMENTS for scope hint.`}</Code>
             <p className="font-medium text-foreground">CLI flags</p>
             <Row label="-p / --print" desc="Non-interactive, pipe mode" />
             <Row label="--model" desc="Set model at startup" />
+            <Row label="--effort" desc="Set reasoning effort level" />
             <Row label="--continue" desc="Resume last session" />
+            <Row label="--resume" desc="Resume specific session" />
+            <Row label="--remote" desc="Start a web session" />
+            <Row label="--add-dir" desc="Add extra directory access" />
           </div>
+          <Bullet>Customize bindings: <Cmd>~/.claude/keybindings.json</Cmd></Bullet>
         </SectionCard>
 
         {/* 13 — What to Put in CLAUDE.md */}
@@ -359,7 +424,14 @@ Test: npm test | Lint: npm run lint
             <Bullet>Include <strong>how to run</strong> tests, lint, build</Bullet>
             <Bullet>List <strong>forbidden patterns</strong></Bullet>
             <Bullet>Keep under <strong>200 lines</strong></Bullet>
+            <Bullet>Use <Cmd>.claude/rules/</Cmd> for path-scoped instructions:</Bullet>
           </div>
+          <Code>{`# .claude/rules/api-design.md
+---
+paths: ["src/api/**/*.ts"]
+---
+Endpoints must validate input with zod.
+Include OpenAPI docs for each route.`}</Code>
         </SectionCard>
 
         {/* 14 — Non-Interactive / CI Mode */}
@@ -372,9 +444,17 @@ cat error.log | claude -p "diagnose"
 git diff | claude -p "write commit msg"
 
 # JSON output for scripting
-claude -p "list todos" --output-format json`}</Code>
+claude -p "list todos" --output-format json
+
+# Resume a session non-interactively
+claude --resume <session-id> -p "continue"
+
+# Start a remote web session
+claude --remote`}</Code>
           <div className="space-y-0.5">
             <Bullet><Cmd>-p</Cmd> exits after one response</Bullet>
+            <Bullet><Cmd>--resume</Cmd> continue a specific session</Bullet>
+            <Bullet><Cmd>--remote</Cmd> run as a web session</Bullet>
             <Bullet>Set <Cmd>ANTHROPIC_API_KEY</Cmd> env var for headless auth</Bullet>
           </div>
         </SectionCard>
@@ -388,6 +468,8 @@ claude -p "list todos" --output-format json`}</Code>
               { tag: 'Give the why', color: 'bg-blue-500/15 text-blue-700 dark:text-blue-400', tip: 'Context lets Claude make better tradeoffs' },
               { tag: 'Plan first', color: 'bg-orange-500/15 text-orange-700 dark:text-orange-400', tip: 'Use /plan before any multi-file change' },
               { tag: 'Correct fast', color: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400', tip: 'Use /rewind early' },
+              { tag: 'Tune effort', color: 'bg-purple-500/15 text-purple-700 dark:text-purple-400', tip: '/effort low for simple, high for complex' },
+              { tag: 'Use @references', color: 'bg-pink-500/15 text-pink-700 dark:text-pink-400', tip: '@file#10-20 for specific line ranges' },
             ].map(({ tag, color, tip }) => (
               <div key={tag} className="flex gap-2 items-start border-b border-border/40 pb-1.5 last:border-0">
                 <Tag color={color}>{tag}</Tag>

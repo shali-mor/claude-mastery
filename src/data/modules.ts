@@ -28,12 +28,12 @@ export const modules: Module[] = [
           },
           {
             type: 'text',
-            content: 'Claude Code is an agentic coding tool that operates directly in your terminal, understands your codebase, and helps you ship code faster through natural language commands.',
+            content: 'Claude Code is an agentic coding tool that understands your codebase and helps you ship code faster through natural language commands. It\'s available as a **CLI** (terminal), **Desktop app** (macOS/Windows), **Web app** (claude.ai/code), and **IDE extensions** (VS Code, JetBrains).',
           },
           {
             type: 'callout',
             calloutVariant: 'info',
-            content: 'Claude Code requires Node.js 18+ and an Anthropic API key. It connects directly to the Anthropic API from your machine.',
+            content: 'Claude Code requires Node.js 18+ and an Anthropic API key (or a Max/Team/Enterprise subscription). It connects directly to the Anthropic API from your machine.',
           },
           {
             type: 'steps',
@@ -75,7 +75,7 @@ claude -p "Summarize this codebase"`,
           },
           {
             type: 'text',
-            content: 'Claude Code ships with 29 built-in slash commands. They cover everything from context management and model switching to GitHub integration and MCP servers. Here they are grouped by what they do.',
+            content: 'Claude Code ships with dozens of built-in slash commands. They cover everything from context management and model switching to scheduling and remote sessions. Here they are grouped by what they do.',
           },
           {
             type: 'heading',
@@ -89,10 +89,13 @@ claude -p "Summarize this codebase"`,
             rows: [
               ['/clear', 'Wipe the entire conversation history and start fresh'],
               ['/compact [focus]', 'Replace history with an AI summary — preserves context at ~10% of the token cost. Pass optional focus instructions, e.g. `/compact focus on auth changes`'],
+              ['/context', 'Visualize context window usage as a color grid with optimization suggestions'],
               ['/cost', 'Show input/output token counts and estimated USD cost for this session'],
               ['/status', 'Show the active model, permission mode, loaded CLAUDE.md files, and connected MCP servers'],
-              ['/reset', 'Reset session state and conversation history (deeper than /clear)'],
-              ['/todo', 'View the in-session task list Claude uses to track multi-step work'],
+              ['/fork', 'Branch conversation from the current point — explore a different direction without losing your place'],
+              ['/rewind', 'Roll back to a previous checkpoint — undo a wrong direction'],
+              ['/diff', 'Interactive git diff viewer showing per-turn changes'],
+              ['/tasks', 'Manage background tasks running in parallel'],
               ['/desktop', 'Move the current CLI session into the Claude Desktop app — session context carries over. macOS and Windows only.'],
             ],
           },
@@ -140,11 +143,12 @@ claude -p "Summarize this codebase"`,
                     content: '',
                     headers: ['Command', 'What it does'],
                     rows: [
-                      ['/model [id]', 'Switch Claude model mid-session. Run without an argument to see a picker. Switch to Haiku for cheap tasks, Opus for hard problems.'],
-                      ['/config', 'Open the settings UI for model, permissions, hooks, and other preferences. Saves to `~/.claude/settings.json` or `.claude/settings.json`.'],
+                      ['/model [id]', 'Switch Claude model mid-session. Run without an argument to see a picker with effort slider. Switch to Haiku for cheap tasks, Opus for hard problems.'],
+                      ['/fast [on|off]', 'Toggle fast mode — 2.5x faster Opus 4.6 output. Same model, just faster generation.'],
+                      ['/effort [low|medium|high]', 'Adjust reasoning effort. Lower = faster and cheaper; higher = more thorough. Use `/effort auto` to reset to default.'],
+                      ['/config', 'Consolidated settings UI for model, editor mode (vim/emacs), permissions, hooks, and preferences.'],
                       ['/permissions', 'View and adjust what actions Claude can take without asking. Restrict or expand file writes, bash commands, and network access.'],
                       ['/theme [light|dark|system]', 'Switch the terminal colour theme. Preference is saved.'],
-                      ['/vim', 'Toggle Vim keybindings in the input prompt (normal/insert mode).'],
                       ['/terminal-setup', 'Configure shell integration (keyboard shortcuts, shell hooks) for your terminal and shell (bash/zsh/fish).'],
                     ],
                   },
@@ -159,7 +163,6 @@ claude -p "Summarize this codebase"`,
                     headers: ['Command', 'What it does'],
                     rows: [
                       ['/review', 'Ask Claude to review uncommitted changes (`git diff`). Flags issues, suggests improvements, and catches security problems before you commit.'],
-                      ['/pr-comments', 'Fetch open PR review comments from GitHub for the current branch. Claude can then help you address each one. Requires `gh` CLI.'],
                       ['/install-github-app', 'Install the Claude Code GitHub App on your repo to enable automated PR reviews and CI workflows.'],
                     ],
                   },
@@ -176,6 +179,22 @@ claude -p "Summarize this codebase"`,
                       ['/mcp [list|add|remove]', 'Manage Model Context Protocol server connections — databases, APIs, file systems, and custom tools.'],
                       ['/run-mcp-tool <server> <tool>', 'Directly invoke a tool from a connected MCP server. Useful for testing integrations.'],
                       ['/web-search', 'Toggle or configure Claude\'s ability to search the web for current information and documentation.'],
+                    ],
+                  },
+                ],
+              },
+              {
+                label: 'Scheduling & Remote',
+                blocks: [
+                  {
+                    type: 'table',
+                    content: '',
+                    headers: ['Command', 'What it does'],
+                    rows: [
+                      ['/loop [interval] [prompt]', 'Run a prompt on a recurring interval (e.g. `/loop 5m check the deploy`). Omit the interval to let Claude self-pace.'],
+                      ['/schedule', 'Create durable cloud-scheduled tasks that run unattended — even when your machine is off.'],
+                      ['/remote-control', 'Enable remote control from claude.ai — continue your CLI session in a browser.'],
+                      ['/teleport', 'Pull a web session into the terminal. Alias: `/tp`.'],
                     ],
                   },
                 ],
@@ -257,8 +276,20 @@ claude -p "List all TODO comments in this file" < src/app.ts
 # Specify a model directly
 claude --model claude-opus-4-6
 
+# Set reasoning effort (low/medium/high)
+claude --effort high -p "Refactor this module"
+
 # Continue the most recent session
 claude --continue  # or: claude -c
+
+# Resume a specific session
+claude --resume <session-id>
+
+# Start a remote web session
+claude --remote
+
+# Add extra directory access
+claude --add-dir ~/shared-libs
 
 # Skip all permission prompts (for automated CI use)
 claude --dangerously-skip-permissions -p "Run the tests"
@@ -276,6 +307,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
               ['Up / Down Arrow', 'Navigate message history'],
               ['Ctrl+C', 'Interrupt / cancel current operation'],
               ['Ctrl+D', 'Exit the session'],
+              ['Ctrl+O', 'Toggle focus view'],
               ['Tab', 'Autocomplete file paths and commands'],
               ['Esc', 'Cancel current prompt'],
             ],
@@ -285,7 +317,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
       {
         id: 'lesson-1-4',
         title: 'Permission Modes & Safety',
-        description: 'Understand the three permission modes and when to use each.',
+        description: 'Understand the six permission modes and when to use each.',
         estimatedMinutes: 5,
         tier: 'advanced',
         blocks: [
@@ -294,7 +326,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
           },
           {
             type: 'text',
-            content: 'Claude Code has three permission modes that control how much autonomy it has. Choosing the right mode balances speed with safety.',
+            content: 'Claude Code has six permission modes that control how much autonomy it has. Choosing the right mode balances speed with safety.',
           },
           {
             type: 'table',
@@ -302,7 +334,10 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
             headers: ['Mode', 'Flag', 'Behavior'],
             rows: [
               ['default', '(none)', 'Prompts for permission on potentially dangerous operations'],
-              ['acceptEdits', '--permission-mode acceptEdits', 'Auto-approves file edits; still prompts for shell commands'],
+              ['plan', '--permission-mode plan', 'Read-only — Claude analyzes but cannot modify files or run commands'],
+              ['acceptEdits', '--permission-mode acceptEdits', 'Auto-approves file edits and filesystem commands; still prompts for shell commands'],
+              ['auto', '--permission-mode auto', 'Auto-approve most actions with a background safety classifier that blocks risky operations'],
+              ['dontAsk', '--permission-mode dontAsk', 'Deny everything unless explicitly pre-approved in allow rules'],
               ['bypassPermissions', '--dangerously-skip-permissions', 'Skips ALL prompts — use only in trusted automated environments'],
             ],
           },
@@ -313,7 +348,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
           },
           {
             type: 'tip',
-            content: 'For local development, acceptEdits mode strikes the best balance — fast for coding tasks, but still asks before running shell commands or making network requests.',
+            content: 'For local development, **acceptEdits** mode strikes the best balance — fast for coding tasks, but still asks before running shell commands. For trusted workflows, **auto** mode uses a safety classifier to auto-approve most actions while still blocking dangerous ones.',
           },
         ],
       },
@@ -328,7 +363,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
           { type: 'lesson-player' },
           {
             type: 'text',
-            content: 'Claude Code isn\'t terminal-only. Both VS Code and JetBrains IDEs have first-party extensions that embed Claude Code in a sidebar panel — giving you inline diffs, file context, and chat without alt-tabbing to a terminal.',
+            content: 'Claude Code isn\'t terminal-only. It\'s available as a **Desktop app** (macOS/Windows), **Web app** (claude.ai/code), and IDE extensions for **VS Code** and **JetBrains** — giving you inline diffs, file context, and chat without alt-tabbing to a terminal.',
           },
           {
             type: 'heading', level: 2,
@@ -352,6 +387,8 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
               ['Context pins', 'Right-click a file → Pin to Claude context', 'Keeping key files in scope across multiple turns'],
               ['Active file context', 'Claude always sees your currently open file', 'Quick questions about the code you\'re looking at'],
               ['Terminal passthrough', 'Claude can still open a terminal and run commands', 'Hooks and shell commands work the same way'],
+              ['Toggle focus', '`Cmd+Esc` / `Ctrl+Esc` to switch between editor and Claude panel', 'Rapid context switching during coding'],
+              ['@-mentions', '`Option+K` / `Alt+K` to insert @-mention references to files or symbols', 'Precise file/line context in prompts'],
             ],
           },
           {
@@ -574,7 +611,7 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
           },
           {
             type: 'text',
-            content: 'Claude Code gives you three ways to extend and automate your workflow: **built-in slash commands**, **custom skills**, and **hooks**. They look similar but serve different purposes. Picking the wrong one costs you time — picking the right one multiplies your output.',
+            content: 'Claude Code gives you four ways to extend and automate your workflow: **built-in slash commands**, **custom skills**, **hooks**, and **custom agents**. They look similar but serve different purposes. Picking the wrong one costs you time — picking the right one multiplies your output.',
           },
           {
             type: 'table',
@@ -583,7 +620,8 @@ claude --output-format json -p "What does this function do?" < utils.ts`,
               ['Slash command', 'Built-in Claude Code command (`/help`, `/compact`, `/clear`)', 'Standard Claude Code actions — cannot be added, only used'],
               ['Bundled skill', 'A skill pre-installed by Anthropic (`/simplify`, `/batch`, `/loop`)', 'Ships with Claude Code — use them as-is, no setup needed'],
               ['Skill (custom command)', 'A Markdown file in `.claude/commands/` invoked with `/name`', 'Reusable prompts or workflows specific to **your project or team**'],
-              ['Hook', 'A shell script that fires automatically on Claude Code events', 'Automations that run **without user input** — lint on save, block dangerous commands, log all actions'],
+              ['Hook', 'A shell/HTTP/prompt script that fires automatically on Claude Code events', 'Automations that run **without user input** — lint on save, block dangerous commands, log all actions'],
+              ['Custom agent', 'A Markdown file in `.claude/agents/` defining a subagent type', 'Specialized sub-agents with their own tools, model, and instructions for delegation'],
             ],
           },
           {
@@ -835,7 +873,9 @@ description: Run full test suite and fix any failures
 argument-hint: [src/ path — omit for whole project]
 allowed-tools: [Bash, Read, Write, Glob, Grep]
 context: fork
-model: claude-sonnet-4-6
+model: sonnet
+effort: high
+paths: ["src/**/*.ts", "src/**/*.tsx"]
 ---
 
 # /fix-tests
@@ -862,9 +902,12 @@ Steps:
             rows: [
               ['`description`', 'Claude reads this to auto-activate the skill when relevant', '`Review code for security issues`'],
               ['`argument-hint`', 'Hint shown in autocomplete when typing the command', '`[file-path or git-ref]`'],
-              ['`allowed-tools`', 'Restrict which tools Claude can use during this skill', '`[Bash, Read, Grep]`'],
+              ['`allowed-tools`', 'Pre-approve specific tools without prompting', '`[Bash, Read, Grep]`'],
               ['`context: fork`', 'Run the skill in an isolated subagent (no shared state)', '`context: fork`'],
-              ['`model`', 'Pin a specific Claude model for this skill', '`claude-opus-4-6`'],
+              ['`model`', 'Pin a specific Claude model for this skill', '`opus` or `sonnet`'],
+              ['`effort`', 'Override reasoning effort for the skill', '`low`, `medium`, or `high`'],
+              ['`agent`', 'Run as a specific subagent type', '`Explore` or `Plan`'],
+              ['`paths`', 'Auto-load only when working on matching files', '`["src/api/**/*.ts"]`'],
               ['`user-invocable: false`', 'Hide from the `/` menu — Claude can still auto-invoke it', '`user-invocable: false`'],
               ['`disable-model-invocation: true`', 'Prevent Claude from auto-invoking; manual `/command` only', '`disable-model-invocation: true`'],
             ],
@@ -1016,14 +1059,14 @@ Rules:
           },
           {
             type: 'text',
-            content: 'Hooks are shell scripts Claude Code runs automatically at specific points in its workflow. Unlike skills (which you invoke), hooks fire on their own. They\'re ideal for enforcing team standards and automating quality gates that would otherwise be forgotten.',
+            content: 'Hooks are scripts Claude Code runs automatically at specific points in its workflow. They can be **shell commands**, **HTTP endpoints**, **prompt evaluations**, or even **subagents**. Unlike skills (which you invoke), hooks fire on their own. They\'re ideal for enforcing team standards and automating quality gates.',
           },
           {
             type: 'table',
             content: 'All hook events',
             headers: ['Event', 'Fires When', 'Can Block?'],
             rows: [
-              ['PreToolUse', 'Before any tool call', 'Yes'],
+              ['PreToolUse', 'Before any tool call (supports `defer` for external UI approval)', 'Yes'],
               ['PostToolUse', 'After any tool call completes', 'No'],
               ['PreBashExec', 'Before a bash command runs', 'Yes'],
               ['PostBashExec', 'After a bash command completes', 'No'],
@@ -1032,12 +1075,13 @@ Rules:
               ['PreWrite', 'Before a file is written', 'Yes'],
               ['PostWrite', 'After a file is written', 'No'],
               ['UserPromptSubmit', 'When the user submits a prompt', 'Yes'],
-              ['AssistantResponse', 'When Claude generates a response', 'No'],
               ['Stop', 'When Claude finishes the task', 'No'],
               ['Notification', 'Claude-triggered notifications', 'No'],
+              ['SubagentStart', 'When a sub-agent is spawned', 'No'],
               ['SubagentStop', 'When a sub-agent finishes', 'No'],
               ['PreCompact', 'Before conversation compaction', 'Yes'],
               ['PostCompact', 'After compaction completes', 'No'],
+              ['PermissionDenied', 'When auto mode blocks an action (supports `{retry: true}`)', 'No'],
             ],
           },
           {
@@ -1058,6 +1102,21 @@ Rules:
             type: 'callout',
             calloutVariant: 'tip',
             content: '**Exit code 2 is your hard stop.** Use it only for truly dangerous actions. For softer enforcement — lint errors, type failures — use a non-zero exit other than 2 so Claude sees the output and self-corrects.',
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Hook types',
+          },
+          {
+            type: 'table',
+            headers: ['Type', 'What it does', 'Best for'],
+            rows: [
+              ['`command`', 'Runs a shell command — exit code controls behavior', 'Linting, blocking, logging, notifications'],
+              ['`http`', 'POSTs to a URL with `$ARGUMENTS` and `$TOKEN` env vars', 'External approval workflows, webhooks, audit APIs'],
+              ['`prompt`', 'Single-turn Claude evaluation of the action', 'AI-powered rule checking, semantic validation'],
+              ['`agent`', 'Spawns a subagent with tool access', 'Complex multi-step validation or auto-fixes'],
+            ],
           },
           {
             type: 'heading',
@@ -1271,13 +1330,18 @@ Key: these run WHEN INVOKED via /command-name.`,
             language: 'bash',
             content: `.claude/
 ├── CLAUDE.md              # Project context — auto-loaded every session
-├── settings.json          # Hooks configuration
+├── settings.json          # Hooks & permissions configuration
+├── settings.local.json    # Personal overrides (gitignored)
 ├── commands/              # Project skills (committed to Git)
 │   ├── write-test.md      # /write-test
 │   ├── security-review.md # /security-review
-│   ├── add-changelog.md   # /add-changelog
 │   └── explain.md         # /explain $ARGUMENTS
-└── bash-history.log       # Optional: audit log (add to .gitignore)`,
+├── rules/                 # Path-scoped instructions
+│   ├── api-design.md      # Auto-loaded for src/api/**
+│   └── testing.md         # Auto-loaded for **/*.test.ts
+├── agents/                # Custom subagent definitions
+│   └── reviewer.md        # Specialized review agent
+└── CLAUDE.local.md        # Personal project prefs (gitignored)`,
           },
           {
             type: 'heading',
@@ -1751,7 +1815,7 @@ git commit -m "chore: add Claude Code skill library"`,
       {
         id: 'lesson-2-6',
         title: 'Memory & Context — How Claude Remembers',
-        description: 'Master the four memory layers and the context window so Claude always has exactly the right information — without burning tokens on noise.',
+        description: 'Master the six memory layers and the context window so Claude always has exactly the right information — without burning tokens on noise.',
         estimatedMinutes: 8,
         tier: 'advanced',
         blocks: [
@@ -1760,19 +1824,21 @@ git commit -m "chore: add Claude Code skill library"`,
           },
           {
             type: 'text',
-            content: 'Claude Code has no persistent memory by default — every session starts blank. But it gives you four distinct layers to inject exactly the right context. Understanding which layer to use (and when) is the difference between Claude that feels like a specialist and Claude that feels like a stranger.',
+            content: 'Claude Code has no persistent memory by default — every session starts blank. But it gives you six distinct layers to inject exactly the right context. Understanding which layer to use (and when) is the difference between Claude that feels like a specialist and Claude that feels like a stranger.',
           },
           {
             type: 'heading',
             level: 2,
-            content: 'The four memory layers',
+            content: 'The six memory layers',
           },
           {
             type: 'table',
             headers: ['Layer', 'Where it lives', 'Scope', 'Best for'],
             rows: [
               ['Global CLAUDE.md', '`~/.claude/CLAUDE.md`', 'Every project on your machine', 'Personal preferences: code style, preferred tools, how you like responses formatted'],
-              ['Project CLAUDE.md', '`.claude/CLAUDE.md` (committed)', 'Everyone on the team, every session', 'Stack, conventions, do-nots, key file map'],
+              ['Project CLAUDE.md', '`CLAUDE.md` or `.claude/CLAUDE.md` (committed)', 'Everyone on the team, every session', 'Stack, conventions, do-nots, key file map'],
+              ['Local CLAUDE.md', '`CLAUDE.local.md` (gitignored)', 'Your machine only, this project', 'Personal project-specific preferences you don\'t want to share'],
+              ['Path-scoped rules', '`.claude/rules/*.md` with `paths:` frontmatter', 'Auto-loaded when working on matching files', 'Instructions specific to parts of the codebase (e.g. API routes, test files)'],
               ['Auto-memory', '`~/.claude/projects/<hash>/memory/`', 'Persists across sessions for that project', 'Facts Claude discovers mid-session that you want it to remember next time'],
               ['In-session context', 'The live conversation window', 'Current session only — gone when you /clear', 'Everything Claude is actively working with right now'],
             ],
@@ -1818,12 +1884,35 @@ git commit -m "chore: add Claude Code skill library"`,
           {
             type: 'callout',
             calloutVariant: 'tip',
-            content: '**Both files load together.** Global preferences + project conventions are merged in every session. Keep them separate — global is about *you*, project is about *the codebase*.',
+            content: '**All layers load together.** Global preferences + project conventions + local overrides + path-scoped rules are merged in every session. Use `@path/to/file` in any CLAUDE.md to import content from another file (e.g. `@README.md` or `@package.json`).',
           },
           {
             type: 'heading',
             level: 2,
-            content: 'Layer 3 — Auto-memory',
+            content: 'Layer 3 — Local CLAUDE.md & path-scoped rules',
+          },
+          {
+            type: 'text',
+            content: '`CLAUDE.local.md` lives at the project root and is gitignored — use it for personal project-specific preferences you don\'t want to share. For **path-scoped rules**, create `.md` files in `.claude/rules/` with a `paths:` frontmatter field. These only load when Claude is working on matching files.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# .claude/rules/api-design.md
+---
+paths:
+  - "src/api/**/*.ts"
+---
+
+## API Design Rules
+- All endpoints must validate input with Zod schemas
+- Return errors as { error: string, code: number }
+- Include OpenAPI JSDoc for each route`,
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Layer 4 — Auto-memory',
           },
           {
             type: 'text',
@@ -1863,11 +1952,11 @@ git commit -m "chore: add Claude Code skill library"`,
           {
             type: 'heading',
             level: 2,
-            content: 'Layer 4 — The context window',
+            content: 'Layer 6 — The context window',
           },
           {
             type: 'text',
-            content: 'The context window is the live conversation: every message, every tool result, every file Claude has read. It is powerful but finite — Claude Code runs on models with 200K token windows, but costs grow with every turn.',
+            content: 'The context window is the live conversation: every message, every tool result, every file Claude has read. It is powerful but finite — Claude models support up to **200K tokens**, but costs grow with every turn. Auto-compaction kicks in when the context fills, summarizing the conversation while preserving CLAUDE.md and active skill content.',
           },
           {
             type: 'table',
@@ -1920,7 +2009,7 @@ git commit -m "chore: add Claude Code skill library"`,
           {
             type: 'callout',
             calloutVariant: 'tip',
-            content: '**The 3-layer rule:** Put it in CLAUDE.md if it\'s always true. Ask Claude to remember it if it\'s true for this project going forward. Let it stay in context if it\'s only relevant today.',
+            content: '**The memory rule:** Put it in CLAUDE.md if the whole team needs it. Put it in CLAUDE.local.md if only you need it. Put it in `.claude/rules/` if it only applies to certain files. Ask Claude to remember it if it\'s true for this project going forward. Let it stay in context if it\'s only relevant today.',
           },
           {
             type: 'exercise',
@@ -2440,7 +2529,7 @@ for await (const item of await client.messages.batches.results(batch.id)) {
           },
           {
             type: 'text',
-            content: 'Claude Code has no built-in auto-switch — you pick the model with `/model`. But you can add two automation layers: a **skill** that analyses your task and recommends the cheapest model that can handle it, and a **hook** that warns you in real-time if you\'re on the wrong model for what you\'re asking.',
+            content: 'Claude Code now has several built-in cost controls: `/model` to switch models, `/fast` for faster output, `/effort` to reduce reasoning cost, and the **OpusPlan** hybrid model. You can also add custom automation with a skill and hook.',
           },
           {
             type: 'table',
@@ -2451,8 +2540,29 @@ for await (const item of await client.messages.batches.results(batch.id)) {
               ['Boilerplate, CRUD, test generation', 'Haiku or Sonnet', 'Routine code — no need for reasoning depth'],
               ['Feature implementation, refactoring', 'Sonnet', 'Best price/performance for most real work'],
               ['Complex architecture, debugging, planning', 'Sonnet or Opus', 'Multi-step reasoning pays off here'],
+              ['Planning with Opus, executing with Sonnet', 'OpusPlan', 'Opus-quality plans, Sonnet-cost execution — best of both worlds'],
               ['Multi-agent orchestration, research', 'Opus', 'Highest reasoning — worth the cost for hard problems'],
             ],
+          },
+          {
+            type: 'heading',
+            level: 2,
+            content: 'Built-in cost controls',
+          },
+          {
+            type: 'table',
+            headers: ['Control', 'Command', 'Saving'],
+            rows: [
+              ['**OpusPlan**', '`/model opusplan`', 'Opus plans, Sonnet executes — saves on execution tokens while keeping Opus-quality planning'],
+              ['**Fast mode**', '`/fast` or `/fast on`', '2.5× faster Opus output — same model, just faster generation'],
+              ['**Effort levels**', '`/effort low` / `medium` / `high`', 'Lower effort = less reasoning = fewer output tokens = cheaper. Use `/effort auto` to reset to default'],
+              ['**Auto-compaction**', 'Automatic when context fills', 'Summarizes conversation, re-injects CLAUDE.md — prevents runaway context costs'],
+            ],
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**OpusPlan is the sweet spot** for most development work. You get Opus-quality analysis and planning (where it matters most) with Sonnet-cost execution (where the work is mechanical). Try it with `/model opusplan`.',
           },
           {
             type: 'heading',
@@ -2498,9 +2608,10 @@ Assign one point for each of the following that applies:
 
 | Score | Model | Switch command |
 |-------|-------|---------------|
-| 0–1   | Haiku  | \`claude --model claude-haiku-4-5-20251001\` |
-| 2–3   | Sonnet | \`claude --model claude-sonnet-4-6\` |
-| 4–5   | Opus   | \`claude --model claude-opus-4-6\` |
+| 0–1   | Haiku  | \`/model haiku\` |
+| 2–3   | Sonnet | \`/model sonnet\` |
+| 3–4   | OpusPlan | \`/model opusplan\` (Opus plans, Sonnet executes) |
+| 4–5   | Opus   | \`/model opus\` |
 
 ## Output format
 
@@ -3361,7 +3472,7 @@ Only flag security vulnerabilities.`,
           {
             type: 'callout',
             calloutVariant: 'info',
-            content: 'Sub-agents are launched with the **Task tool** — a built-in Claude Code tool that spins up a new Claude instance. When you ask Claude Code to "delegate this work" or "use a sub-agent," it calls the Task tool internally. You never write the tool call yourself — you write the **delegation prompt**, which is the set of instructions the sub-agent will receive.',
+            content: 'Sub-agents are launched with the **Agent tool** — a built-in Claude Code tool that spins up a new Claude instance. Claude Code ships with built-in agent types (Explore, Plan, general-purpose), and you can define your own in `.claude/agents/`. When you ask Claude Code to "delegate this work" or "use a sub-agent," it calls the Agent tool internally. You never write the tool call yourself — you write the **delegation prompt**.',
           },
           {
             type: 'heading',
@@ -3430,6 +3541,34 @@ One growing context window holds all unrelated detail`,
             calloutVariant: 'warning',
             content: '**The most important thing to understand**: every sub-agent starts with zero memory. It does not know your project name, your tech stack, what you discussed five minutes ago, or what other sub-agents found. Everything the agent needs must be written explicitly in the delegation prompt. Missing context = wrong or incomplete results.',
           },
+          {
+            type: 'heading',
+            content: 'Custom Agent Definitions',
+          },
+          {
+            type: 'text',
+            content: 'Beyond the built-in agent types (Explore, Plan, general-purpose), you can define **custom agents** in `.claude/agents/`. Each is a Markdown file that specifies the agent\'s instructions, tools, and model — just like a skill but for delegation.',
+          },
+          {
+            type: 'code',
+            language: 'markdown',
+            content: `# .claude/agents/reviewer.md
+---
+description: Security-focused code reviewer
+model: opus
+allowed-tools: [Read, Grep, Glob]
+---
+
+You are a security-focused code reviewer.
+Review code for OWASP Top 10 vulnerabilities.
+Report findings with file, line, severity, and fix.
+Do NOT modify any files — read only.`,
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: 'Custom agents are great for specialized roles that you delegate to repeatedly — reviewers, documentation writers, test generators. Define them once, delegate to them by name.',
+          },
         ],
       },
       {
@@ -3444,7 +3583,7 @@ One growing context window holds all unrelated detail`,
           },
           {
             type: 'text',
-            content: 'Claude Code is a terminal chat. You type messages; Claude responds. To spawn a sub-agent, you simply **describe what you want delegated** — Claude reads it and calls the Task tool internally. You never write JSON or call any API.',
+            content: 'Claude Code is a terminal chat. You type messages; Claude responds. To spawn a sub-agent, you simply **describe what you want delegated** — Claude reads it and calls the Agent tool internally. You never write JSON or call any API.',
           },
           {
             type: 'heading',
@@ -3467,7 +3606,7 @@ claude`,
           },
           {
             type: 'text',
-            content: 'Every Task tool parameter has a natural-language equivalent. You do not set parameters with code — you mention them in your message:',
+            content: 'Every Agent tool parameter has a natural-language equivalent. You do not set parameters with code — you mention them in your message:',
           },
           {
             type: 'table',
@@ -4322,7 +4461,7 @@ I will review each diff before merging.`,
           { type: 'lesson-player' },
           {
             type: 'text',
-            content: 'Not every task in a pipeline needs your most expensive model. The scout → synthesize pattern routes cheap, parallelisable tasks to Haiku, complex work to Sonnet, and final synthesis to Opus. The cost difference is roughly 20× between Haiku and Opus — so the routing decision matters.',
+            content: 'Not every task in a pipeline needs your most expensive model. The scout → synthesize pattern routes cheap, parallelisable tasks to Haiku, complex work to Sonnet, and final synthesis to Opus. The **OpusPlan** hybrid model automates this — Opus handles planning, Sonnet handles execution. For manual control, the cost difference is roughly 20× between Haiku and Opus — so the routing decision matters.',
           },
           {
             type: 'heading', level: 2,
@@ -4334,6 +4473,7 @@ I will review each diff before merging.`,
             rows: [
               ['Scout', 'claude-haiku-4-5-20251001', 'Reading files, grep, listing, classification, extraction', '1×'],
               ['Worker', 'claude-sonnet-4-6', 'Writing code, refactoring, analysis, moderate reasoning', '5×'],
+              ['Hybrid', 'opusplan', 'Opus plans + Sonnet executes — best of both without manual routing', '~8×'],
               ['Synthesizer', 'claude-opus-4-6', 'Final synthesis, hard reasoning, architecture decisions', '25×'],
             ],
           },
@@ -4503,6 +4643,11 @@ const result = await client.messages.create({ model, ... });`,
           {
             type: 'tip',
             content: 'Think of Plan Mode as separating "figuring out what to do" from "doing it". It inserts a mandatory user review checkpoint before any changes land in your codebase.',
+          },
+          {
+            type: 'callout',
+            calloutVariant: 'info',
+            content: '**Plan as a permission mode:** You can also start an entire session in plan mode with `--permission-mode plan`. This enforces the read-only constraint for the whole session — Claude can never modify files, only analyze and recommend. Useful for code reviews, architecture audits, and onboarding to unfamiliar codebases.',
           },
         ],
       },
@@ -6038,6 +6183,11 @@ curl -X POST "$SLACK_WEBHOOK_URL" \\
             type: 'tip',
             content: 'Use `--output-format json` when you need structured data from a script. Claude will return a JSON object you can parse with `jq`: `claude -p "extract name and email" --output-format json < contact.txt | jq .name`',
           },
+          {
+            type: 'callout',
+            calloutVariant: 'tip',
+            content: '**Built-in alternatives to cron:** Claude Code now has `/loop` (recurring prompts within a session, e.g. `/loop 5m check the deploy`) and `/schedule` (durable cloud-scheduled tasks that run even when your machine is off). For developer-facing recurring tasks, these are often simpler than maintaining shell scripts + cron.',
+          },
         ],
       },
       {
@@ -6200,6 +6350,8 @@ app.listen(3000);`,
             headers: ['Tool', 'Best for', 'Avoid when'],
             rows: [
               ['Claude CLI (-p)', 'Cron jobs, CI scripts, one-off automation', 'Needs UI, retries, or multi-step orchestration'],
+              ['/loop (Claude Code)', 'Recurring checks within a session (build status, deploy)', 'Needs to run when your machine is off'],
+              ['/schedule (Claude Code)', 'Durable cloud tasks that run unattended on a cron', 'Complex multi-step workflows needing external triggers'],
               ['n8n (self-hosted)', 'Complex workflows, data privacy, high volume', 'Team has no infra capacity or prefers no-code'],
               ['Make.com', 'Visual complex flows, moderate volume', 'Data must stay on-premise, high volume'],
               ['Zapier', 'Quick no-code, simple trigger → action', 'Complex logic, high volume, cost-sensitive'],

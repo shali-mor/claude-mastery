@@ -67,7 +67,7 @@ export const whatsNew: WhatsNewEntry[] = [
     summary: 'Effort levels are now low/medium/high (max removed) with new visual symbols ○ ◐ ●. Use `/effort auto` to reset to default; type "ultrathink" to force high effort for one turn.',
     detail: 'Opus 4.6 now defaults to medium effort for Max and Team subscribers. The "ultrathink" keyword was re-introduced for bumping to high effort on the next turn. `/effort` can also be changed while Claude is actively responding.',
     version: '2.1.68',
-    tutorialCovered: false,
+    tutorialCovered: true,
     sourceUrl: 'https://github.com/anthropics/claude-code/releases/tag/v2.1.68',
   },
   {
