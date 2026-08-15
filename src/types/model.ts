@@ -5,7 +5,7 @@ export interface ModelPricing {
   cacheReadPerMillion?: number;
 }
 
-export type ModelFamily = 'claude-4' | 'claude-3-7' | 'claude-3-5' | 'claude-3';
+export type ModelFamily = 'claude-5' | 'claude-4' | 'claude-3-7' | 'claude-3-5' | 'claude-3';
 
 export interface ClaudeModel {
   id: string;

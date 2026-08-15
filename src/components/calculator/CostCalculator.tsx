@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,7 @@ import { Info, Lightbulb, Zap, TrendingDown } from 'lucide-react';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { claudeModels, calculateCost } from '@/data/models';
 import { getTipsForContext } from '@/data/optimizationTips';
-import { formatCost, formatTokens } from '@/lib/utils';
+import { formatTokens } from '@/lib/utils';
 
 function formatDollars(n: number) {
   if (n < 0.000001) return '$0.000000';
@@ -30,7 +31,7 @@ export function CostCalculator() {
   const [outputTokens, setOutputTokens] = useState(2000);
   const [cachedTokens, setCachedTokens] = useState(0);
   const [useBatch, setUseBatch] = useState(false);
-  const [selectedModelId, setSelectedModelId] = useState('claude-sonnet-4-6');
+  const [selectedModelId, setSelectedModelId] = useState('claude-sonnet-5');
 
   const selectedModel = claudeModels.find(m => m.id === selectedModelId)!;
 
@@ -43,7 +44,8 @@ export function CostCalculator() {
     return claudeModels.map((model, i) => {
       const cost = calculateCost(model, inputTokens, outputTokens, cachedTokens, useBatch);
       return {
-        name: model.displayName.replace('Claude ', '').replace(' 4.', '\n4.').replace(' 3.', '\n3.'),
+        id: model.id,
+        name: model.displayName.replace('Claude ', ''),
         total: cost.total,
         colorIdx: i,
       };
@@ -65,6 +67,13 @@ export function CostCalculator() {
         <p className="text-muted-foreground text-sm">
           Estimate API costs with real 2026 pricing. Compare models, Batch API, and prompt caching.
         </p>
+        <Link
+          href="/cost-guide"
+          className="inline-flex items-center gap-1.5 mt-2 text-xs text-primary hover:underline"
+        >
+          <Lightbulb className="h-3.5 w-3.5" />
+          New: read the Cost Guide for cost-mindful Claude Code habits &rarr;
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -260,18 +269,20 @@ export function CostCalculator() {
                 <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 20, left: 4 }}>
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                    tick={{ fontSize: 10, fill: 'currentColor' }}
+                    className="text-muted-foreground"
                     interval={0}
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                    tick={{ fontSize: 10, fill: 'currentColor' }}
+                    className="text-muted-foreground"
                     tickFormatter={v => formatDollars(v)}
                   />
                   <Tooltip
                     formatter={(val) => [formatDollars(Number(val ?? 0)), 'Cost']}
                     contentStyle={{
-                      background: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
+                      background: 'var(--card)',
+                      border: '1px solid var(--border)',
                       borderRadius: '8px',
                       fontSize: 12,
                     }}
@@ -279,9 +290,9 @@ export function CostCalculator() {
                   <Bar dataKey="total" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, index) => (
                       <Cell
-                        key={`cell-${index}`}
-                        fill={entry.name.includes(selectedModel.displayName.split(' ').slice(-1)[0])
-                          ? 'hsl(var(--primary))'
+                        key={entry.id}
+                        fill={entry.id === selectedModelId
+                          ? 'var(--primary)'
                           : CHART_COLORS[index % CHART_COLORS.length] + '80'
                         }
                       />

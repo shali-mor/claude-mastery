@@ -41,9 +41,44 @@ export default function CheatsheetPage() {
       {/* Print styles */}
       <style>{`
         @media print {
-          nav, aside, header, [data-sidebar], .print\\:hidden { display: none !important; }
-          body { background: white !important; }
-          * { color-adjust: exact !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          @page { size: A4; margin: 10mm 8mm; }
+
+          /* Hide chrome */
+          nav, aside, header, footer,
+          [data-sidebar], .print\\:hidden { display: none !important; }
+
+          /* Unclamp the AppShell so content flows across pages */
+          body, html { height: auto !important; overflow: visible !important; background: white !important; }
+          body > div, body > div > div,
+          main, [class*="flex"][class*="h-screen"],
+          [class*="overflow-hidden"], [class*="overflow-y-auto"] {
+            height: auto !important;
+            overflow: visible !important;
+            display: block !important;
+          }
+
+          /* Preserve colors */
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+          /* Force all accordion sections open */
+          [data-section-content] { display: block !important; }
+          [data-section-toggle] svg { display: none !important; }
+
+          /* Page break control */
+          [data-section-card] { break-inside: avoid; }
+
+          /* 2-column grid for A4 width */
+          [data-cheatsheet-grid] {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+          }
+
+          /* Compact spacing */
+          [data-section-card] { font-size: 9px !important; }
+          [data-section-card] pre { font-size: 8.5px !important; padding: 4px !important; }
+          [data-section-card] button { padding: 6px 8px !important; }
+          [data-section-card] > div:last-child { padding: 4px 8px 6px !important; }
         }
       `}</style>
     </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BookOpen, Terminal, DollarSign,
+  BookOpen, Terminal, DollarSign, Wallet,
   Code2, X, Award, Info, BookMarked, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
   { href: '/modules', label: 'Learn', icon: <BookOpen className="h-4 w-4" /> },
   { href: '/commands', label: 'Commands', icon: <Terminal className="h-4 w-4" /> },
   { href: '/calculator', label: 'Cost Calculator', icon: <DollarSign className="h-4 w-4" /> },
+  { href: '/cost-guide', label: 'Cost Guide', icon: <Wallet className="h-4 w-4" /> },
   { href: '/playground', label: 'Playground', icon: <Code2 className="h-4 w-4" /> },
   { href: '/cheatsheet', label: 'Cheatsheet', icon: <BookMarked className="h-4 w-4" /> },
   { href: '/whats-new', label: "What's New", icon: <Sparkles className="h-4 w-4" /> },

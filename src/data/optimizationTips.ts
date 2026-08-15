@@ -30,8 +30,8 @@ export const optimizationTips: OptimizationTip[] = [
     id: 'tip-3',
     title: 'Use Haiku for Simple Tasks',
     description:
-      'Claude Haiku 4.5 costs ~19x less than Opus 4.6 per input token. Routing simpler tasks (classification, extraction, summarization) to Haiku dramatically cuts costs.',
-    savingsEstimate: 'Up to 19x cheaper vs Opus',
+      'Claude Haiku 4.5 costs 5x less than Opus 5 and 10x less than Fable 5 per input token. Routing simpler tasks (classification, extraction, summarization) to Haiku dramatically cuts costs.',
+    savingsEstimate: 'Up to 10x cheaper vs Fable 5',
     category: 'model-selection',
     applicableWhen: 'Task does not require deep reasoning or creativity',
   },
@@ -75,7 +75,7 @@ export const optimizationTips: OptimizationTip[] = [
     id: 'tip-8',
     title: 'Combine Caching + Batching',
     description:
-      'For maximum savings, use prompt caching on the static parts of your prompt AND the Batch API for the dynamic parts. Cache reads at 50% off already; batch adds another 50%.',
+      'For maximum savings, use prompt caching on the static parts of your prompt AND the Batch API for the dynamic parts. Cache reads are already 90% off; batch halves what remains.',
     savingsEstimate: 'Up to 95% on cacheable batch jobs',
     category: 'batching',
     applicableWhen: 'High-volume jobs with large shared context',
@@ -91,9 +91,9 @@ export const optimizationTips: OptimizationTip[] = [
   },
   {
     id: 'tip-10',
-    title: 'Monitor Costs with /cost',
+    title: 'Monitor Costs with /usage',
     description:
-      'In Claude Code, run /cost to see the session token spend. Use this to identify expensive operations and decide when to /compact or switch to a cheaper model.',
+      'In Claude Code, run /usage for session cost, historical stats, and plan limits in one dashboard (/cost and /stats open it on the relevant tab). Use it to identify expensive operations and decide when to /compact or switch to a cheaper model.',
     savingsEstimate: 'Visibility → informed decisions',
     category: 'context',
     applicableWhen: 'Always — especially in long Claude Code sessions',

@@ -1,99 +1,105 @@
 import type { ClaudeModel } from '@/types/model';
 
+/**
+ * Standard Claude API pricing, USD per million tokens.
+ *
+ * Cache writes are 1.25x the input rate; cache reads are 0.1x the input rate.
+ * Batch API applies a further 50% discount to every token type.
+ */
 export const claudeModels: ClaudeModel[] = [
   {
-    id: 'claude-opus-4-6',
-    displayName: 'Claude Opus 4.6',
-    family: 'claude-4',
+    id: 'claude-fable-5',
+    displayName: 'Claude Fable 5',
+    family: 'claude-5',
     pricing: {
-      inputPerMillion: 15.00,
-      outputPerMillion: 75.00,
-      cacheWritePerMillion: 18.75,
-      cacheReadPerMillion: 1.50,
+      inputPerMillion: 10.0,
+      outputPerMillion: 50.0,
+      cacheWritePerMillion: 12.5,
+      cacheReadPerMillion: 1.0,
     },
     supportsBatchApi: true,
     supportsPromptCaching: true,
-    contextWindow: 200000,
-    description: 'Most powerful model for complex reasoning, research, and nuanced tasks.',
+    contextWindow: 1_000_000,
+    description: 'Most capable model, for the most demanding reasoning and long-horizon agentic work.',
+  },
+  {
+    id: 'claude-opus-5',
+    displayName: 'Claude Opus 5',
+    family: 'claude-5',
+    pricing: {
+      inputPerMillion: 5.0,
+      outputPerMillion: 25.0,
+      cacheWritePerMillion: 6.25,
+      cacheReadPerMillion: 0.5,
+    },
+    supportsBatchApi: true,
+    supportsPromptCaching: true,
+    contextWindow: 1_000_000,
+    description: 'Complex agentic coding and deep reasoning at half the cost of Fable 5.',
+  },
+  {
+    id: 'claude-sonnet-5',
+    displayName: 'Claude Sonnet 5',
+    family: 'claude-5',
+    pricing: {
+      inputPerMillion: 3.0,
+      outputPerMillion: 15.0,
+      cacheWritePerMillion: 3.75,
+      cacheReadPerMillion: 0.3,
+    },
+    supportsBatchApi: true,
+    supportsPromptCaching: true,
+    contextWindow: 1_000_000,
+    description: 'Best balance of speed and intelligence — near-Opus quality on coding and agentic work.',
+  },
+  {
+    id: 'claude-haiku-4-5',
+    displayName: 'Claude Haiku 4.5',
+    family: 'claude-4',
+    pricing: {
+      inputPerMillion: 1.0,
+      outputPerMillion: 5.0,
+      cacheWritePerMillion: 1.25,
+      cacheReadPerMillion: 0.1,
+    },
+    supportsBatchApi: true,
+    supportsPromptCaching: true,
+    contextWindow: 200_000,
+    description: 'Fastest and cheapest — ideal for mechanical, high-volume, and simpler tasks.',
+  },
+  {
+    id: 'claude-opus-4-8',
+    displayName: 'Claude Opus 4.8',
+    family: 'claude-4',
+    pricing: {
+      inputPerMillion: 5.0,
+      outputPerMillion: 25.0,
+      cacheWritePerMillion: 6.25,
+      cacheReadPerMillion: 0.5,
+    },
+    supportsBatchApi: true,
+    supportsPromptCaching: true,
+    contextWindow: 1_000_000,
+    description: 'Previous-generation Opus — highly autonomous on long-horizon agentic work.',
   },
   {
     id: 'claude-sonnet-4-6',
     displayName: 'Claude Sonnet 4.6',
     family: 'claude-4',
     pricing: {
-      inputPerMillion: 3.00,
-      outputPerMillion: 15.00,
+      inputPerMillion: 3.0,
+      outputPerMillion: 15.0,
       cacheWritePerMillion: 3.75,
-      cacheReadPerMillion: 0.30,
+      cacheReadPerMillion: 0.3,
     },
     supportsBatchApi: true,
     supportsPromptCaching: true,
-    contextWindow: 200000,
-    description: 'Best balance of intelligence and speed. Ideal for most production workloads.',
-  },
-  {
-    id: 'claude-haiku-4-5-20251001',
-    displayName: 'Claude Haiku 4.5',
-    family: 'claude-4',
-    pricing: {
-      inputPerMillion: 0.80,
-      outputPerMillion: 4.00,
-      cacheWritePerMillion: 1.00,
-      cacheReadPerMillion: 0.08,
-    },
-    supportsBatchApi: true,
-    supportsPromptCaching: true,
-    contextWindow: 200000,
-    description: 'Fastest and most cost-effective. Perfect for high-volume, simpler tasks.',
-  },
-  {
-    id: 'claude-3-7-sonnet-20250219',
-    displayName: 'Claude 3.7 Sonnet',
-    family: 'claude-3-7',
-    pricing: {
-      inputPerMillion: 3.00,
-      outputPerMillion: 15.00,
-      cacheWritePerMillion: 3.75,
-      cacheReadPerMillion: 0.30,
-    },
-    supportsBatchApi: true,
-    supportsPromptCaching: true,
-    contextWindow: 200000,
-    description: 'Previous-generation Sonnet with extended thinking capabilities.',
-  },
-  {
-    id: 'claude-3-5-sonnet-20241022',
-    displayName: 'Claude 3.5 Sonnet',
-    family: 'claude-3-5',
-    pricing: {
-      inputPerMillion: 3.00,
-      outputPerMillion: 15.00,
-      cacheWritePerMillion: 3.75,
-      cacheReadPerMillion: 0.30,
-    },
-    supportsBatchApi: true,
-    supportsPromptCaching: true,
-    contextWindow: 200000,
-    description: 'Highly capable model with strong coding and analysis abilities.',
-  },
-  {
-    id: 'claude-3-5-haiku-20241022',
-    displayName: 'Claude 3.5 Haiku',
-    family: 'claude-3-5',
-    pricing: {
-      inputPerMillion: 0.80,
-      outputPerMillion: 4.00,
-      cacheWritePerMillion: 1.00,
-      cacheReadPerMillion: 0.08,
-    },
-    supportsBatchApi: true,
-    supportsPromptCaching: true,
-    contextWindow: 200000,
-    description: 'Fast and affordable with improved capabilities over Haiku 3.',
+    contextWindow: 1_000_000,
+    description: 'Previous-generation Sonnet — still a strong everyday engineering model.',
   },
 ];
 
-export const defaultModel = claudeModels.find(m => m.id === 'claude-sonnet-4-6')!;
+export const defaultModel = claudeModels.find(m => m.id === 'claude-sonnet-5')!;
 
 export function getModelById(id: string): ClaudeModel | undefined {
   return claudeModels.find(m => m.id === id);

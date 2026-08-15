@@ -34,10 +34,11 @@ function Tag({ children, color = 'bg-primary/15 text-primary' }: { children: str
 
 function SectionCard({ n, title, open, onToggle, children }: { n: number; title: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border bg-card overflow-hidden">
+    <div className="rounded-xl border bg-card overflow-hidden" data-section-card>
       <button
         onClick={onToggle}
         className="w-full flex items-center gap-2 p-4 text-left hover:bg-muted/30 transition-colors"
+        data-section-toggle
       >
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
           {n}
@@ -45,9 +46,12 @@ function SectionCard({ n, title, open, onToggle, children }: { n: number; title:
         <h3 className="font-bold text-sm flex-1">{title}</h3>
         <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
-        <div className="px-4 pb-4 text-xs text-muted-foreground space-y-1.5">{children}</div>
-      )}
+      <div
+        className={`px-4 pb-4 text-xs text-muted-foreground space-y-1.5 ${open ? '' : 'hidden'}`}
+        data-section-content
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -88,7 +92,7 @@ export function Cheatsheet() {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" data-cheatsheet-grid>
 
         {/* 1 — Getting Started */}
         <SectionCard n={1} title="Getting Started" open={openSections.has(1)} onToggle={() => toggle(1)}>

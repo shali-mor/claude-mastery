@@ -141,6 +141,29 @@
   .prose-lesson ol { @apply list-decimal list-inside mb-4 space-y-1; }
 }
 
+/* ── Print: force light theme & unclamp layout ── */
+@media print {
+  .dark {
+    --background: oklch(0.99 0 0);
+    --foreground: oklch(0.12 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.12 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.12 0 0);
+    --primary: oklch(0.65 0.18 40);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.96 0 0);
+    --secondary-foreground: oklch(0.20 0 0);
+    --muted: oklch(0.96 0 0);
+    --muted-foreground: oklch(0.50 0 0);
+    --accent: oklch(0.95 0.02 40);
+    --accent-foreground: oklch(0.20 0 0);
+    --border: oklch(0.90 0 0);
+    --input: oklch(0.90 0 0);
+    --ring: oklch(0.65 0.18 40);
+  }
+}
+
 /* Shiki dual-theme: light tokens by default, dark tokens when .dark is on <html> */
 .shiki span {
   color: var(--shiki-light);

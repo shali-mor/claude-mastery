@@ -16,6 +16,36 @@ export function ThemeInitializer() {
     useStore.persist.rehydrate();
   }, []);
 
+  // Hide Clerk development mode widget (injected by Clerk CDN JS)
+  useEffect(() => {
+    const hideClerkWidget = () => {
+      // Walk all fixed-position elements looking for Clerk's dev popup
+      const allEls = document.querySelectorAll('body *');
+      for (const el of allEls) {
+        const html = el as HTMLElement;
+        if (
+          html.textContent?.includes('Configure your application') &&
+          html.textContent?.includes('first user')
+        ) {
+          // Walk to the outermost portal wrapper (direct body child)
+          let root: HTMLElement = html;
+          while (root.parentElement && root.parentElement !== document.body) {
+            root = root.parentElement;
+          }
+          root.remove();
+          return true;
+        }
+      }
+      return false;
+    };
+    // Poll since Clerk widget loads asynchronously from CDN
+    let attempts = 0;
+    const interval = setInterval(() => {
+      if (hideClerkWidget() || ++attempts > 20) clearInterval(interval);
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const root = document.documentElement;
     if (theme === 'system') {
