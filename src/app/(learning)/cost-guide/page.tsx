@@ -8,6 +8,7 @@ import {
   Users, Rewind, LineChart, ShieldAlert, Target, Repeat, Building2, Radio,
   Wrench, Split, Gauge, Bot, Search, Filter, FolderTree, Crosshair, Eraser,
   Minimize2, FileText, Package, ExternalLink, Flame, SlidersHorizontal,
+  ShieldCheck, ListChecks,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +17,8 @@ import { claudeModels } from '@/data/models';
 import {
   quickWins, routingTactics, mcpTactics, contextTactics, outputTactics,
   ossTools, gatewayNote, tokenKinds, visibilityTools, antiPatterns,
-  habitGroups, teamPractices, type Tactic,
+  habitGroups, teamPractices, globalSettingsSnippet, toolkitHooks,
+  guardrailSkill, habitsNotSizeNote, type Tactic,
 } from '@/data/costGuide';
 
 const icons = {
@@ -25,6 +27,7 @@ const icons = {
   Users, Rewind, LineChart, ShieldAlert, Target, Repeat, Building2, Radio,
   Wrench, Split, Gauge, Bot, Search, Filter, FolderTree, Crosshair, Eraser,
   Minimize2, FileText, Package, ExternalLink, Flame, SlidersHorizontal,
+  ShieldCheck, ListChecks,
 } as const;
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -41,6 +44,7 @@ const sections = [
   { id: 'context', label: 'Context' },
   { id: 'output', label: 'Output' },
   { id: 'oss', label: 'Open-source tools' },
+  { id: 'toolkit', label: 'Enforcement toolkit' },
   { id: 'avoid', label: 'What to avoid' },
   { id: 'habits', label: 'Habits' },
   { id: 'reference', label: 'Reference' },
@@ -113,6 +117,27 @@ function TacticCard({ t, delay }: { t: Tactic; delay: number }) {
                 <span className="text-green-600 select-none">+ </span>{t.example.after}
               </div>
             </div>
+          )}
+
+          {t.howTo && t.howTo.length > 0 && (
+            <div className="rounded-md border border-border bg-muted/30 px-3 py-2.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground/80 mb-1.5">
+                <ListChecks className="h-3 w-3" />
+                How to set it up
+              </div>
+              <ol className="space-y-1 list-decimal list-inside">
+                {t.howTo.map((step, idx) => (
+                  <li key={idx} className="text-[11px] text-muted-foreground leading-relaxed">{step}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {t.enforce && (
+            <p className="text-[11px] text-muted-foreground leading-relaxed flex items-start gap-1.5">
+              <ShieldCheck className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" />
+              <span><span className="font-medium text-foreground/80">How far this can be enforced: </span>{t.enforce}</span>
+            </p>
           )}
         </CardContent>
       </Card>
@@ -187,6 +212,9 @@ export default function CostGuidePage() {
                     <code className="inline-block mt-1.5 text-[11px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
                       {w.cmd}
                     </code>
+                    <p className="text-[10.5px] text-muted-foreground/80 leading-relaxed mt-1.5 max-w-md">
+                      {w.howTo[0]}
+                    </p>
                   </div>
                   <div className="text-right flex-shrink-0 space-y-1">
                     <p className="text-[11px] text-green-600 font-medium">{w.saving}</p>
@@ -298,6 +326,89 @@ export default function CostGuidePage() {
           </CardContent>
         </Card>
 
+        {/* ══ Enforcement toolkit ══ */}
+        <SectionHeading
+          id="toolkit"
+          title="Enforcement toolkit"
+          sub="Copy-paste config so the tactics above apply automatically instead of relying on memory. Requires jq for the hook scripts."
+        />
+
+        <p className="text-xs font-medium mb-2.5">Global settings.json defaults</p>
+        <Card className="mb-8 overflow-hidden">
+          <CardContent className="pt-4 pb-4">
+            <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+              Merge this into ~/.claude/settings.json (personal) or the project’s .claude/settings.json
+              (team default) — never overwrite the whole file if one already exists.
+            </p>
+            <pre className="text-[11px] font-mono bg-muted rounded-md p-3 overflow-x-auto whitespace-pre">
+              {globalSettingsSnippet}
+            </pre>
+          </CardContent>
+        </Card>
+
+        <p className="text-xs font-medium mb-2.5">Hooks that apply without remembering</p>
+        <div className="space-y-3 mb-8">
+          {toolkitHooks.map(h => (
+            <Card key={h.name}>
+              <CardContent className="pt-4 pb-4 space-y-3">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Zap className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium leading-snug">{h.name}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {h.event} → {h.matcher} · requires {h.requires}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{h.what}</p>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+                    Save as {h.scriptPath}
+                  </p>
+                  <pre className="text-[11px] font-mono bg-muted rounded-md p-3 overflow-x-auto whitespace-pre">
+                    {h.script}
+                  </pre>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+                    Wire it into settings.json
+                  </p>
+                  <pre className="text-[11px] font-mono bg-muted rounded-md p-3 overflow-x-auto whitespace-pre">
+                    {h.settingsSnippet}
+                  </pre>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <p className="text-xs font-medium mb-2.5">A skill that audits all of this for you</p>
+        <Card className="mb-10 overflow-hidden">
+          <CardContent className="pt-4 pb-4 space-y-3">
+            <div className="flex items-start gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-snug">cost-guardrails</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Save as {guardrailSkill.path}, then run /cost-guardrails any time.
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Checks model routing, autoCompactWindow, MCP scoping, CLAUDE.md, unbounded headless runs,
+              the statusline, and whether the two hooks above are actually installed — then reports the
+              exact fix for anything missing. Read-only unless you explicitly ask it to change something.
+            </p>
+            <pre className="text-[11px] font-mono bg-muted rounded-md p-3 overflow-x-auto whitespace-pre max-h-64 overflow-y-auto">
+              {guardrailSkill.content}
+            </pre>
+          </CardContent>
+        </Card>
+
         {/* ══ Anti-patterns ══ */}
         <SectionHeading
           id="avoid"
@@ -328,6 +439,18 @@ export default function CostGuidePage() {
           title="Make it routine"
           sub="Turn the tactics above into things you do without deciding to."
         />
+
+        <Card className="mb-6 border-primary/20 bg-primary/4">
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-start gap-2.5">
+              <Flame className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium mb-1">{habitsNotSizeNote.title}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{habitsNotSizeNote.body}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="space-y-3 mb-10">
           {habitGroups.map((g, i) => (
